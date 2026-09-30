@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none">
+  <!-- Ink tile with a split-flap: top half settled, bottom half mid-flip -->
+  <rect x="0.5" y="0.5" width="23" height="23" rx="6" fill="#101a2b" stroke="#243149"/>
+  <rect x="5.5" y="5.5" width="13" height="5.6" rx="1.6" fill="#f5b83d"/>
+  <rect x="5.5" y="12.9" width="13" height="5.6" rx="1.6" fill="#f5b83d" fill-opacity=".5"/>
+  <rect x="3" y="11.5" width="18" height="1" fill="#101a2b"/>
+</svg>

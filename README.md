@@ -2,7 +2,7 @@
 
 Static site (HTML + one CSS file + one small script). No build step, no frameworks. The only network request is the password-reset page talking to your Supabase project. Hosted free on GitHub Pages.
 
-Files: `index.html`, `privacy.html`, `terms.html`, `refund.html`, `contact.html`, `shipping.html`, `verified.html`, `reset-password.html`, `404.html`, `styles.css`, `assets/robot-logo.svg`, `assets/reset-password.js`.
+Files: `index.html`, `privacy.html`, `terms.html`, `refund.html`, `contact.html`, `shipping.html`, `verified.html`, `reset-password.html`, `404.html`, `styles.css`, `assets/logo-mark.svg` (BenchPilot mark, copied from the extension), `assets/fonts/*.woff2` (Familjen Grotesk, IBM Plex Sans, IBM Plex Mono; SIL Open Font License, copied from the extension), `assets/reset-password.js`, `assets/verified.js`.
 
 ## 1. Replace the placeholders first
 
@@ -14,9 +14,6 @@ Open each `.html` file in a text editor (Notepad, VS Code) and use Find and Repl
 | `REPLACE_ME_CHROME_STORE_URL` | your Chrome Web Store listing URL (fill after the extension is approved) | `https://chromewebstore.google.com/detail/...` |
 | `Rakessh.D` | your legal name (individual seller) | `Your Full Name` |
 | `Hyderabad, Telangana, India` | operating address, city and state (shown on Contact Us; Razorpay verifies this) | `Hyderabad, Telangana` |
-| `REPLACE_ME_RAZORPAY_MONTHLY` | Razorpay Payment Page URL for Pro Monthly | `https://rzp.io/rzp/AbCd123` |
-| `REPLACE_ME_RAZORPAY_YEARLY` | Razorpay Payment Page URL for Pro Yearly | `https://pages.razorpay.com/benchpilot-yearly` |
-| `REPLACE_ME_RAZORPAY_FOUNDING` | Razorpay Payment Page URL for Founding Monthly | `https://rzp.io/rzp/XyZ789` |
 
 Tip: search for `REPLACE_ME` afterwards. It should find nothing. (Until the Chrome Web Store URL is known, the "Add to Chrome" buttons will not work; you can publish the site first to get the privacy policy URL that the store asks for, then update the buttons later.)
 
@@ -25,7 +22,7 @@ Tip: search for `REPLACE_ME` afterwards. It should find nothing. (Until the Chro
 1. Create a free account at https://github.com/signup and verify your email.
 2. Click **+** (top right) → **New repository**. Name it `benchpilot`, set it to **Public**, and click **Create repository**.
 3. On the empty repository page click **uploading an existing file** (or **Add file → Upload files**).
-4. Open the `website` folder on your computer, select everything **inside** it (`index.html`, `privacy.html`, `terms.html`, `refund.html`, `contact.html`, `shipping.html`, `verified.html`, `reset-password.html`, `404.html`, `styles.css`, `README.md` and the `assets` folder, which includes `reset-password.js`) and drag it into the browser. Upload the contents, not the `website` folder itself, so `index.html` is at the top level.
+4. Open the `website` folder on your computer, select everything **inside** it (`index.html`, `privacy.html`, `terms.html`, `refund.html`, `contact.html`, `shipping.html`, `verified.html`, `reset-password.html`, `404.html`, `styles.css`, `README.md` and the `assets` folder, which includes `reset-password.js`, `verified.js`, `logo-mark.svg` and the `fonts` folder) and drag it into the browser. Upload the contents, not the `website` folder itself, so `index.html` is at the top level.
 5. Scroll down and click **Commit changes**.
 6. Go to **Settings → Pages**. Under **Build and deployment**, set **Source** to **Deploy from a branch**, choose branch **main** and folder **/ (root)**, and click **Save**.
 7. Wait 1–2 minutes and refresh. GitHub shows your live address: `https://<your-username>.github.io/benchpilot/`.
