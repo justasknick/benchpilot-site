@@ -204,11 +204,15 @@
     });
   });
 
-  // Decide where a signed-in session belongs: console (aal2) or the MFA step.
+  // The authenticator-code step. Off for now (founder decision 2026-10-01); turn it back on together with
+  // the server secret ADMIN_REQUIRE_MFA=true.
+  var REQUIRE_MFA = false;
+
+  // Decide where a signed-in session belongs: console, or the MFA step when it is required.
   async function route() {
     var s = loadSession();
     if (!s) { toSignin(''); return; }
-    if (L.tokenAal(s.access_token) === 'aal2') { enterConsole(); return; }
+    if (!REQUIRE_MFA || L.tokenAal(s.access_token) === 'aal2') { enterConsole(); return; }
     await startMfa();
   }
 
