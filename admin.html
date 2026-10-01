@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src https://uhgtlyxarozzdgdizoaz.supabase.co; form-action 'none'; base-uri 'none'; object-src 'none'">
+<meta name="referrer" content="no-referrer">
+<meta name="robots" content="noindex,nofollow">
+<title>BenchPilot admin</title>
+<meta name="theme-color" content="#101a2b">
+<link rel="icon" type="image/svg+xml" href="assets/logo-mark.svg">
+<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="admin.css">
+</head>
+<body class="adm">
+<header class="adm-bar">
+  <div class="adm-wrap adm-bar-in">
+    <span class="adm-brand"><img src="assets/logo-mark.svg" alt="" width="26" height="26"><span>Bench<span class="pilot">Pilot</span> admin</span></span>
+    <div id="who" class="adm-who" hidden>
+      <span id="who-email"></span>
+      <button id="btn-signout" class="adm-btn adm-btn-ghost" type="button">Sign out</button>
+    </div>
+  </div>
+</header>
+
+<main class="adm-wrap" id="main">
+  <p id="status" class="adm-status" role="status" aria-live="polite" hidden></p>
+  <noscript><p class="adm-status adm-err">This page needs JavaScript.</p></noscript>
+
+  <!-- 1. Sign in -->
+  <section id="view-signin" class="adm-card adm-narrow" hidden aria-labelledby="h-signin">
+    <h1 id="h-signin">Sign in</h1>
+    <form id="form-signin" class="adm-form" novalidate>
+      <label>Email<input id="in-email" type="email" autocomplete="username" required></label>
+      <label>Password<input id="in-password" type="password" autocomplete="current-password" required></label>
+      <button id="btn-signin" class="adm-btn adm-btn-primary" type="submit">Sign in</button>
+    </form>
+  </section>
+
+  <!-- 2. Two-step verification -->
+  <section id="view-mfa" class="adm-card adm-narrow" hidden aria-labelledby="h-mfa">
+    <h1 id="h-mfa">Two-step verification</h1>
+    <div id="mfa-enrol" hidden>
+      <p>Set up your authenticator app (once). Scan the QR code, or type the secret into the app, then enter the 6-digit code it shows.</p>
+      <img id="mfa-qr" class="adm-qr" alt="QR code for your authenticator app" width="200" height="200">
+      <p>Secret: <code id="mfa-secret" class="adm-secret"></code></p>
+    </div>
+    <p id="mfa-verify-intro" hidden>Enter the 6-digit code from your authenticator app.</p>
+    <form id="form-mfa" class="adm-form" novalidate>
+      <label>6-digit code<input id="in-code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="7" pattern="[0-9 ]*" required></label>
+      <button id="btn-mfa" class="adm-btn adm-btn-primary" type="submit">Verify</button>
+    </form>
+  </section>
+
+  <!-- 3. Console (only shown once the session is aal2) -->
+  <div id="view-console" hidden>
+    <section class="adm-card" aria-labelledby="h-search">
+      <h1 id="h-search">Find a user</h1>
+      <form id="form-search" class="adm-row" novalidate>
+        <label class="adm-grow">Email contains<input id="in-query" type="text" autocomplete="off" maxlength="100" placeholder="name@example.com"></label>
+        <button id="btn-search" class="adm-btn adm-btn-primary" type="submit">Search</button>
+      </form>
+      <div id="results" hidden>
+        <p id="results-note" class="adm-muted"></p>
+        <div class="adm-scroll"><table class="adm-table" id="tbl-results">
+          <thead><tr><th>Email</th><th>Created</th><th>Last sign-in</th><th>Effective plan</th><th>Paid plan</th><th>Active grant</th><th></th></tr></thead>
+          <tbody></tbody>
+        </table></div>
+      </div>
+    </section>
+
+    <section id="detail" class="adm-card" hidden aria-labelledby="h-detail">
+      <h2 id="h-detail">User</h2>
+      <dl id="detail-summary" class="adm-dl"></dl>
+
+      <h3>Give plan</h3>
+      <form id="form-grant" class="adm-form adm-grant" novalidate>
+        <div class="adm-row">
+          <label>Plan
+            <select id="g-tier"><option value="pro">Pro</option><option value="basic">Basic</option></select>
+          </label>
+          <div class="adm-days">
+            <span class="adm-lab">Days</span>
+            <div class="adm-row adm-tight">
+              <button type="button" class="adm-btn adm-btn-ghost adm-preset" data-days="7">7</button>
+              <button type="button" class="adm-btn adm-btn-ghost adm-preset" data-days="30">30</button>
+              <button type="button" class="adm-btn adm-btn-ghost adm-preset" data-days="90">90</button>
+              <input id="g-days" type="number" min="1" max="366" step="1" value="30" aria-label="Days (1 to 366)">
+            </div>
+          </div>
+        </div>
+        <label>Reason (required, kept in the audit log)
+          <textarea id="g-reason" rows="2" maxlength="300"></textarea>
+        </label>
+        <p class="adm-muted"><span id="g-count">0</span> / 300</p>
+        <p id="g-error" class="adm-err" role="alert" hidden></p>
+        <button id="btn-grant" class="adm-btn adm-btn-primary" type="submit">Give plan</button>
+      </form>
+
+      <h3>Grants</h3>
+      <div class="adm-scroll"><table class="adm-table" id="tbl-grants">
+        <thead><tr><th>Plan</th><th>From</th><th>Until</th><th>Reason</th><th>Status</th><th></th></tr></thead>
+        <tbody></tbody>
+      </table></div>
+      <p id="grants-empty" class="adm-muted" hidden>No grants.</p>
+
+      <h3>Payments</h3>
+      <div class="adm-scroll"><table class="adm-table" id="tbl-payments">
+        <thead><tr><th>Date</th><th>Plan</th><th>Amount</th><th>Status</th><th>Razorpay payment</th></tr></thead>
+        <tbody></tbody>
+      </table></div>
+      <p id="payments-empty" class="adm-muted" hidden>No payments.</p>
+
+      <h3>Recent checkouts</h3>
+      <div class="adm-scroll"><table class="adm-table" id="tbl-checkouts">
+        <thead><tr><th>Date</th><th>Plan</th><th>Reference</th></tr></thead>
+        <tbody></tbody>
+      </table></div>
+      <p id="checkouts-empty" class="adm-muted" hidden>No checkouts.</p>
+    </section>
+  </div>
+</main>
+
+<!-- Confirm / reason dialog (used for grant confirmation and revoke) -->
+<dialog id="dlg" class="adm-dlg" aria-labelledby="dlg-title">
+  <form id="dlg-form" class="adm-form" novalidate>
+    <h2 id="dlg-title"></h2>
+    <p id="dlg-msg"></p>
+    <label id="dlg-reason-wrap" hidden>Reason (required)
+      <textarea id="dlg-reason" rows="3" maxlength="300"></textarea>
+    </label>
+    <p id="dlg-error" class="adm-err" role="alert" hidden></p>
+    <div class="adm-row adm-end">
+      <button id="dlg-cancel" class="adm-btn adm-btn-ghost" type="button">Cancel</button>
+      <button id="dlg-ok" class="adm-btn adm-btn-primary" type="submit">Confirm</button>
+    </div>
+  </form>
+</dialog>
+
+<script src="admin-lib.js"></script>
+<script src="admin.js"></script>
+</body>
+</html>
