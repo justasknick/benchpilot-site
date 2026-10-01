@@ -14,7 +14,7 @@
 </head>
 <body class="adm">
 <header class="adm-bar">
-  <div class="adm-wrap adm-bar-in">
+  <div class="adm-bar-in">
     <span class="adm-brand"><img src="assets/logo-mark.svg" alt="" width="26" height="26"><span>Bench<span class="pilot">Pilot</span> admin</span></span>
     <div id="who" class="adm-who" hidden>
       <span id="who-email"></span>
@@ -23,7 +23,7 @@
   </div>
 </header>
 
-<main class="adm-wrap" id="main">
+<main class="adm-main" id="main">
   <p id="status" class="adm-status" role="status" aria-live="polite" hidden></p>
   <noscript><p class="adm-status adm-err">This page needs JavaScript.</p></noscript>
 
@@ -53,81 +53,217 @@
   </section>
 
   <!-- 3. Console (only shown once the session is aal2) -->
-  <div id="view-console" hidden>
-    <section class="adm-card" aria-labelledby="h-search">
-      <h1 id="h-search">Find a user</h1>
-      <form id="form-search" class="adm-row" novalidate>
-        <label class="adm-grow">Email contains<input id="in-query" type="text" autocomplete="off" maxlength="100" placeholder="name@example.com"></label>
-        <button id="btn-search" class="adm-btn adm-btn-primary" type="submit">Search</button>
-      </form>
-      <div id="results" hidden>
-        <p id="results-note" class="adm-muted"></p>
-        <div class="adm-scroll"><table class="adm-table" id="tbl-results">
-          <thead><tr><th>Email</th><th>Created</th><th>Last sign-in</th><th>Effective plan</th><th>Paid plan</th><th>Active grant</th><th></th></tr></thead>
-          <tbody></tbody>
-        </table></div>
-      </div>
-    </section>
+  <div id="view-console" class="adm-shell" hidden>
+    <nav class="adm-nav" aria-label="Admin sections">
+      <a href="#dashboard" data-route="dashboard">Dashboard</a>
+      <a href="#users" data-route="users">Users</a>
+      <a href="#payments" data-route="payments">Payments</a>
+      <a href="#audit" data-route="audit">Audit log</a>
+      <a href="#settings" data-route="settings">Settings</a>
+    </nav>
 
-    <section id="detail" class="adm-card" hidden aria-labelledby="h-detail">
-      <h2 id="h-detail">User</h2>
-      <dl id="detail-summary" class="adm-dl"></dl>
-
-      <h3>Give plan</h3>
-      <form id="form-grant" class="adm-form adm-grant" novalidate>
-        <div class="adm-row">
-          <label>Plan
-            <select id="g-tier"><option value="pro">Pro</option><option value="basic">Basic</option></select>
-          </label>
-          <div class="adm-days">
-            <span class="adm-lab">Days</span>
-            <div class="adm-row adm-tight">
-              <button type="button" class="adm-btn adm-btn-ghost adm-preset" data-days="7">7</button>
-              <button type="button" class="adm-btn adm-btn-ghost adm-preset" data-days="30">30</button>
-              <button type="button" class="adm-btn adm-btn-ghost adm-preset" data-days="90">90</button>
-              <input id="g-days" type="number" min="1" max="366" step="1" value="30" aria-label="Days (1 to 366)">
-            </div>
+    <div class="adm-content">
+      <!-- Dashboard -->
+      <section id="page-dashboard" hidden aria-labelledby="h-dash">
+        <div class="adm-pagehead">
+          <h1 id="h-dash">Dashboard</h1>
+          <div class="adm-seg" role="group" aria-label="Date range">
+            <button type="button" class="adm-seg-btn" data-range="7" aria-pressed="false">7 days</button>
+            <button type="button" class="adm-seg-btn" data-range="30" aria-pressed="true">30 days</button>
+            <button type="button" class="adm-seg-btn" data-range="90" aria-pressed="false">90 days</button>
           </div>
         </div>
-        <label>Reason (required, kept in the audit log)
-          <textarea id="g-reason" rows="2" maxlength="300"></textarea>
-        </label>
-        <p class="adm-muted"><span id="g-count">0</span> / 300</p>
-        <p id="g-error" class="adm-err" role="alert" hidden></p>
-        <button id="btn-grant" class="adm-btn adm-btn-primary" type="submit">Give plan</button>
-      </form>
+        <p id="dash-note" class="adm-muted"></p>
+        <div id="kpis" class="adm-kpis"></div>
+        <div class="adm-grid2">
+          <section class="adm-card adm-chart" aria-labelledby="h-c-signups">
+            <div class="adm-chart-head"><h2 id="h-c-signups">Sign-ups per day</h2><button type="button" class="adm-btn adm-btn-ghost adm-btn-sm" id="tg-signups" aria-expanded="false" aria-controls="tbl-wrap-signups">View as table</button></div>
+            <div id="chart-signups"></div>
+            <div id="tbl-wrap-signups" class="adm-scroll adm-tbl-short" hidden></div>
+          </section>
+          <section class="adm-card adm-chart" aria-labelledby="h-c-revenue">
+            <div class="adm-chart-head"><h2 id="h-c-revenue">Revenue per day</h2><button type="button" class="adm-btn adm-btn-ghost adm-btn-sm" id="tg-revenue" aria-expanded="false" aria-controls="tbl-wrap-revenue">View as table</button></div>
+            <div id="chart-revenue"></div>
+            <div id="tbl-wrap-revenue" class="adm-scroll adm-tbl-short" hidden></div>
+          </section>
+        </div>
+        <div class="adm-grid2">
+          <section class="adm-card adm-chart" aria-labelledby="h-c-plan">
+            <div class="adm-chart-head"><h2 id="h-c-plan">Plan split</h2></div>
+            <div id="chart-plan"></div>
+          </section>
+          <section class="adm-card adm-chart" aria-labelledby="h-c-funnel">
+            <div class="adm-chart-head"><h2 id="h-c-funnel">Funnel, last 30 days</h2></div>
+            <div id="funnel"></div>
+          </section>
+        </div>
+        <section class="adm-card" aria-labelledby="h-health">
+          <h2 id="h-health">Health</h2>
+          <div id="health"></div>
+        </section>
+      </section>
 
-      <h3>Grants</h3>
-      <div class="adm-scroll"><table class="adm-table" id="tbl-grants">
-        <thead><tr><th>Plan</th><th>From</th><th>Until</th><th>Reason</th><th>Status</th><th></th></tr></thead>
-        <tbody></tbody>
-      </table></div>
-      <p id="grants-empty" class="adm-muted" hidden>No grants.</p>
+      <!-- Users -->
+      <section id="page-users" hidden aria-labelledby="h-users">
+        <div class="adm-pagehead"><h1 id="h-users">Users</h1></div>
+        <form id="form-users" class="adm-card adm-filters" novalidate>
+          <label class="adm-grow">Search email<input id="u-q" type="search" autocomplete="off" maxlength="100" placeholder="name@example.com"></label>
+          <label>Plan<select id="u-plan"><option value="">Any</option><option value="free">Free</option><option value="basic">Basic</option><option value="pro">Pro</option></select></label>
+          <label>Source<select id="u-source"><option value="">Any</option><option value="paid">Paid</option><option value="grant">Granted</option></select></label>
+          <label>Status<select id="u-status"><option value="">Any</option><option value="active">Active</option><option value="suspended">Suspended</option><option value="unconfirmed">Unconfirmed</option></select></label>
+          <label>Signed up from<input id="u-after" type="date"></label>
+          <label>Signed up to<input id="u-before" type="date"></label>
+          <label>Sort<select id="u-sort"></select></label>
+          <button type="button" id="u-reset" class="adm-btn adm-btn-ghost">Reset</button>
+        </form>
+        <p id="u-error" class="adm-err" role="alert" hidden></p>
+        <div class="adm-toolbar">
+          <p id="u-count" class="adm-muted" aria-live="polite"></p>
+          <div class="adm-row adm-tight">
+            <button type="button" id="u-bulk" class="adm-btn adm-btn-primary adm-btn-sm" disabled>Grant to selected (0)</button>
+            <button type="button" id="u-export" class="adm-btn adm-btn-ghost adm-btn-sm">Export CSV</button>
+          </div>
+        </div>
+        <div class="adm-card adm-flush"><div class="adm-scroll"><table class="adm-table adm-click" id="tbl-users">
+          <caption class="adm-sr">Users</caption>
+          <thead><tr><th scope="col" class="adm-chk"><input type="checkbox" id="u-all" aria-label="Select all users on this page"></th><th scope="col">Email</th><th scope="col">Signed up</th><th scope="col">Last sign-in</th><th scope="col">Plan</th><th scope="col">Status</th><th scope="col"><span class="adm-sr">Open</span></th></tr></thead>
+          <tbody></tbody>
+        </table></div></div>
+        <div class="adm-pager"><button type="button" class="adm-btn adm-btn-ghost adm-btn-sm" id="u-prev">Previous</button><span id="u-range" class="adm-muted"></span><button type="button" class="adm-btn adm-btn-ghost adm-btn-sm" id="u-next">Next</button></div>
+      </section>
 
-      <h3>Payments</h3>
-      <div class="adm-scroll"><table class="adm-table" id="tbl-payments">
-        <thead><tr><th>Date</th><th>Plan</th><th>Amount</th><th>Status</th><th>Razorpay payment</th></tr></thead>
-        <tbody></tbody>
-      </table></div>
-      <p id="payments-empty" class="adm-muted" hidden>No payments.</p>
+      <!-- Payments -->
+      <section id="page-payments" hidden aria-labelledby="h-pay">
+        <div class="adm-pagehead"><h1 id="h-pay">Payments</h1></div>
+        <form id="form-payments" class="adm-card adm-filters" novalidate>
+          <label class="adm-grow">Search email or payment ID<input id="p-q" type="search" autocomplete="off" maxlength="100"></label>
+          <label>Status<select id="p-status"><option value="">Any</option><option value="captured">Captured</option><option value="refunded">Refunded</option><option value="failed">Failed</option></select></label>
+          <label>Plan<select id="p-plan"><option value="">Any</option><option value="basic">Basic</option><option value="pro">Pro</option></select></label>
+          <label>From<input id="p-from" type="date"></label>
+          <label>To<input id="p-to" type="date"></label>
+          <button type="button" id="p-reset" class="adm-btn adm-btn-ghost">Reset</button>
+        </form>
+        <p id="p-error" class="adm-err" role="alert" hidden></p>
+        <div class="adm-toolbar">
+          <p id="p-count" class="adm-muted" aria-live="polite"></p>
+          <button type="button" id="p-export" class="adm-btn adm-btn-ghost adm-btn-sm">Export CSV</button>
+        </div>
+        <div class="adm-card adm-flush"><div class="adm-scroll"><table class="adm-table" id="tbl-pay">
+          <caption class="adm-sr">Payments</caption>
+          <thead><tr><th scope="col">Date</th><th scope="col">User</th><th scope="col">Plan</th><th scope="col" class="adm-num">Amount</th><th scope="col">Status</th><th scope="col">Razorpay payment</th></tr></thead>
+          <tbody></tbody>
+        </table></div></div>
+        <div class="adm-pager"><button type="button" class="adm-btn adm-btn-ghost adm-btn-sm" id="p-prev">Previous</button><span id="p-range" class="adm-muted"></span><button type="button" class="adm-btn adm-btn-ghost adm-btn-sm" id="p-next">Next</button></div>
+      </section>
 
-      <h3>Recent checkouts</h3>
-      <div class="adm-scroll"><table class="adm-table" id="tbl-checkouts">
-        <thead><tr><th>Date</th><th>Plan</th><th>Reference</th></tr></thead>
-        <tbody></tbody>
-      </table></div>
-      <p id="checkouts-empty" class="adm-muted" hidden>No checkouts.</p>
-    </section>
+      <!-- Audit log -->
+      <section id="page-audit" hidden aria-labelledby="h-audit">
+        <div class="adm-pagehead"><h1 id="h-audit">Audit log</h1></div>
+        <form id="form-audit" class="adm-card adm-filters" novalidate>
+          <label class="adm-grow">Action<input id="a-action" type="text" list="a-actions" autocomplete="off" maxlength="60" placeholder="e.g. grant_plan"></label>
+          <datalist id="a-actions"><option value="grant_plan"><option value="revoke_grant"><option value="suspend_user"><option value="unsuspend_user"><option value="sign_out_everywhere"><option value="send_password_reset"><option value="delete_user"><option value="delete_user_failed"></datalist>
+          <label>From<input id="a-from" type="date"></label>
+          <label>To<input id="a-to" type="date"></label>
+          <button type="button" id="a-reset" class="adm-btn adm-btn-ghost">Reset</button>
+        </form>
+        <p id="a-error" class="adm-err" role="alert" hidden></p>
+        <div class="adm-toolbar"><p id="a-count" class="adm-muted" aria-live="polite"></p></div>
+        <div class="adm-card adm-flush"><div class="adm-scroll"><table class="adm-table" id="tbl-audit">
+          <caption class="adm-sr">Admin actions</caption>
+          <thead><tr><th scope="col">When</th><th scope="col">Admin</th><th scope="col">Action</th><th scope="col">User</th><th scope="col">Reason</th><th scope="col"><span class="adm-sr">Details</span></th></tr></thead>
+          <tbody></tbody>
+        </table></div></div>
+        <div class="adm-pager"><button type="button" class="adm-btn adm-btn-ghost adm-btn-sm" id="a-prev">Previous</button><span id="a-range" class="adm-muted"></span><button type="button" class="adm-btn adm-btn-ghost adm-btn-sm" id="a-next">Next</button></div>
+      </section>
+
+      <!-- Settings -->
+      <section id="page-settings" hidden aria-labelledby="h-set">
+        <div class="adm-pagehead"><h1 id="h-set">Settings</h1></div>
+        <section class="adm-card" aria-labelledby="h-set-acct">
+          <h2 id="h-set-acct">Your account</h2>
+          <dl id="set-account" class="adm-dl"></dl>
+        </section>
+        <section class="adm-card" aria-labelledby="h-set-links">
+          <h2 id="h-set-links">Dashboards</h2>
+          <ul class="adm-links">
+            <li><a href="https://supabase.com/dashboard/project/uhgtlyxarozzdgdizoaz" target="_blank" rel="noopener noreferrer">Supabase project (database, auth, functions)</a></li>
+            <li><a href="https://dashboard.razorpay.com/" target="_blank" rel="noopener noreferrer">Razorpay dashboard (payments, refunds)</a></li>
+            <li><a href="https://chrome.google.com/webstore/devconsole" target="_blank" rel="noopener noreferrer">Chrome Web Store developer dashboard</a></li>
+          </ul>
+        </section>
+      </section>
+    </div>
   </div>
 </main>
 
-<!-- Confirm / reason dialog (used for grant confirmation and revoke) -->
+<!-- User panel (opens from a Users row) -->
+<aside id="panel" class="adm-panel" hidden aria-labelledby="panel-title">
+  <div class="adm-panel-head">
+    <h2 id="panel-title">User</h2>
+    <button type="button" id="panel-close" class="adm-btn adm-btn-ghost adm-btn-sm">Close</button>
+  </div>
+  <div class="adm-panel-body">
+    <p id="panel-status" class="adm-status" role="status" hidden></p>
+    <dl id="detail-summary" class="adm-dl"></dl>
+    <div id="detail-actions" class="adm-actions"></div>
+
+    <h3>Grants</h3>
+    <div class="adm-scroll"><table class="adm-table" id="tbl-grants">
+      <thead><tr><th>Plan</th><th>From</th><th>Until</th><th>Reason</th><th>Status</th><th></th></tr></thead>
+      <tbody></tbody>
+    </table></div>
+    <p id="grants-empty" class="adm-muted" hidden>No grants.</p>
+
+    <h3>Payments</h3>
+    <div class="adm-scroll"><table class="adm-table" id="tbl-payments">
+      <thead><tr><th>Date</th><th>Plan</th><th>Amount</th><th>Status</th><th>Razorpay payment</th></tr></thead>
+      <tbody></tbody>
+    </table></div>
+    <p id="payments-empty" class="adm-muted" hidden>No payments.</p>
+
+    <h3>Recent checkouts</h3>
+    <div class="adm-scroll"><table class="adm-table" id="tbl-checkouts">
+      <thead><tr><th>Date</th><th>Plan</th><th>Reference</th></tr></thead>
+      <tbody></tbody>
+    </table></div>
+    <p id="checkouts-empty" class="adm-muted" hidden>No checkouts.</p>
+
+    <h3>Admin history for this user</h3>
+    <div class="adm-scroll"><table class="adm-table" id="tbl-uaudit">
+      <thead><tr><th>When</th><th>Admin</th><th>Action</th><th>Reason</th></tr></thead>
+      <tbody></tbody>
+    </table></div>
+    <p id="uaudit-empty" class="adm-muted" hidden>No admin actions yet.</p>
+  </div>
+</aside>
+<div id="panel-scrim" class="adm-scrim" hidden></div>
+
+<!-- Confirm dialog: optional plan fields, reason, and type-the-email box -->
 <dialog id="dlg" class="adm-dlg" aria-labelledby="dlg-title">
   <form id="dlg-form" class="adm-form" novalidate>
     <h2 id="dlg-title"></h2>
     <p id="dlg-msg"></p>
-    <label id="dlg-reason-wrap" hidden>Reason (required)
+    <div id="dlg-grant" hidden>
+      <div class="adm-row">
+        <label>Plan
+          <select id="dg-tier"><option value="pro">Pro</option><option value="basic">Basic</option></select>
+        </label>
+        <div>
+          <span class="adm-lab">Days</span>
+          <div class="adm-row adm-tight">
+            <button type="button" class="adm-btn adm-btn-ghost adm-preset" data-days="7">7</button>
+            <button type="button" class="adm-btn adm-btn-ghost adm-preset" data-days="30">30</button>
+            <button type="button" class="adm-btn adm-btn-ghost adm-preset" data-days="90">90</button>
+            <input id="dg-days" type="number" min="1" max="366" step="1" value="30" aria-label="Days (1 to 366)">
+          </div>
+        </div>
+      </div>
+    </div>
+    <label id="dlg-reason-wrap" hidden>Reason (required, kept in the audit log)
       <textarea id="dlg-reason" rows="3" maxlength="300"></textarea>
+    </label>
+    <label id="dlg-type-wrap" hidden><span id="dlg-type-label"></span>
+      <input id="dlg-type" type="text" autocomplete="off" spellcheck="false">
     </label>
     <p id="dlg-error" class="adm-err" role="alert" hidden></p>
     <div class="adm-row adm-end">
