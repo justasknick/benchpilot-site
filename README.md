@@ -49,3 +49,13 @@ In the developer dashboard listing, use:
 ## 5. Razorpay website verification
 
 Razorpay checks the site before activating payments. It needs: pricing in ₹ (on the home page), Contact Us (`contact.html`), Terms, Privacy, Refund/Cancellation and Shipping & Delivery (`shipping.html`) pages, all linked in the footer. Publish the site with placeholders filled (including the address) before submitting it in the Razorpay dashboard.
+
+## 6. Admin page (founder only)
+
+`admin.html` (+ `admin.js`, `admin.css`, `admin-lib.js`) is the founder admin console: search a user, give a Basic/Pro plan for N days, revoke a grant, see payments. It is not linked from any page and has `noindex`. Once published it lives at `https://justasknick.github.io/benchpilot-site/admin.html`.
+
+- It only talks to your Supabase project (Auth REST + the `admin` edge function). No third-party scripts; a strict CSP is set in the page.
+- Access needs all three: a Supabase account, a row in the `admins` table (added by you in the SQL editor), and TOTP two-step verification. On first sign-in the page shows a QR code to enrol your authenticator app; afterwards it asks for the 6-digit code each time. The session lives in `sessionStorage` and disappears when the tab closes.
+- The `admin` function only accepts requests from the origin in its `ADMIN_ORIGIN` secret (default `https://justasknick.github.io`).
+- Go-live order is in `supabase/README.md` ("Admin console: deploy order"). Upload `admin.html`, `admin.js`, `admin.css` and `admin-lib.js` next to the other site files.
+- Tests for the helpers: `node --test website/test/*.test.js`.
