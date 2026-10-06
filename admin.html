@@ -135,6 +135,20 @@
       <!-- Payments -->
       <section id="page-payments" hidden aria-labelledby="h-pay">
         <div class="adm-pagehead"><h1 id="h-pay">Payments</h1></div>
+        <section class="adm-card adm-issues" aria-labelledby="h-issues">
+          <div class="adm-toolbar">
+            <h2 id="h-issues">Payment issues <span id="issues-badge" class="adm-badge adm-badge-off" aria-live="polite">0</span></h2>
+            <button type="button" id="issues-refresh" class="adm-btn adm-btn-ghost adm-btn-sm">Refresh</button>
+          </div>
+          <p class="adm-muted">Payments that reached BenchPilot but failed a server check, so no plan was given. Check Razorpay, fix by hand (grant the plan or refund), then resolve.</p>
+          <p id="issues-error" class="adm-err" role="alert" hidden></p>
+          <p id="issues-count" class="adm-muted" aria-live="polite"></p>
+          <div class="adm-scroll"><table class="adm-table" id="tbl-issues">
+            <caption class="adm-sr">Open payment issues</caption>
+            <thead><tr><th scope="col">Date</th><th scope="col">Razorpay payment</th><th scope="col">User</th><th scope="col">Plan</th><th scope="col" class="adm-num">Amount</th><th scope="col">Reason</th><th scope="col"><span class="adm-sr">Action</span></th></tr></thead>
+            <tbody></tbody>
+          </table></div>
+        </section>
         <form id="form-payments" class="adm-card adm-filters" novalidate>
           <label class="adm-grow">Search email or payment ID<input id="p-q" type="search" autocomplete="off" maxlength="100"></label>
           <label>Status<select id="p-status"><option value="">Any</option><option value="captured">Captured</option><option value="refunded">Refunded</option><option value="failed">Failed</option></select></label>
@@ -161,7 +175,7 @@
         <div class="adm-pagehead"><h1 id="h-audit">Audit log</h1></div>
         <form id="form-audit" class="adm-card adm-filters" novalidate>
           <label class="adm-grow">Action<input id="a-action" type="text" list="a-actions" autocomplete="off" maxlength="60" placeholder="e.g. grant_plan"></label>
-          <datalist id="a-actions"><option value="grant_plan"><option value="revoke_grant"><option value="suspend_user"><option value="unsuspend_user"><option value="sign_out_everywhere"><option value="send_password_reset"><option value="delete_user"><option value="delete_user_failed"></datalist>
+          <datalist id="a-actions"><option value="grant_plan"><option value="revoke_grant"><option value="suspend_user"><option value="unsuspend_user"><option value="sign_out_everywhere"><option value="send_password_reset"><option value="delete_user"><option value="delete_user_failed"><option value="resolve_payment_issue"></datalist>
           <label>From<input id="a-from" type="date"></label>
           <label>To<input id="a-to" type="date"></label>
           <button type="button" id="a-reset" class="adm-btn adm-btn-ghost">Reset</button>

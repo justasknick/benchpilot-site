@@ -13,7 +13,7 @@
 //   POST   /auth/v1/factors/{id}/verify              {challenge_id, code}                   -> new session at aal2
 // Admin function: POST /functions/v1/admin (Bearer access token, aal2 required by the server).
 // Actions: metrics, list_users, get_user, grant, revoke, grant_bulk, suspend, unsuspend, sign_out_everywhere,
-// send_password_reset, delete_user, list_payments, list_audit (contract: docs/ADMIN_V2_PLAN.md).
+// send_password_reset, delete_user, list_payments, list_audit, list_payment_issues, resolve_payment_issue (contract: docs/ADMIN_V2_PLAN.md).
 (function () {
   'use strict';
 
@@ -346,7 +346,7 @@
     if (h1) { h1.setAttribute('tabindex', '-1'); h1.focus({ preventScroll: true }); }
     if (r === 'dashboard') loadDashboard();
     else if (r === 'users') loadUsers();
-    else if (r === 'payments') loadPayments();
+    else if (r === 'payments') { loadIssues(); loadPayments(); }
     else if (r === 'audit') loadAudit();
     else loadSettings();
   }
@@ -1021,6 +1021,53 @@
       return exportCsv({ action: 'list_payments', filter: payFilterNow(), key: 'payments', headers: L.PAYMENT_CSV_HEADERS, row: L.paymentCsvRow, file: 'benchpilot-payments' });
     });
   });
+
+  // ---------- payment issues ----------
+  var iToken = 0;
+  $('issues-refresh').addEventListener('click', function () { loadIssues(); });
+
+  async function loadIssues() {
+    var mine = ++iToken;
+    setErr('issues-error', '');
+    $('issues-count').textContent = 'Loading...';
+    var r = await callAdmin(L.paymentIssuesBody());
+    if (mine !== iToken) return;
+    if (adminFailed(r, 'issues-error')) { $('issues-count').textContent = ''; return; }
+    var list = r.body.issues || [];
+    var open = Number(r.body.open_count) || 0;
+    var b = $('issues-badge');
+    b.textContent = String(open);
+    b.className = 'adm-badge ' + (open > 0 ? 'adm-badge-bad' : 'adm-badge-off');
+    $('issues-count').textContent = L.issueCountText(open) + (open > list.length ? ' (showing the newest ' + list.length + ')' : '');
+    var tb = $('tbl-issues').tBodies[0];
+    clear(tb);
+    if (!list.length) tb.appendChild(el('tr', null, [el('td', { colspan: 7, 'class': 'adm-muted', text: 'Nothing to look at.' })]));
+    list.forEach(function (i) {
+      var who;
+      if (i.user_id) { who = el('button', { type: 'button', 'class': 'adm-link adm-mono', text: i.email || i.user_id }); who.addEventListener('click', function () { openUser(i.user_id, who); }); }
+      else who = el('span', { 'class': 'adm-muted', text: i.email || 'Unknown user' });
+      var btn = el('button', { type: 'button', 'class': 'adm-btn adm-btn-ghost adm-btn-sm', text: 'Resolve' });
+      btn.addEventListener('click', function () { onResolveIssue(i, btn); });
+      tb.appendChild(el('tr', null, [
+        td(L.formatDateTime(i.created_at)), td(i.razorpay_payment_id, 'adm-mono'), td(who), td(i.plan || '-'),
+        td(i.amount == null ? '-' : L.formatMoney(i.amount, 'INR'), 'adm-num'),
+        td(el('span', { 'class': 'adm-badge adm-badge-bad', text: L.issueReasonLabel(i.reason) })), td(btn)
+      ]));
+    });
+  }
+
+  function onResolveIssue(i, btn) {
+    guarded('resolve-issue', [btn], async function () {
+      var res = await ask({
+        title: 'Resolve payment issue', reason: true, okText: 'Mark resolved',
+        message: 'Payment ' + i.razorpay_payment_id + ' (' + L.issueReasonLabel(i.reason) + '). Write what you did, for example "Granted Pro 31 days" or "Refunded in Razorpay". This is kept in the audit log.',
+        run: function (vals) { return callAdmin(L.resolveIssueBody(i.id, vals.reason)); }
+      });
+      if (!res) return;
+      setStatus('Payment issue resolved.', 'ok');
+      await loadIssues();
+    });
+  }
 
   // ---------- audit log ----------
   var aState = { offset: 0 };
