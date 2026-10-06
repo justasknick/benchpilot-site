@@ -216,7 +216,7 @@
     }
   }
   // latest-request-wins counters, one per view
-  var tokens = { dash: 0, users: 0, pay: 0, audit: 0, panel: 0, settings: 0 };
+  var tokens = { dash: 0, users: 0, pay: 0, audit: 0, panel: 0, settings: 0, feedback: 0 };
   function nextToken(k) { tokens[k]++; return tokens[k]; }
 
   // ---------- 1. sign in ----------
@@ -321,7 +321,7 @@
   });
 
   // ---------- 3. console shell + routing ----------
-  var ROUTES = ['dashboard', 'users', 'payments', 'audit', 'settings'];
+  var ROUTES = ['dashboard', 'users', 'payments', 'feedback', 'audit', 'settings'];
   var currentUser = null; // {id, email} of the user shown in the panel
 
   function enterConsole() {
@@ -347,6 +347,7 @@
     if (r === 'dashboard') loadDashboard();
     else if (r === 'users') loadUsers();
     else if (r === 'payments') { loadIssues(); loadPayments(); }
+    else if (r === 'feedback') loadFeedback();
     else if (r === 'audit') loadAudit();
     else loadSettings();
   }
@@ -1067,6 +1068,167 @@
       setStatus('Payment issue resolved.', 'ok');
       await loadIssues();
     });
+  }
+
+  // ---------- feedback (bug reports and ideas) ----------
+  var fState = { offset: 0, rows: [], selected: {}, versionsSeen: '' };
+  var FB_FIELDS = { kind: 'f-kind', status: 'f-status', version: 'f-version' };
+  function feedbackFilterNow() { return L.feedbackFilter(readFilter(FB_FIELDS)); }
+  ['f-kind', 'f-status', 'f-version'].forEach(function (id) { $(id).addEventListener('change', function () { fState.offset = 0; fState.selected = {}; loadFeedback(); }); });
+  $('f-reset').addEventListener('click', function () { resetFields(FB_FIELDS); fState.offset = 0; fState.selected = {}; loadFeedback(); });
+  $('f-prev').addEventListener('click', function () { fState.offset = Math.max(0, fState.offset - L.PAGE_SIZE); fState.selected = {}; loadFeedback(); });
+  $('f-next').addEventListener('click', function () { fState.offset += L.PAGE_SIZE; fState.selected = {}; loadFeedback(); });
+  $('f-all').addEventListener('change', function () {
+    var on = $('f-all').checked;
+    fState.rows.forEach(function (r) { if (on) fState.selected[r.id] = true; else delete fState.selected[r.id]; });
+    Array.prototype.forEach.call($('f-list').querySelectorAll('input[data-fb-select]'), function (c) { c.checked = on; });
+    updateFeedbackCopy();
+  });
+
+  function selectedFeedback() { return fState.rows.filter(function (r) { return fState.selected[r.id]; }); }
+  function updateFeedbackCopy() {
+    var n = selectedFeedback().length;
+    $('f-copy').textContent = 'Copy for Claude (' + n + ')';
+    $('f-copy').disabled = n === 0;
+  }
+  /** Clipboard with a fallback for browsers that refuse the async API. Text only: no screenshot ever goes in. */
+  async function copyText(text) {
+    try { await navigator.clipboard.writeText(text); return true; } catch (e) { /* fall through */ }
+    try {
+      var ta = el('textarea', { 'class': 'adm-sr', 'aria-hidden': 'true' });
+      ta.value = text; document.body.appendChild(ta); ta.select();
+      var ok = document.execCommand('copy');
+      document.body.removeChild(ta);
+      return ok;
+    } catch (e2) { return false; }
+  }
+  $('f-copy').addEventListener('click', async function () {
+    var picked = selectedFeedback();
+    if (!picked.length) return;
+    var ok = await copyText(L.feedbackBatchText(picked));
+    setStatus(ok ? 'Copied ' + picked.length + (picked.length === 1 ? ' report' : ' reports') + ' as plain text (no screenshots).' : 'Could not copy. Select the text and copy it by hand.', ok ? 'ok' : 'err');
+  });
+  $('f-purge').addEventListener('click', function () {
+    var btn = $('f-purge');
+    guarded('purge-feedback', [btn], async function () {
+      var res = await ask({
+        title: 'Delete old reports', okText: 'Delete',
+        message: 'Permanently delete every report (and its screenshot) older than 12 months. This follows the retention promise in the privacy policy and cannot be undone.',
+        run: function () { return callAdmin(L.purgeFeedbackBody()); }
+      });
+      if (!res) return;
+      var out = res.body;
+      setStatus('Deleted ' + (Number(out.deleted) || 0) + ' old reports' + (out.files_failed ? ' (some screenshot files could not be removed; run it again)' : '') + '.', out.files_failed ? 'err' : 'ok');
+      fState.offset = 0;
+      await loadFeedback();
+    });
+  });
+
+  function fillVersions(list) {
+    var sel = $('f-version');
+    var key = (list || []).join('|');
+    if (key === fState.versionsSeen) return;
+    fState.versionsSeen = key;
+    var cur = sel.value;
+    while (sel.options.length > 1) sel.remove(1);
+    (list || []).forEach(function (v) { sel.appendChild(el('option', { value: v, text: v })); });
+    sel.value = (list || []).indexOf(cur) >= 0 ? cur : '';
+  }
+
+  async function loadFeedback() {
+    var mine = nextToken('feedback');
+    setErr('f-error', '');
+    $('f-count').textContent = 'Loading...';
+    var r = await callAdmin(L.feedbackBody(feedbackFilterNow(), L.PAGE_SIZE, fState.offset));
+    if (mine !== tokens.feedback) return;
+    if (adminFailed(r, 'f-error')) { $('f-count').textContent = ''; return; }
+    var list = r.body.rows || [];
+    var total = Number(r.body.total) || 0;
+    var counts = r.body.counts || {};
+    var pi = L.pageInfo(total, fState.offset, list.length);
+    fState.rows = list;
+    fillVersions(r.body.versions || []);
+    $('f-count').textContent = L.formatCount(total) + (total === 1 ? ' report' : ' reports') + ' (' + L.formatCount(Number(counts.new) || 0) + ' new)';
+    $('f-range').textContent = pi.text;
+    $('f-prev').disabled = !pi.hasPrev; $('f-next').disabled = !pi.hasNext;
+    $('f-all').checked = false;
+    var box = $('f-list');
+    clear(box);
+    if (!list.length) box.appendChild(el('p', { 'class': 'adm-card adm-muted', text: 'No reports match these filters.' }));
+    list.forEach(function (rep) { box.appendChild(feedbackCard(rep)); });
+    updateFeedbackCopy();
+  }
+
+  function feedbackCard(rep) {
+    var card = el('article', { 'class': 'adm-card adm-fb', 'aria-label': 'Report ' + rep.id });
+    var pick = el('input', { type: 'checkbox', 'data-fb-select': '1', 'aria-label': 'Select report ' + rep.id });
+    pick.checked = !!fState.selected[rep.id];
+    pick.addEventListener('change', function () { if (pick.checked) fState.selected[rep.id] = true; else delete fState.selected[rep.id]; updateFeedbackCopy(); });
+    var statusBadgeEl = el('span', { 'class': 'adm-badge adm-badge-' + rep.status, text: L.feedbackStatusLabel(rep.status) });
+    var head = el('div', { 'class': 'adm-fb-head' }, [
+      pick,
+      el('strong', { text: '#' + rep.id }),
+      el('span', { 'class': 'adm-badge adm-badge-' + (rep.kind === 'idea' ? 'idea' : 'bug'), text: L.feedbackKindLabel(rep.kind) }),
+      statusBadgeEl,
+      el('span', { 'class': 'adm-muted', text: L.formatDateTime(rep.created_at) }),
+      rep.user_id ? null : el('span', { 'class': 'adm-muted', text: '(anonymous)' })
+    ]);
+    if (rep.user_id) {
+      var who = el('button', { type: 'button', 'class': 'adm-link adm-mono', text: rep.email || rep.user_id });
+      who.addEventListener('click', function () { openUser(rep.user_id, who); });
+      head.appendChild(who);
+    }
+    card.appendChild(head);
+    card.appendChild(el('p', { 'class': 'adm-fb-msg', text: rep.message }));
+    var summary = L.feedbackContextSummary(rep.context);
+    if (summary) card.appendChild(el('p', { 'class': 'adm-fb-ctx', text: summary }));
+
+    if (rep.screenshot_path) {
+      // Loaded on click: every view of a screenshot is logged in the audit log, so thumbnails are not fetched in bulk.
+      var shotBox = el('div', { 'class': 'adm-fb-shot' });
+      var showBtn = el('button', { type: 'button', 'class': 'adm-btn adm-btn-ghost adm-btn-sm', text: 'Show screenshot' });
+      showBtn.addEventListener('click', function () {
+        guarded('shot-' + rep.id, [showBtn], async function () {
+          var res = await callAdmin(L.feedbackScreenshotBody(rep.id));
+          if (adminFailed(res)) return;
+          var url = L.safeScreenshotUrl(res.body.url);
+          if (!url) { setStatus('The screenshot link was not valid.', 'err'); return; }
+          var img = el('img', { 'class': 'adm-fb-thumb', alt: 'Screenshot attached to report ' + rep.id, src: url, referrerpolicy: 'no-referrer' });
+          var open = el('a', { href: url, target: '_blank', rel: 'noopener noreferrer', text: 'Open full size (link works for 5 minutes)' });
+          clear(shotBox);
+          shotBox.appendChild(img);
+          shotBox.appendChild(open);
+        });
+      });
+      shotBox.appendChild(showBtn);
+      card.appendChild(shotBox);
+    }
+
+    var note = el('input', { type: 'text', maxlength: String(L.MAX_FEEDBACK_NOTE), placeholder: 'Note (optional)', 'aria-label': 'Admin note for report ' + rep.id });
+    note.value = rep.admin_note || '';
+    var actions = el('div', { 'class': 'adm-fb-actions', role: 'group', 'aria-label': 'Status' });
+    var buttons = [];
+    L.FEEDBACK_STATUSES.forEach(function (st) {
+      var b = el('button', { type: 'button', 'class': 'adm-btn adm-btn-ghost adm-btn-sm adm-fb-status', 'aria-pressed': rep.status === st ? 'true' : 'false', text: L.feedbackStatusLabel(st) });
+      b.addEventListener('click', function () {
+        var body = L.feedbackUpdateBody(rep.id, st, note.value);
+        if (!body) { setStatus('The note is too long or has invalid characters.', 'err'); return; }
+        guarded('fb-' + rep.id, buttons, async function () {
+          var res = await callAdmin(body);
+          if (adminFailed(res)) return;
+          rep.status = res.body.status; rep.admin_note = res.body.admin_note;
+          statusBadgeEl.className = 'adm-badge adm-badge-' + rep.status;
+          statusBadgeEl.textContent = L.feedbackStatusLabel(rep.status);
+          buttons.forEach(function (x, i) { x.setAttribute('aria-pressed', L.FEEDBACK_STATUSES[i] === rep.status ? 'true' : 'false'); });
+          setStatus('Report #' + rep.id + ' marked ' + L.feedbackStatusLabel(rep.status) + '.', 'ok');
+        });
+      });
+      buttons.push(b);
+      actions.appendChild(b);
+    });
+    actions.appendChild(note);
+    card.appendChild(actions);
+    return card;
   }
 
   // ---------- audit log ----------

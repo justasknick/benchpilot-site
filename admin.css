@@ -156,3 +156,23 @@
 /* payment issues (Payments page) */
 .adm-issues h2{display:flex;align-items:center;gap:8px;margin:0}
 .adm-issues .adm-badge-bad{font-weight:700}
+
+/* feedback page: one card per report */
+.adm-inline{display:inline-flex;align-items:center;gap:6px;font-weight:600;font-size:.88rem}
+.adm-fb-list{display:grid;gap:12px}
+.adm-fb{display:grid;gap:10px;margin:0}
+.adm-fb-head{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px}
+.adm-fb-head .adm-muted{font-size:.85rem}
+.adm-fb-msg{margin:0;white-space:pre-wrap;word-break:break-word;font-size:.98rem}
+.adm-fb-ctx{margin:0;font:12px/1.5 var(--mono);color:var(--text-3);word-break:break-word}
+.adm-fb-shot{display:flex;align-items:flex-start;gap:10px;flex-wrap:wrap}
+.adm-fb-thumb{display:block;max-width:220px;max-height:140px;border:1px solid var(--border-strong);border-radius:var(--r-sm);object-fit:cover}
+.adm-fb-actions{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.adm-fb-actions input[type=text]{flex:1 1 220px;min-width:160px}
+.adm-fb-status[aria-pressed=true]{background:var(--ink);color:#fff;border-color:var(--ink)}
+.adm-badge-bug{background:#fbeceb;color:#9b2118}
+.adm-badge-idea{background:var(--amber-soft);color:var(--amber-text)}
+.adm-badge-new{background:var(--ink);color:var(--amber)}
+.adm-badge-seen{background:var(--surface-3);color:var(--text-2)}
+.adm-badge-fixed{background:var(--success-bg);color:var(--success)}
+.adm-badge-wont_fix{background:var(--surface-3);color:var(--text-3)}
