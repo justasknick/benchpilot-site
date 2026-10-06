@@ -131,6 +131,70 @@
   function paymentIssuesBody() { return { action: 'list_payment_issues' }; }
   function resolveIssueBody(issueId, note) { return { action: 'resolve_payment_issue', issue_id: issueId, note: note }; }
 
+  // ---- feedback (bug reports and ideas from the extension, migration 0006) ----
+  var FEEDBACK_STATUSES = ['new', 'seen', 'fixed', 'wont_fix'];
+  var FEEDBACK_STATUS_LABELS = { new: 'New', seen: 'Seen', fixed: 'Fixed', wont_fix: "Won't fix" };
+  var FEEDBACK_KINDS = { bug: 'Bug', idea: 'Idea' };
+  var MAX_FEEDBACK_NOTE = 500;
+  var FEEDBACK_FILTERS = { kind: ['bug', 'idea'], status: FEEDBACK_STATUSES, version: 'text' };
+  var SCREENSHOT_URL_PREFIX = 'https://uhgtlyxarozzdgdizoaz.supabase.co/storage/v1/';
+
+  function feedbackStatusLabel(s) { return Object.prototype.hasOwnProperty.call(FEEDBACK_STATUS_LABELS, s) ? FEEDBACK_STATUS_LABELS[s] : (s ? String(s) : '-'); }
+  function feedbackKindLabel(k) { return Object.prototype.hasOwnProperty.call(FEEDBACK_KINDS, k) ? FEEDBACK_KINDS[k] : (k ? String(k) : '-'); }
+  function feedbackFilter(raw) {
+    var f = cleanFilter(raw, FEEDBACK_FILTERS);
+    if (f.version && f.version.length > 20) delete f.version;
+    return f;
+  }
+  function feedbackBody(filter, limit, offset) { return listBody('list_feedback', filter, limit, offset); }
+  /** Note is optional (max 500); returns null when it is too long or has control characters. */
+  function feedbackUpdateBody(id, status, note) {
+    var n = typeof note === 'string' ? note.trim() : '';
+    if (!(id > 0) || Math.floor(id) !== id || FEEDBACK_STATUSES.indexOf(status) < 0) return null;
+    if (n.length > MAX_FEEDBACK_NOTE || CONTROL_RE.test(n)) return null;
+    return { action: 'update_feedback', id: id, status: status, note: n };
+  }
+  function feedbackScreenshotBody(id) { return { action: 'feedback_screenshot_url', id: id }; }
+  function purgeFeedbackBody() { return { action: 'purge_feedback' }; }
+  /** A signed URL is only used as an image source when it points at this project's Storage over https. */
+  function safeScreenshotUrl(u) {
+    return typeof u === 'string' && u.indexOf(SCREENSHOT_URL_PREFIX) === 0 && !/[\s"'<>]/.test(u) ? u : '';
+  }
+  /** One line: "drawer on /feed/ - v1.6.0 - pro - Chrome 130 / Windows - en-IN". */
+  function feedbackContextSummary(ctx) {
+    var c = ctx && typeof ctx === 'object' ? ctx : {};
+    var parts = [];
+    if (c.surface) parts.push(String(c.surface) + (c.page ? ' on ' + c.page : ''));
+    else if (c.page) parts.push(String(c.page));
+    if (c.version) parts.push('v' + c.version);
+    if (c.plan) parts.push(String(c.plan));
+    if (c.ua) parts.push(String(c.ua));
+    if (c.lang) parts.push(String(c.lang));
+    return parts.join(' - ');
+  }
+  /**
+   * Plain text for pasting into Claude: message and context only, never the screenshot or any file reference.
+   * "#12 BUG (new) 2026-10-06 10:00 UTC
+   *  From: a@b.com (or anonymous)
+   *  <message>
+   *  Context: ..."
+   */
+  function feedbackToText(r) {
+    r = r || {};
+    var when = r.created_at ? String(r.created_at).replace('T', ' ').slice(0, 16) + ' UTC' : '';
+    var lines = ['#' + r.id + ' ' + String(r.kind || '').toUpperCase() + ' (' + (r.status || 'new') + ')' + (when ? ' ' + when : '')];
+    lines.push('From: ' + (r.email || 'anonymous'));
+    lines.push(String(r.message == null ? '' : r.message));
+    var ctx = r.context && typeof r.context === 'object' ? r.context : {};
+    var keys = Object.keys(ctx);
+    if (keys.length) lines.push('Context: ' + keys.map(function (k) { return k + '=' + ctx[k]; }).join(', '));
+    if (r.admin_note) lines.push('Admin note: ' + r.admin_note);
+    return lines.join('\n');
+  }
+  function feedbackBatchText(list) {
+    return (list || []).map(feedbackToText).join('\n\n---\n\n');
+  }
+
   /** "Give a@b.com Pro until 31 Oct 2026 (30 days from today)?" */
   function grantConfirmText(email, v, nowMs) {
     return 'Give ' + email + ' ' + tierLabel(v.tier) + ' until ' + formatDate(grantEndDate(nowMs, v.days)) +
@@ -466,6 +530,10 @@
     validateTotpCode: validateTotpCode, isUuid: isUuid,
     searchBody: searchBody, getUserBody: getUserBody, grantBody: grantBody, revokeBody: revokeBody,
     grantConfirmText: grantConfirmText,
+    FEEDBACK_STATUSES: FEEDBACK_STATUSES, MAX_FEEDBACK_NOTE: MAX_FEEDBACK_NOTE, feedbackStatusLabel: feedbackStatusLabel, feedbackKindLabel: feedbackKindLabel,
+    feedbackFilter: feedbackFilter, feedbackBody: feedbackBody, feedbackUpdateBody: feedbackUpdateBody, feedbackScreenshotBody: feedbackScreenshotBody,
+    purgeFeedbackBody: purgeFeedbackBody, safeScreenshotUrl: safeScreenshotUrl, feedbackContextSummary: feedbackContextSummary,
+    feedbackToText: feedbackToText, feedbackBatchText: feedbackBatchText,
     issueReasonLabel: issueReasonLabel, issueCountText: issueCountText, paymentIssuesBody: paymentIssuesBody, resolveIssueBody: resolveIssueBody,
     decodeJwtClaims: decodeJwtClaims, tokenAal: tokenAal, normaliseSession: normaliseSession,
     needsRefresh: needsRefresh, pickFactors: pickFactors,
