@@ -152,3 +152,7 @@
   .adm-detail-grid{grid-template-columns:1fr}
 }
 @media (max-width:560px){.adm-card{padding:14px}.adm-main{padding:14px 12px 40px}.adm-dl{grid-template-columns:1fr}.adm-dl dt{margin-top:6px}}
+
+/* payment issues (Payments page) */
+.adm-issues h2{display:flex;align-items:center;gap:8px;margin:0}
+.adm-issues .adm-badge-bad{font-weight:700}

@@ -110,6 +110,27 @@
   function grantBody(userId, v) { return { action: 'grant', user_id: userId, tier: v.tier, days: v.days, reason: v.reason }; }
   function revokeBody(grantId, reason) { return { action: 'revoke', grant_id: grantId, reason: reason }; }
 
+  // ---- payment issues (payments that paid but failed a server check; migration 0005) ----
+  var ISSUE_REASONS = {
+    unknown_plan: 'Unknown plan',
+    bad_uid: 'Invalid user id',
+    not_captured: 'Not captured',
+    currency_mismatch: 'Wrong currency',
+    amount_mismatch: 'Wrong amount',
+    checkout_missing: 'No checkout on record',
+    checkout_mismatch: 'Checkout is for another user or plan'
+  };
+  /** Machine reason -> short words; an unknown reason is shown as-is. */
+  function issueReasonLabel(reason) {
+    return Object.prototype.hasOwnProperty.call(ISSUE_REASONS, reason) ? ISSUE_REASONS[reason] : (reason ? String(reason) : '-');
+  }
+  function issueCountText(n) {
+    var c = Number.isFinite(n) && n > 0 ? Math.floor(n) : 0;
+    return c === 0 ? 'No open payment issues' : c + (c === 1 ? ' open payment issue' : ' open payment issues');
+  }
+  function paymentIssuesBody() { return { action: 'list_payment_issues' }; }
+  function resolveIssueBody(issueId, note) { return { action: 'resolve_payment_issue', issue_id: issueId, note: note }; }
+
   /** "Give a@b.com Pro until 31 Oct 2026 (30 days from today)?" */
   function grantConfirmText(email, v, nowMs) {
     return 'Give ' + email + ' ' + tierLabel(v.tier) + ' until ' + formatDate(grantEndDate(nowMs, v.days)) +
@@ -445,6 +466,7 @@
     validateTotpCode: validateTotpCode, isUuid: isUuid,
     searchBody: searchBody, getUserBody: getUserBody, grantBody: grantBody, revokeBody: revokeBody,
     grantConfirmText: grantConfirmText,
+    issueReasonLabel: issueReasonLabel, issueCountText: issueCountText, paymentIssuesBody: paymentIssuesBody, resolveIssueBody: resolveIssueBody,
     decodeJwtClaims: decodeJwtClaims, tokenAal: tokenAal, normaliseSession: normaliseSession,
     needsRefresh: needsRefresh, pickFactors: pickFactors,
     authErrorMessage: authErrorMessage, adminErrorMessage: adminErrorMessage
