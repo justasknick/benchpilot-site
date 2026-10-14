@@ -47,3 +47,8 @@
 .legal a,.faq a{text-decoration:underline}
 @media(max-width:900px){.hero-layout{grid-template-columns:1fr;gap:32px}.hero-copy{max-width:680px}.launch-preview{max-width:560px;width:100%}.grid{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:640px){.hero{padding:40px 0}.hero h1{font-size:2.85rem}.hero .sub{font-size:1.05rem}.grid{grid-template-columns:1fr}.nav{gap:8px}.nav-links{gap:8px}.site-header .btn{padding:10px;font-size:.78rem}.preview-caption{font-size:9px}.launch-preview img{height:420px}.eyebrow{font-size:.64rem}.cta-row .btn{width:100%}}
+
+/* Sign-in that ended on the website by mistake (assets/signin-notice.js) */
+.signin-notice{max-width:1080px;margin:16px auto;padding:16px 20px;border-radius:14px;background:#fff4c7;color:#1e1a2e;border:1px solid #e9c94a;display:flex;gap:16px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.signin-notice p{margin:0;flex:1 1 420px;line-height:1.5}
+.signin-notice a{font-weight:600;color:#1e1a2e;text-decoration:underline}
