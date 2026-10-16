@@ -29,8 +29,8 @@
 <main id="main" class="legal"><div class="wrap narrow">
 
 <h1>Privacy Policy</h1>
-<p class="meta">Last updated: 6 October 2026 · Operated by Rakessh.D</p>
-<div class="callout"><p><strong>Short version:</strong> Your leads, vendor companies, consultants, résumé files, notes and settings are stored only in your own browser and are never uploaded. If you create a BenchPilot account, we (and our service providers) keep only your account email, sign-in details and plan and payment records. If you press Send on the feedback button, we also receive that report. We do not sell your data or track you.</p></div>
+<p class="meta">Last updated: 16 October 2026 · Operated by Rakessh.D</p>
+<div class="callout"><p><strong>Short version:</strong> Your leads, vendor companies, consultants, résumé files, notes and settings are stored only in your own browser and are never uploaded. If you create a BenchPilot account, we (and our service providers) keep only your account email, sign-in details and plan and payment records. If you press Send on the feedback button, we also receive that report. If you turn on the optional "Send anonymous error reports" setting (off by default), we also receive anonymous error details when something breaks. We do not sell your data or track you.</p></div>
 <p style="margin-top:1.2em">BenchPilot ("the extension", "we") is a Chrome extension for recruiters and bench sales professionals, operated by Rakessh.D ("the seller"). This policy explains what the extension handles and where it goes. This website (the marketing site) does not use cookies, analytics or trackers.</p>
 
 <h2>1. What data the extension reads</h2>
@@ -51,8 +51,8 @@
 <h2>2. Where the data is stored</h2>
 <ul>
 <li>Everything BenchPilot finds and everything you save (leads, notes, statuses, follow-up dates, consultants, email templates and settings) is stored <strong>only in your browser</strong>, using Chrome's local extension storage (<code>chrome.storage</code>).</li>
-<li>BenchPilot does <strong>not upload your leads, consultants, notes, templates or browsing data</strong> to the seller or to any third party. The only data that reaches a server is your account and payment information described in section 5 and, only when you press Send, a feedback report described in section 5a.</li>
-<li>The extension contains <strong>no analytics, telemetry, advertising or tracking</strong> code.</li>
+<li>BenchPilot does <strong>not upload your leads, consultants, notes, templates or browsing data</strong> to the seller or to any third party. The only data that reaches a server is your account and payment information described in section 5 and, only when you press Send, a feedback report described in section 5a and, only if you turn it on, the anonymous error reports described in section 5b.</li>
+<li>The extension contains <strong>no analytics, advertising or tracking</strong> code. The only automatic reporting is the optional, off-by-default error reports in section 5b.</li>
 </ul>
 
 <h2>3. We do not sell or transfer your data</h2>
@@ -90,6 +90,18 @@
 <li><strong>Retention:</strong> reports and their screenshots are deleted after <strong>12 months</strong>.</li>
 <li><strong>Deletion:</strong> to have a report or screenshot deleted sooner, email <a href="mailto:nicklennox30@gmail.com">nicklennox30@gmail.com</a> from your account email (or quote the time you sent it).</li>
 <li><strong>Service provider:</strong> Supabase (database and storage).</li>
+</ul>
+
+<h2>5b. Anonymous error reports (optional, off by default)</h2>
+<p>In <strong>Settings &gt; Error reports</strong> (also in the gear menu of the LinkedIn drawer) there is a switch, <strong>Send anonymous error reports</strong>. It is <strong>off by default</strong>. While it is off, BenchPilot collects nothing and sends nothing about errors.</p>
+<ul>
+<li><strong>What is sent, if you turn it on:</strong> when part of BenchPilot breaks, the name of the error, a short error message (up to 300 characters), where in BenchPilot's own code it happened (file names and line numbers only), the BenchPilot version, which screen it happened on (background worker, dashboard, popup, LinkedIn drawer or settings), your Chrome version number (for example "Chrome 130") and the time. Email-like text, phone-like numbers and anything after a "?" in a web address are removed before sending.</li>
+<li><strong>Never sent:</strong> your leads, contacts, consultants, notes, templates, r&eacute;sum&eacute;s, LinkedIn pages or addresses, page text, your email address or any account or user id. Error reports are not linked to your account or to you, and no screenshot is ever included.</li>
+<li><strong>Limits:</strong> at most 5 error reports an hour from your computer, and the same error is sent only once in 24 hours. If you are offline, reports wait on your computer and are sent later; turning the switch off discards any that are waiting.</li>
+<li><strong>Where it goes and how long we keep it:</strong> to the same private database table as feedback reports on Supabase (Mumbai, India), readable only by the founder through the protected admin console. They follow the same retention as feedback reports: deleted after <strong>12 months</strong>. To limit abuse we keep a salted one-way hash of your IP address and browser for the hourly limit, never the raw address.</li>
+<li><strong>Purpose:</strong> to find and fix bugs. Not used for advertising, never sold.</li>
+<li><strong>How to turn it off:</strong> switch it off in Settings &gt; Error reports (or in the drawer's gear menu) at any time. It takes effect immediately.</li>
+<li><strong>Service provider:</strong> Supabase (database).</li>
 </ul>
 
 <h2>6. Emails you send</h2>

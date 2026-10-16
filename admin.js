@@ -12,7 +12,7 @@
 //   POST   /auth/v1/factors/{id}/challenge           {}                                     -> {id: challenge_id, expires_at}
 //   POST   /auth/v1/factors/{id}/verify              {challenge_id, code}                   -> new session at aal2
 // Admin function: POST /functions/v1/admin (Bearer access token, aal2 required by the server).
-// Actions: metrics, list_users, get_user, grant, revoke, grant_bulk, suspend, unsuspend, sign_out_everywhere,
+// Actions: metrics, growth, list_users, get_user, grant, revoke, grant_bulk, suspend, unsuspend, sign_out_everywhere,
 // send_password_reset, delete_user, list_payments, list_audit, list_payment_issues, resolve_payment_issue (contract: docs/ADMIN_V2_PLAN.md).
 (function () {
   'use strict';
@@ -216,7 +216,7 @@
     }
   }
   // latest-request-wins counters, one per view
-  var tokens = { dash: 0, users: 0, pay: 0, audit: 0, panel: 0, settings: 0, feedback: 0 };
+  var tokens = { dash: 0, users: 0, pay: 0, audit: 0, panel: 0, settings: 0, feedback: 0, growth: 0 };
   function nextToken(k) { tokens[k]++; return tokens[k]; }
 
   // ---------- 1. sign in ----------
@@ -321,7 +321,7 @@
   });
 
   // ---------- 3. console shell + routing ----------
-  var ROUTES = ['dashboard', 'users', 'payments', 'feedback', 'audit', 'settings'];
+  var ROUTES = ['dashboard', 'growth', 'users', 'payments', 'feedback', 'audit', 'settings'];
   var currentUser = null; // {id, email} of the user shown in the panel
 
   function enterConsole() {
@@ -345,6 +345,7 @@
     var h1 = $('page-' + r).querySelector('h1');
     if (h1) { h1.setAttribute('tabindex', '-1'); h1.focus({ preventScroll: true }); }
     if (r === 'dashboard') loadDashboard();
+    else if (r === 'growth') loadGrowth();
     else if (r === 'users') loadUsers();
     else if (r === 'payments') { loadIssues(); loadPayments(); }
     else if (r === 'feedback') loadFeedback();
@@ -443,6 +444,79 @@
     planChart($('chart-plan'), t);
     funnelChart($('funnel'), m.funnel_30d);
     healthPanel($('health'), m);
+  }
+
+  // ---------- growth ----------
+  var INSTALLS_KEY = 'bp_admin_store_installs'; // manual, this browser only
+  var gState = { users: 0, loaded: false };
+  function readInstalls() { try { return window.localStorage.getItem(INSTALLS_KEY) || ''; } catch (e) { return ''; } }
+  function saveInstalls(v) { try { if (v) window.localStorage.setItem(INSTALLS_KEY, v); else window.localStorage.removeItem(INSTALLS_KEY); } catch (e) { /* storage blocked: the field still works for this visit */ } }
+  setupToggle('tg-gsignups', 'tbl-wrap-gsignups');
+  $('g-installs').value = readInstalls();
+  $('g-installs').addEventListener('input', function () {
+    var raw = $('g-installs').value.trim();
+    var n = L.parseInstalls(raw);
+    $('g-installs').setAttribute('aria-invalid', raw && n == null ? 'true' : 'false');
+    if (!raw || n != null) saveInstalls(n == null ? '' : String(n));
+    if (gState.loaded) renderGoal();
+  });
+
+  async function loadGrowth() {
+    var mine = nextToken('growth');
+    $('growth-note').textContent = 'Loading...';
+    var r = await callAdmin(L.growthBody(L.GROWTH_DAYS));
+    if (mine !== tokens.growth) return;
+    if (adminFailed(r)) { $('growth-note').textContent = ''; return; }
+    $('growth-note').textContent = 'Last ' + L.GROWTH_DAYS + ' days, IST. Counts only; no names or emails. "Signed in" is the latest sign-in per user, so older days can undercount.';
+    renderGrowth(r.body.growth || r.body);
+  }
+
+  function renderGoal() {
+    var p = L.growthPace(gState.users, readInstalls(), Date.now());
+    var src = p.source === 'installs' ? ' (store installs, entered by hand)' : ' (registered users)';
+    $('goal-line').textContent = L.formatCount(p.current) + ' of ' + L.formatCount(p.goal) + ' users, ' +
+      (p.overdue ? 'deadline passed ' + L.formatCount(-p.daysLeft) + ' days ago' : L.formatCount(p.daysLeft) + ' days to 8 Nov');
+    $('goal-fill').style.width = p.pctNum + '%';
+    $('goal-track').setAttribute('aria-valuenow', String(p.current));
+    $('goal-track').setAttribute('aria-valuetext', p.pctNum + '% of the goal');
+    $('goal-pace').textContent = p.reached
+      ? 'Goal reached. Counting' + src + '.'
+      : 'Needed: ' + L.formatCount(p.perDay) + ' new users a day (' + L.formatCount(p.remaining) + ' to go)' + (p.overdue ? ', and the date has passed' : '') + '. Counting' + src + '.';
+  }
+
+  function renderGrowth(g) {
+    var t = g.totals || {}, per = g.period || {};
+    var days = g.days | 0 || L.GROWTH_DAYS;
+    var daily = L.fillDaily(g.daily, days);
+    gState.users = t.users | 0;
+    gState.loaded = true;
+    renderGoal();
+    var wk = L.weekCompare(daily);
+    var delta = el('div', { 'class': 'adm-kpi-s adm-delta-' + wk.dir, text: wk.text });
+    var kp = $('growth-kpis');
+    clear(kp);
+    kp.appendChild(el('div', { 'class': 'adm-kpi' }, [
+      el('div', { 'class': 'adm-kpi-k', text: 'Sign-ups, last 7 days' }),
+      el('div', { 'class': 'adm-kpi-v', text: L.formatCount(wk.cur) }),
+      el('div', { 'class': 'adm-kpi-s', text: wk.hasPrev ? 'Previous 7 days: ' + L.formatCount(wk.prev) : '' }),
+      delta
+    ]));
+    [
+      kpi('Sign-ups, ' + days + ' days', L.formatCount(per.signups)),
+      kpi('Users, all time', L.formatCount(t.users)),
+      kpi('Paying users now', L.formatCount(t.paying_users), 'active paid plan'),
+      kpi('Granted plans now', L.formatCount(t.grants), 'given free by you'),
+      kpi('Payments, ' + days + ' days', L.formatCount(per.payments)),
+      kpi('Revenue, ' + days + ' days', L.formatRupees(per.revenue_paise), 'All time ' + L.formatRupees(t.revenue_all_time_paise))
+    ].forEach(function (k) { kp.appendChild(k); });
+    barChart({
+      host: $('chart-gsignups'), tableHost: $('tbl-wrap-gsignups'), cls: 'adm-bar-signups',
+      title: 'Sign-ups per day', unit: 'sign-ups', days: daily,
+      values: daily.map(function (d) { return d.signups; }),
+      fmt: function (v) { return L.formatCount(v); }, tickFmt: function (v) { return L.formatCount(v); },
+      tableHead: ['Date', 'Sign-ups', 'Signed in that day', 'Payments'],
+      tableRow: function (d) { return [L.formatDate(d.day), L.formatCount(d.signups), L.formatCount(d.active), L.formatCount(d.payments)]; }
+    });
   }
 
   /** Bar chart: inline SVG, gridlines + y ticks, every bar has a <title> tooltip; text summary + table fallback. */
@@ -1182,6 +1256,7 @@
     card.appendChild(el('p', { 'class': 'adm-fb-msg', text: rep.message }));
     var summary = L.feedbackContextSummary(rep.context);
     if (summary) card.appendChild(el('p', { 'class': 'adm-fb-ctx', text: summary }));
+    if (rep.kind === 'error' && rep.context && typeof rep.context.stack === 'string') card.appendChild(el('pre', { 'class': 'adm-fb-ctx adm-mono', text: rep.context.stack }));
 
     if (rep.screenshot_path) {
       // Loaded on click: every view of a screenshot is logged in the audit log, so thumbnails are not fetched in bulk.

@@ -134,9 +134,9 @@
   // ---- feedback (bug reports and ideas from the extension, migration 0006) ----
   var FEEDBACK_STATUSES = ['new', 'seen', 'fixed', 'wont_fix'];
   var FEEDBACK_STATUS_LABELS = { new: 'New', seen: 'Seen', fixed: 'Fixed', wont_fix: "Won't fix" };
-  var FEEDBACK_KINDS = { bug: 'Bug', idea: 'Idea' };
+  var FEEDBACK_KINDS = { bug: 'Bug', idea: 'Idea', error: 'Error' };
   var MAX_FEEDBACK_NOTE = 500;
-  var FEEDBACK_FILTERS = { kind: ['bug', 'idea'], status: FEEDBACK_STATUSES, version: 'text' };
+  var FEEDBACK_FILTERS = { kind: ['bug', 'idea', 'error'], status: FEEDBACK_STATUSES, version: 'text' };
   var SCREENSHOT_URL_PREFIX = 'https://uhgtlyxarozzdgdizoaz.supabase.co/storage/v1/';
 
   function feedbackStatusLabel(s) { return Object.prototype.hasOwnProperty.call(FEEDBACK_STATUS_LABELS, s) ? FEEDBACK_STATUS_LABELS[s] : (s ? String(s) : '-'); }
@@ -512,7 +512,57 @@
     ];
   }
 
+  // ---------- growth view ----------
+  var GOAL_USERS = 1000, GOAL_DATE = '2026-11-08', GROWTH_DAYS = 30, MAX_INSTALLS = 10000000;
+  function growthBody(days) {
+    var d = Math.floor(Number(days));
+    return { action: 'growth', days: d >= 1 && d <= 90 ? d : GROWTH_DAYS };
+  }
+  /** Whole days from ymd a to ymd b (negative if b is earlier); NaN if either is not a date. */
+  function daysBetween(a, b) {
+    if (!validYmd(a) || !validYmd(b)) return NaN;
+    var pa = a.split('-').map(Number), pb = b.split('-').map(Number);
+    return Math.round((Date.UTC(pb[0], pb[1] - 1, pb[2]) - Date.UTC(pa[0], pa[1] - 1, pa[2])) / 86400000);
+  }
+  /** Manual Chrome Web Store installs: digits only, 0..10,000,000. Anything else is null (treated as not set). */
+  function parseInstalls(v) {
+    if (typeof v === 'number') v = String(v);
+    if (typeof v !== 'string') return null;
+    v = v.trim().replace(/,/g, '');
+    if (!/^[0-9]{1,8}$/.test(v)) return null;
+    var n = Number(v);
+    return n <= MAX_INSTALLS ? n : null;
+  }
+  /** Goal progress. current = whichever is higher: registered users or manual store installs. */
+  function growthPace(users, installs, nowMs, goal, deadline) {
+    goal = goal || GOAL_USERS; deadline = deadline || GOAL_DATE;
+    var u = Math.max(0, Math.floor(Number(users)) || 0);
+    var i = parseInstalls(installs);
+    var current = Math.max(u, i == null ? 0 : i);
+    var left = daysBetween(istToday(nowMs), deadline);
+    var remaining = Math.max(0, goal - current);
+    var reached = current >= goal;
+    var perDay = reached ? 0 : Math.ceil((remaining / Math.max(left, 1)) * 10) / 10;
+    return {
+      current: current, goal: goal, source: i != null && i > u ? 'installs' : 'users', remaining: remaining, reached: reached,
+      daysLeft: left, overdue: left < 0 && !reached, perDay: perDay, pctNum: Math.min(100, Math.round((current / goal) * 1000) / 10)
+    };
+  }
+  /** Sign-ups in the last 7 days vs the 7 before. hasPrev is false when fewer than 14 days are available. */
+  function weekCompare(daily) {
+    var s = (Array.isArray(daily) ? daily : []).map(function (d) { return (d && d.signups) | 0; });
+    var sum = function (a) { return a.reduce(function (x, y) { return x + y; }, 0); };
+    var cur = sum(s.slice(-7));
+    var hasPrev = s.length >= 14;
+    var prev = hasPrev ? sum(s.slice(-14, -7)) : 0;
+    var delta = cur - prev;
+    var text = !hasPrev ? 'No earlier week to compare' : prev === 0 ? (cur === 0 ? 'No change' : 'Up from 0') : (delta >= 0 ? '+' : '-') + Math.abs(Math.round((delta / prev) * 100)) + '%';
+    return { cur: cur, prev: prev, delta: delta, hasPrev: hasPrev, text: text, dir: delta > 0 ? 'up' : delta < 0 ? 'down' : 'flat' };
+  }
+
   return {
+    GOAL_USERS: GOAL_USERS, GOAL_DATE: GOAL_DATE, GROWTH_DAYS: GROWTH_DAYS, growthBody: growthBody, daysBetween: daysBetween,
+    parseInstalls: parseInstalls, growthPace: growthPace, weekCompare: weekCompare,
     MAX_BULK: MAX_BULK, PAGE_SIZE: PAGE_SIZE, EXPORT_PAGE: EXPORT_PAGE, EXPORT_MAX_ROWS: EXPORT_MAX_ROWS, RANGES: RANGES, USER_SORTS: USER_SORTS,
     formatCount: formatCount, formatRupees: formatRupees, formatRupeesShort: formatRupeesShort, pct: pct, pctNum: pctNum,
     csvCell: csvCell, buildCsv: buildCsv, USER_CSV_HEADERS: USER_CSV_HEADERS, userCsvRow: userCsvRow, userStatus: userStatus,
