@@ -1,6 +1,6 @@
 /* Admin page: plain, functional, Departure Board colours (ink + amber). Builds on styles.css tokens. */
 [hidden]{display:none!important}
-.adm{min-height:100vh;--c-signups:#1d3f9e;--c-revenue:#a86a00;--c-free:#c3c9d4;--c-basic:#f5b83d;--c-pro:#101a2b;--c-gbasic:#7fa0e0;--c-gpro:#1d3f9e;--c-warn:#9b2118}
+.adm{min-height:100vh;--c-signups:#1d3f9e;--c-revenue:#a86a00;--c-free:#c3c9d4;--c-basic:#f5b83d;--c-pro:#101a2b;--c-gbasic:#7fa0e0;--c-gpro:#1d3f9e;--c-warn:#9b2118;--c-up:#14683a}
 .adm-wrap{width:100%;max-width:1080px;margin:0 auto;padding:0 16px}
 .adm-bar{background:var(--ink);border-bottom:1px solid var(--ink-line);color:var(--ink-text)}
 .adm-bar-in{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:56px;flex-wrap:wrap;padding:0 20px}
@@ -176,3 +176,11 @@
 .adm-badge-seen{background:var(--surface-3);color:var(--text-2)}
 .adm-badge-fixed{background:var(--success-bg);color:var(--success)}
 .adm-badge-wont_fix{background:var(--surface-3);color:var(--text-3)}
+
+/* Growth */
+.adm-goal-line{font:700 1.3rem/1.3 var(--display);color:var(--ink);margin:6px 0 10px;font-variant-numeric:tabular-nums}
+.adm-goal-track{height:26px}
+.adm-goal-pace{margin:10px 0 14px;color:var(--text-2)}
+.adm-goal-installs{display:block;max-width:420px;font-weight:600;margin-top:6px}
+.adm-goal-installs input{display:block;margin-top:4px;max-width:200px}
+.adm-delta-up{color:var(--c-up)}.adm-delta-down{color:var(--c-warn)}
