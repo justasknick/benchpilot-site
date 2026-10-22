@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://justasknick.github.io/benchpilot-site/sitemap.xml
