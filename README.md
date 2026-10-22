@@ -4,6 +4,13 @@ Static site (HTML + one CSS file + one small script). No build step, no framewor
 
 Files: `index.html`, `privacy.html`, `terms.html`, `refund.html`, `contact.html`, `shipping.html`, `verified.html`, `reset-password.html`, `404.html`, `styles.css`, `assets/logo-mark.svg` (BenchPilot mark, copied from the extension), `assets/fonts/*.woff2` (Familjen Grotesk, IBM Plex Sans, IBM Plex Mono; SIL Open Font License, copied from the extension), `assets/reset-password.js`, `assets/verified.js`.
 
+## Home page (redesigned 22 Oct 2026)
+
+- `index.html` uses `site.css` and `site.js` only. The other public pages use `site.css` too. `styles.css` and `admin.css` are kept for the admin console.
+- `assets/shots/*.webp` are real drawer screens with fictional sample data, captured at 2x from `dev/preview-drawer.html`. Capture them again when the drawer changes.
+- `assets/bp/*.js` are copies of five extension library files, so the "Paste a post" box reads posts exactly as the extension does, inside the page. `test/bp-libs.test.js` fails when they drift; copy them again with:
+  `for f in shared email-extract roles classify requirement; do cp BenchPilot-Extension/lib/$f.js website/assets/bp/; done`
+
 ## 1. Replace the placeholders first
 
 Open each `.html` file in a text editor (Notepad, VS Code) and use Find and Replace (Ctrl+H) across all files. Replace these exact tokens:
