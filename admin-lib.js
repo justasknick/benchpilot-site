@@ -118,7 +118,9 @@
     currency_mismatch: 'Wrong currency',
     amount_mismatch: 'Wrong amount',
     checkout_missing: 'No checkout on record',
-    checkout_mismatch: 'Checkout is for another user or plan'
+    checkout_mismatch: 'Checkout is for another user or plan',
+    founding_over_cap: 'Founding offer was full (paid, plan granted)',
+    partial_refund: 'Partial refund (plan unchanged)'
   };
   /** Machine reason -> short words; an unknown reason is shown as-is. */
   function issueReasonLabel(reason) {
