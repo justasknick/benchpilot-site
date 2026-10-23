@@ -3,136 +3,116 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>BenchPilot – match your bench as you scroll LinkedIn</title>
-<meta name="description" content="BenchPilot is a Chrome extension for bench sales recruiters. It reads the LinkedIn requirements you scroll past, matches them to your consultants, checks your submission history and opens the email draft. Free plan.">
-<meta name="theme-color" content="#7357d8">
+<title>BenchPilot – scroll LinkedIn, submit faster</title>
+<meta name="description" content="BenchPilot is a Chrome extension for bench sales recruiters. It reads the LinkedIn requirements you scroll past, matches them to your consultants, checks your submission history and drafts the email. Free plan.">
+<meta name="theme-color" content="#6a4fd0">
 <meta name="color-scheme" content="light">
 <link rel="icon" type="image/svg+xml" href="assets/logo-target.svg">
 <link rel="canonical" href="https://justasknick.github.io/benchpilot-site/">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://justasknick.github.io/benchpilot-site/">
-<meta property="og:image" content="https://justasknick.github.io/benchpilot-site/assets/v17-drawer.png">
-<meta property="og:title" content="BenchPilot – match your bench as you scroll">
-<meta property="og:description" content="Match LinkedIn requirements to your consultants, check submission history and open the email draft. A Chrome extension for bench sales recruiters.">
-<meta name="twitter:card" content="summary">
-<link rel="preload" href="assets/fonts/familjen-grotesk-latin.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="preload" href="assets/fonts/ibm-plex-sans-latin.woff2" as="font" type="font/woff2" crossorigin>
+<meta property="og:image" content="https://justasknick.github.io/benchpilot-site/assets/og-image.jpg">
+<meta property="og:title" content="BenchPilot – scroll LinkedIn, submit faster">
+<meta property="og:description" content="The Chrome extension that reads requirement posts, matches them to your consultants and catches repeat submissions before you send.">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preload" href="assets/fonts/inter-tight-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="assets/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="site.css">
 <script>document.documentElement.classList.add('js')</script>
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
 
-<header class="bar">
-  <a class="mark" href="index.html"><img src="assets/logo-target.svg" alt="" width="32" height="32"><span>BenchPilot</span></a>
-  <nav class="bar-links" aria-label="Main">
-    <a href="#drawer">The drawer</a>
-    <a href="#try">Try it</a>
-    <a href="#pricing">Pricing</a>
-    <a href="#questions">Questions</a>
-  </nav>
-  <a class="btn btn-y bar-cta" href="https://chromewebstore.google.com/detail/benchpilot-recruiter-lead/apmkfnppjohjoiacehfjehcegldkkami">Add to Chrome</a>
+<header class="nav" id="nav">
+  <div class="nav-in">
+    <a class="mark" href="index.html" aria-label="BenchPilot home"><img src="assets/logo-target.svg" alt="" width="30" height="30"><span>BenchPilot</span></a>
+    <nav class="nav-links" aria-label="Main">
+      <a href="#product">Product</a>
+      <a href="#try">Try it</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#questions">Questions</a>
+    </nav>
+    <a class="btn btn-y btn-sm" href="https://chromewebstore.google.com/detail/benchpilot-recruiter-lead/apmkfnppjohjoiacehfjehcegldkkami">Add to Chrome</a>
+  </div>
 </header>
 
 <main id="main">
-  <div class="split">
-    <div class="read">
-
-      <section class="hero" aria-labelledby="hero-title">
-        <p class="clocks" id="clocks" aria-live="off">In Hyderabad it is <b data-clock="Asia/Kolkata">9:30 pm</b>. In New York it is <b data-clock="America/New_York">12:00 pm</b>, and recruiters are posting.</p>
-        <h1 id="hero-title" data-in>Match your bench as you scroll</h1>
-        <p class="lead" data-in>BenchPilot is a Chrome extension for bench sales recruiters. It reads the LinkedIn requirements you scroll past and matches each one to your consultants.</p>
-        <div class="hero-act" data-in>
+  <section class="hero" aria-labelledby="hero-title">
+    <div class="wrap">
+      <h1 id="hero-title" class="hero-h"><span class="ln"><span>Scroll LinkedIn.</span></span><span class="ln y"><span>Submit faster.</span></span></h1>
+      <div class="hero-row">
+        <p class="hero-sub" data-in>The Chrome extension for bench sales recruiters. It reads the requirement posts you scroll past, matches them to your consultants and catches repeat submissions before you send.</p>
+        <div class="hero-cta" data-in>
           <a class="btn btn-y btn-lg" href="https://chromewebstore.google.com/detail/benchpilot-recruiter-lead/apmkfnppjohjoiacehfjehcegldkkami">Add to Chrome, free</a>
-          <p class="small">Free plan: 25 recruiter contacts a month and 2 consultants. No card.</p>
+          <p class="hero-fine">Free plan · 25 recruiter contacts a month · no card</p>
         </div>
-        <ul class="hero-facts" data-in>
-          <li><b>Matches from 60%</b> with the reasons shown</li>
-          <li><b>“Already submitted?”</b> checked before every draft</li>
-          <li><b>Your data</b> stays on your computer</li>
-        </ul>
-      </section>
-
-      <section class="drawer-sec" id="drawer" aria-labelledby="drawer-title">
-        <h2 id="drawer-title" data-in>What the drawer does</h2>
-        <p class="sec-lead" data-in>The drawer docks beside LinkedIn and fills as you scroll. Everything below is a real screen, with sample data.</p>
-
-        <article class="mod" data-stage="match-open">
-          <div class="mod-pic" data-in><img src="assets/shots/match-open.webp" width="400" height="900" alt="An open match card: Why 95% for Ravi Kumar, with Java, Spring Boot, AWS and Microservices matched, title match, same state and C2C ok" loading="lazy" style="--y:74%"></div>
-          <div class="mod-text" data-in>
-            <h3>Why this consultant fits</h3>
-            <p>Each match is scored from 0 to 100. Open the card to see the skills that matched, the ones missing, and blockers such as a visa the post rules out.</p>
-            <p>Only matches of 60% or more are shown. The score orders the list; you decide.</p>
-          </div>
-        </article>
-
-        <article class="mod" data-stage="matches">
-          <div class="mod-pic" data-in><img src="assets/shots/matches.webp" width="400" height="900" alt="A match card with the red line: Already submitted to Lakeview Motors via TekSys Partners on 19 Oct, above a red Draft email button" loading="lazy" style="--y:69%"></div>
-          <div class="mod-text" data-in>
-            <h3>Already submitted? Checked before you send</h3>
-            <p>If you sent the same consultant to the same end client in the last 90 days, the card says so in red: where, through which vendor, and when.</p>
-            <p>It checks the submissions recorded in BenchPilot, so record each one and the check stays sharp.</p>
-          </div>
-        </article>
-
-        <article class="mod" data-stage="requirements">
-          <div class="mod-pic" data-in><img src="assets/shots/requirements.webp" width="400" height="900" alt="The Requirements tab with filters All, Today, Matches (7 days), C2C, Remote and Saved, and requirement cards with recruiter contact buttons" loading="lazy" style="--y:34%"></div>
-          <div class="mod-text" data-in>
-            <h3>Every recruiter, one tap away</h3>
-            <p>The recruiter from each post sits on its card with email, phone, WhatsApp and LinkedIn profile. Copy, call or open a chat without leaving the feed.</p>
-            <p>Filter the day’s requirements by C2C, remote, matches or saved.</p>
-          </div>
-        </article>
-
-        <article class="mod" data-stage="vendors">
-          <div class="mod-pic" data-in><img src="assets/shots/vendors.webp" width="400" height="900" alt="The Vendors tab: QuickHire Corp marked Avoid, Northbay Staffing a trusted prime vendor, Orion Talent an implementation partner" loading="lazy" style="--y:40%"></div>
-          <div class="mod-text" data-in>
-            <h3>Vendors you can trust, and the ones you avoid</h3>
-            <p>Mark each vendor Trusted, Neutral or Avoid, and set its tier: prime vendor, implementation partner or direct client.</p>
-            <p>A vendor you marked Avoid never gets the loud purple button.</p>
-          </div>
-        </article>
-
-        <article class="mod" data-stage="bench">
-          <div class="mod-pic" data-in><img src="assets/shots/bench.webp" width="400" height="900" alt="The Bench tab: Ravi K., Azure Databricks Architect, 31 days on bench and marked Time to push; Priya S., 23 days, 3 matches today" loading="lazy" style="--y:50%"></div>
-          <div class="mod-text" data-in>
-            <h3>Your bench at a glance</h3>
-            <p>Days on the bench, this week’s submissions and interviews, and the best match today for each consultant.</p>
-            <p>Add a consultant by dropping a PDF or Word résumé. It is read on your computer.</p>
-          </div>
-        </article>
-
-        <article class="mod" data-stage="draft-sheet">
-          <div class="mod-pic" data-in><img src="assets/shots/draft-sheet.webp" width="400" height="900" alt="The Draft email sheet to Northbay Staffing: Ravi Kumar picked as best match at 95%, the rate to the vendor, the right-to-represent box and Open in Gmail" loading="lazy" style="--y:46%"></div>
-          <div class="mod-text" data-in>
-            <h3>The draft, never the send</h3>
-            <p>Draft email opens Gmail or Outlook with the consultant, the rate and your right-to-represent note ready. You read it and press Send.</p>
-            <p>BenchPilot logs it as submitted, with a follow-up date if you set one.</p>
-          </div>
-        </article>
-      </section>
+      </div>
     </div>
+    <div class="wrap film-wrap">
+      <figure class="film" id="film">
+        <video id="film-v" autoplay muted loop playsinline preload="metadata" poster="assets/film/hero-poster.webp" aria-label="BenchPilot at work, with sample data: it reads a LinkedIn requirement post, shows a 95% match for Ravi Kumar, checks his submission history and opens a ready Gmail draft">
+          <source src="assets/film/hero-film.mp4" type="video/mp4">
+        </video>
+        <button class="film-btn" id="film-btn" type="button" aria-label="Pause the film" aria-pressed="false"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M8 5h3v14H8zM13 5h3v14h-3z" fill="currentColor"/></svg></button>
+      </figure>
+    </div>
+  </section>
 
-    <aside class="stage" aria-label="The BenchPilot drawer, with sample data">
-      <img class="on" data-shot="matches" src="assets/shots/matches.webp" width="400" height="900" alt="The BenchPilot drawer beside LinkedIn: 3 new requirements today, 3 matches, 1 follow-up due, and a 95% match for Sr. Java Developer at Northbay Staffing" fetchpriority="high">
-      <img data-shot="match-open" src="assets/shots/match-open.webp" width="400" height="900" alt="" loading="lazy">
-      <img data-shot="requirements" src="assets/shots/requirements.webp" width="400" height="900" alt="" loading="lazy">
-      <img data-shot="vendors" src="assets/shots/vendors.webp" width="400" height="900" alt="" loading="lazy">
-      <img data-shot="bench" src="assets/shots/bench.webp" width="400" height="900" alt="" loading="lazy">
-      <img data-shot="draft-sheet" src="assets/shots/draft-sheet.webp" width="400" height="900" alt="" loading="lazy">
-    </aside>
-  </div>
+  <section class="facts" aria-label="What BenchPilot is">
+    <ul class="wrap facts-row" data-in>
+      <li><b>Reads as you scroll</b>Requirement posts on your own LinkedIn feed</li>
+      <li><b>Matches from 60%</b>Scored against every consultant on your bench</li>
+      <li><b>Never clicks for you</b>No messages, no scrolling, no automation on LinkedIn</li>
+      <li><b>Stays on your computer</b>Leads and résumés never leave your browser</li>
+    </ul>
+  </section>
+
+  <section class="product" id="product" aria-labelledby="product-title">
+    <div class="wrap">
+      <div class="sec-head">
+        <h2 id="product-title" data-in>One drawer.<br>Your whole desk.</h2>
+        <p data-in>It docks beside LinkedIn and fills as you scroll. Every screen below is the real product, with sample data.</p>
+      </div>
+      <div class="bento">
+        <article class="tile t-big" data-in>
+          <div class="tile-text"><h3>Matches for your bench</h3><p>Each requirement is scored against every consultant. Open a card to see the skills that matched, what is missing, and why.</p></div>
+          <div class="tile-pic"><img src="assets/shots/match-open.webp" width="400" height="900" alt="An open match: Sr. Java Developer at Northbay Staffing, 95% for Ravi Kumar, with Java, Spring Boot, AWS and Microservices matched" loading="lazy" style="object-position:50% 34%"></div>
+        </article>
+        <article class="tile t-tall t-dark" data-in>
+          <div class="tile-text"><h3>Already submitted?</h3><p>Sent the same consultant to the same client in the last 90 days? The card says so before you draft.</p></div>
+          <div class="tile-pic"><img src="assets/shots/matches.webp" width="400" height="900" alt="A match card with the red line: Already submitted to Lakeview Motors via TekSys Partners on 19 Oct" loading="lazy" style="object-position:50% 66%"></div>
+        </article>
+        <article class="tile" data-in>
+          <div class="tile-text"><h3>Every recruiter, one tap away</h3><p>Email, phone, WhatsApp and LinkedIn from the post, on the card.</p></div>
+          <div class="tile-pic"><img src="assets/shots/requirements.webp" width="400" height="900" alt="Requirement cards with the recruiter's profile, email, phone and chat buttons" loading="lazy" style="object-position:50% 46%"></div>
+        </article>
+        <article class="tile t-y" data-in>
+          <div class="tile-text"><h3>Vendors you trust</h3><p>Mark each vendor Trusted, Neutral or Avoid, and set its tier.</p></div>
+          <div class="tile-pic"><img src="assets/shots/vendors.webp" width="400" height="900" alt="The Vendors tab: QuickHire Corp marked Avoid, Northbay Staffing a trusted prime vendor" loading="lazy" style="object-position:50% 36%"></div>
+        </article>
+        <article class="tile t-wide" data-in>
+          <div class="tile-text"><h3>Your bench at a glance</h3><p>Days on the bench, this week’s submissions and interviews, and today’s best match for each consultant. Add one by dropping a PDF or Word résumé.</p></div>
+          <div class="tile-pic"><img src="assets/shots/bench.webp" width="400" height="900" alt="The Bench tab: Ravi K., Azure Databricks Architect, 31 days on bench; Priya S., 3 matches today" loading="lazy" style="object-position:50% 44%"></div>
+        </article>
+      </div>
+    </div>
+  </section>
 
   <section class="try" id="try" aria-labelledby="try-title">
-    <div class="try-in">
-      <p class="try-note" data-in>This box runs BenchPilot’s own reader, inside this page. Edit the post or pick another sample; nothing leaves your computer.</p>
-      <div class="try-samples" role="group" aria-label="Sample posts" data-in>
-        <button type="button" class="chip-btn" data-sample="ai" aria-pressed="true">AI engineer</button>
-        <button type="button" class="chip-btn" data-sample="java" aria-pressed="false">Java, C2C</button>
-        <button type="button" class="chip-btn" data-sample="hot" aria-pressed="false">A hotlist</button>
+    <div class="wrap">
+      <div class="sec-head on-dark">
+        <h2 id="try-title" data-in>Paste a post.<br>See what it reads.</h2>
+        <p data-in>This box runs BenchPilot’s own reader inside this page. Edit the post or pick a sample; nothing leaves your computer.</p>
       </div>
-      <label class="sr" for="post">A LinkedIn requirement post</label>
-      <textarea id="post" spellcheck="false" data-in>Job Role - AI Engineer
+      <div class="try-grid">
+        <div class="try-in" data-in>
+          <div class="try-samples" role="group" aria-label="Sample posts">
+            <button type="button" class="chip-btn" data-sample="ai" aria-pressed="true">AI engineer</button>
+            <button type="button" class="chip-btn" data-sample="java" aria-pressed="false">Java, C2C</button>
+            <button type="button" class="chip-btn" data-sample="hot" aria-pressed="false">A hotlist</button>
+          </div>
+          <label class="sr" for="post">A LinkedIn requirement post</label>
+          <textarea id="post" spellcheck="false">Job Role - AI Engineer
 Minneapolis, MN (Remote)
 Visa: USC/GC
 Rate: $65/hr C2C
@@ -142,148 +122,131 @@ Required skillset: Databricks, Python (pandas, scikit-learn, NumPy), SQL, LangCh
 
 Heena K.
 heena@softsnippets.example.com</textarea>
-    </div>
-    <div class="try-out">
-      <div class="record" data-ui id="record" aria-live="polite">
-        <div class="rec-head"><b>What BenchPilot read</b><span class="rec-type" id="r-type">Requirement</span></div>
-        <dl class="rec-rows">
-          <div><dt>Role</dt><dd id="r-role">AI Engineer</dd></div>
-          <div><dt>Role group</dt><dd id="r-group">AI / ML</dd></div>
-          <div><dt>Client</dt><dd id="r-client">Halcyon Motors</dd></div>
-          <div><dt>Where</dt><dd id="r-where">MN · Remote</dd></div>
-          <div><dt>Visa</dt><dd id="r-visa">USC, GC</dd></div>
-          <div><dt>Rate</dt><dd id="r-rate">$65/hr C2C</dd></div>
-          <div><dt>Recruiter</dt><dd id="r-email">heena@softsnippets.example.com</dd></div>
-        </dl>
-        <div class="rec-skills" id="r-skills"><span>Databricks</span><span>Python</span><span>Pandas</span><span>scikit-learn</span><span>NumPy</span><span>SQL</span></div>
-        <p class="rec-foot" id="r-foot">Read in this page in 1 ms. Nothing was sent.</p>
+        </div>
+        <div class="record" data-ui id="record" aria-live="polite" data-in>
+          <div class="rec-head"><b>What BenchPilot read</b><span class="rec-type" id="r-type">Requirement</span></div>
+          <dl class="rec-rows">
+            <div><dt>Role</dt><dd id="r-role">AI Engineer</dd></div>
+            <div><dt>Role group</dt><dd id="r-group">AI / ML</dd></div>
+            <div><dt>Client</dt><dd id="r-client">Halcyon Motors</dd></div>
+            <div><dt>Where</dt><dd id="r-where">MN · Remote</dd></div>
+            <div><dt>Visa</dt><dd id="r-visa">USC, GC</dd></div>
+            <div><dt>Rate</dt><dd id="r-rate">$65/hr C2C</dd></div>
+            <div><dt>Recruiter</dt><dd id="r-email">heena@softsnippets.example.com</dd></div>
+          </dl>
+          <div class="rec-skills" id="r-skills"><span>Databricks</span><span>Python</span><span>Pandas</span><span>scikit-learn</span><span>NumPy</span><span>SQL</span></div>
+          <p class="rec-foot" id="r-foot">Read in this page in 1 ms. Nothing was sent.</p>
+        </div>
       </div>
     </div>
-    <h2 class="try-h" id="try-title"><span class="l" data-in>Paste a post.</span> <span class="r" data-in>See what it reads.</span></h2>
   </section>
 
-  <section class="night" id="night" aria-labelledby="night-title">
-    <div class="night-copy">
-      <h2 id="night-title" data-in>One night shift</h2>
-      <p data-in>A sample evening at a bench sales desk in India, from the US morning to the US afternoon. You browse; BenchPilot keeps the list.</p>
-    </div>
-    <div class="slip" data-in>
-      <h3>8:30 pm IST <span>10 am in New York</span></h3>
-      <ol class="slip-rows">
-        <li><span>Open LinkedIn and scroll your feed</span><i></i><span>drawer opens</span></li>
-        <li><span>Requirement posts are read as they pass</span><i></i><span>12 seen</span></li>
+  <section class="steps" aria-labelledby="steps-title">
+    <div class="wrap">
+      <div class="sec-head">
+        <h2 id="steps-title" data-in>From bench to sent,<br>in one evening.</h2>
+        <p data-in>Built for desks in India working US hours. You browse; BenchPilot keeps the list.</p>
+      </div>
+      <ol class="step-row">
+        <li data-in><span class="step-t">Add your bench</span><p>Drop a PDF or Word résumé. BenchPilot reads it on your computer; you check the details and save.</p></li>
+        <li data-in><span class="step-t">Scroll LinkedIn</span><p>Requirement posts are read as they pass. Matches of 60% or more appear in the drawer with the reasons.</p></li>
+        <li data-in><span class="step-t">Draft and send</span><p>Open the Gmail or Outlook draft with résumé, rate and right-to-represent note. You press Send; it is logged with a follow-up date.</p></li>
       </ol>
-      <h3>10:00 pm <span>11:30 am</span></h3>
-      <ol class="slip-rows">
-        <li><span>Review today’s matches for your bench</span><i></i><span>3 matches</span></li>
-        <li><span>“Already submitted?” on each card</span><i></i><span>1 repeat</span></li>
-      </ol>
-      <h3>Midnight <span>1:30 pm</span></h3>
-      <ol class="slip-rows">
-        <li><span>Open two drafts, attach résumés, send</span><i></i><span>2 drafts</span></li>
-        <li><span>Set follow-up dates</span><i></i><span>in 3 days</span></li>
-      </ol>
-      <h3>2:30 am <span>4 pm</span></h3>
-      <ol class="slip-rows">
-        <li><span>Follow-ups due show on the toolbar icon</span><i></i><span>1 due</span></li>
-      </ol>
-      <p class="slip-total"><span>2 submissions sent, none repeated</span><span>one shift</span></p>
     </div>
   </section>
 
-  <section class="rules" aria-labelledby="rules-title">
-    <div class="letter">
-      <img class="letter-mark" src="assets/logo-target.svg" alt="" width="44" height="44" data-in>
-      <h2 id="rules-title" data-in>What BenchPilot never does</h2>
-      <p data-in>BenchPilot reads only what your browser already shows you. It never clicks, scrolls or sends a message on LinkedIn, so your account behaves exactly as it does without it.</p>
-      <p data-in>Your recruiters, consultants, résumés and submissions <mark>stay in your browser</mark>. If you create an account, we keep only your sign-in, plan and payment details.</p>
-      <p data-in>There is no AI inside. Matches come from rules you can read: skills, title, location, visa and rate.</p>
-      <p data-in>It never sends an email. It opens a draft, and you press Send.</p>
-      <p data-in>Back up everything to one file whenever you like. The backup is free on every plan.</p>
-      <p class="sign" data-in>BenchPilot</p>
-      <p class="sign-sub" data-in>Hyderabad, India · Not affiliated with LinkedIn</p>
+  <section class="promise" aria-labelledby="promise-title">
+    <div class="wrap promise-in">
+      <h2 id="promise-title" data-in>Your data stays with you.</h2>
+      <ul class="promise-list">
+        <li data-in><b>Local first</b>Recruiters, consultants, résumés and submissions stay in your browser. With an account we keep only sign-in, plan and payment details.</li>
+        <li data-in><b>Hands off LinkedIn</b>BenchPilot reads what your browser already shows. It never clicks, scrolls or sends a message.</li>
+        <li data-in><b>No AI inside</b>Matches come from rules you can read: skills, title, location, visa and rate.</li>
+        <li data-in><b>Free backup</b>Save everything to one file whenever you like, on every plan.</li>
+      </ul>
     </div>
   </section>
 
   <section class="pricing" id="pricing" aria-labelledby="pricing-title">
-    <h2 id="pricing-title" data-in>Start free. Upgrade later.</h2>
-    <div class="tiles">
-      <div class="tile t-free" data-in>
-        <h3>Free</h3>
-        <p class="price">₹0</p>
-        <ul><li>25 recruiter contacts a month</li><li>2 consultants, 1 template</li><li>Full backup and restore</li></ul>
-        <a class="tile-btn" href="https://chromewebstore.google.com/detail/benchpilot-recruiter-lead/apmkfnppjohjoiacehfjehcegldkkami">Add to Chrome</a>
+    <div class="wrap">
+      <div class="sec-head center">
+        <h2 id="pricing-title" data-in>Start free. Upgrade when it pays.</h2>
+        <div class="period" role="group" aria-label="Billing period" id="period" data-in>
+          <button type="button" data-p="m" aria-pressed="true">Monthly</button>
+          <button type="button" data-p="y" aria-pressed="false">Yearly · save ~30%</button>
+        </div>
       </div>
-      <div class="tile t-basic" data-in>
-        <h3>Basic</h3>
-        <p class="price">₹299<small> a month</small></p>
-        <ul><li>or ₹2,499 a year</li><li>300 recruiter contacts a month</li><li>10 consultants, 3 templates</li><li>CSV, Excel and JSON export</li><li>Follow-up dates and a due count on the toolbar icon</li></ul>
-        <a class="tile-btn" href="https://chromewebstore.google.com/detail/benchpilot-recruiter-lead/apmkfnppjohjoiacehfjehcegldkkami">Get Basic</a>
+      <div class="plans" id="plans" data-p="m">
+        <div class="plan" data-in>
+          <h3>Free</h3>
+          <p class="amt">₹0<small>forever</small></p>
+          <p class="plan-for">Try it on your own LinkedIn feed.</p>
+          <a class="btn btn-line" href="https://chromewebstore.google.com/detail/benchpilot-recruiter-lead/apmkfnppjohjoiacehfjehcegldkkami">Add to Chrome</a>
+          <ul><li>25 recruiter contacts a month</li><li>2 consultants, 1 template</li><li>Drawer, matches and time-zone clocks</li><li>Full backup and restore</li></ul>
+        </div>
+        <div class="plan" data-in>
+          <h3>Basic</h3>
+          <p class="amt"><span class="m">₹299<small>/month</small></span><span class="y">₹2,499<small>/year</small></span></p>
+          <p class="plan-for"><span class="m">Or ₹2,499 a year.</span><span class="y">About ₹208 a month.</span> No auto-renewal.</p>
+          <a class="btn btn-line" href="https://chromewebstore.google.com/detail/benchpilot-recruiter-lead/apmkfnppjohjoiacehfjehcegldkkami">Get Basic</a>
+          <ul><li>300 recruiter contacts a month</li><li>10 consultants, 3 templates</li><li>CSV, Excel and JSON export</li><li>Follow-up dates and a due count on the toolbar icon</li><li>Everything in Free</li></ul>
+        </div>
+        <div class="plan plan-pro" data-in>
+          <h3>Pro</h3>
+          <p class="amt"><span class="m">₹599<small>/month</small></span><span class="y">₹4,999<small>/year</small></span></p>
+          <p class="plan-for"><span class="m">Or ₹4,999 a year.</span><span class="y">About ₹417 a month.</span> No auto-renewal.</p>
+          <a class="btn btn-y" href="https://chromewebstore.google.com/detail/benchpilot-recruiter-lead/apmkfnppjohjoiacehfjehcegldkkami">Get Pro</a>
+          <p class="founding">Founding offer: ₹399 a month for the first 50 buyers.</p>
+          <ul><li>Unlimited recruiter contacts (fair use)</li><li>Up to 200 consultants, 10 templates</li><li>Tech matcher</li><li>Everything in Basic</li></ul>
+        </div>
       </div>
-      <div class="tile t-pro" data-in>
-        <h3>Pro</h3>
-        <p class="price">₹599<small> a month</small></p>
-        <ul><li>or ₹4,999 a year</li><li>Founding offer: ₹399 a month for the first 50 buyers</li><li>Unlimited recruiter contacts (fair use)</li><li>Up to 200 consultants, 10 templates</li><li>Tech matcher</li><li>Everything in Basic</li></ul>
-        <a class="tile-btn" href="https://chromewebstore.google.com/detail/benchpilot-recruiter-lead/apmkfnppjohjoiacehfjehcegldkkami">Get Pro</a>
-      </div>
+      <p class="pay-note" data-in>Buy inside BenchPilot: open the Upgrade page, sign in with email or Google and pay on Razorpay with UPI or a card. Your plan follows your account to every computer. All purchases are final, so try Free first. See the <a href="refund.html">refund policy</a> and <a href="shipping.html">shipping and delivery</a>.</p>
     </div>
-    <p class="pay-note" data-in>To buy, open the Upgrade page inside BenchPilot, sign in with email or Google, and pay on Razorpay with UPI or a card. The plan is linked to your account on every computer you sign in on. No auto-renewal; all purchases are final, so try Free first. See the <a href="refund.html">refund policy</a> and <a href="shipping.html">shipping and delivery</a>.</p>
   </section>
 
   <section class="faq" id="questions" aria-labelledby="faq-title">
-    <h2 id="faq-title" data-in>Questions</h2>
-    <div class="faq-text">
-      <p data-in><b>Does BenchPilot send emails for me?</b> No. It opens a draft in Gmail or Outlook. You review the recipient, résumé and message, then press Send yourself.</p>
-      <p data-in><b>What does the “Already submitted?” check look at?</b> Your saved BenchPilot submission history in this browser. The same consultant and a known end client within 90 days triggers a warning. Missing client names, unrecorded submissions and teammates’ activity are outside it. Vendors you marked Avoid get a “Draft email anyway” button.</p>
-      <p data-in><b>What counts as a contact saved this month?</b> Saving, copying or pitching a new recruiter. The same recruiter again is free. Free has 25 a month, Basic 300, Pro is unlimited under fair use. After that, new contacts show masked, such as r***@company.com, until next month or an upgrade.</p>
-      <p data-in><b>Is my data uploaded anywhere?</b> No. Leads, consultants, captured contact details and settings stay in your browser. With an account, your sign-in, plan and payment details are kept on our account server (Supabase, Mumbai). Feedback is sent only when you send it. Read the <a href="privacy.html">privacy policy</a>.</p>
-      <p data-in><b>What can I do from the Recruiters tab?</b> Every saved recruiter with LinkedIn, email, phone and WhatsApp one click away, plus a plain email draft. Filter by Trust, Vendor tier, status, or a missing phone, profile or vendor.</p>
-      <p data-in><b>What are Trust and Vendor tier?</b> Two separate labels on each vendor. Trust is Trusted, Neutral or Avoid. Vendor tier is where the vendor sits, such as prime vendor or implementation partner.</p>
-      <p data-in><b>What is the autosave guard?</b> Autosave uses one monthly contact for each new recruiter it saves. With 3 left it turns itself off, and you can turn it on anyway. Pro is never paused, and saving by hand is not affected.</p>
-      <p data-in><b>How do I buy Basic or Pro?</b> Open the Upgrade page in the extension, sign in with email or Google, pick a plan and pay on Razorpay with UPI or a card. If the plan does not appear within 15 minutes, write to support with your Razorpay payment ID. An older licence key still works on the Upgrade page.</p>
-      <p data-in><b>Can I extend my plan early?</b> Yes. In the last 14 days of Basic or Pro, the Upgrade page offers Extend, and the days you have left are kept.</p>
-      <p data-in><b>What happens when my plan ends?</b> You go back to Free. Nothing is deleted. Higher contact limits, extra consultants and templates, follow-up dates, exports and, for Pro, the tech matcher pause until you renew.</p>
-      <p data-in><b>What is the founding offer?</b> The first 50 buyers can get Pro at ₹399 a month instead of ₹599, while founding places last.</p>
-      <p data-in><b>Can I use it on two computers?</b> Yes. Sign in on each and your plan is there. Your leads stay in each browser.</p>
-      <p data-in><b>What does the profile card read?</b> Only the profile you are viewing. For 1st-degree connections, it keeps the details LinkedIn shows when you open Contact info. Nothing is read in the background.</p>
-      <p data-in><b>Is payment secure?</b> Payments go through Razorpay, an RBI-authorised payment aggregator. BenchPilot never sees your card or UPI details.</p>
-      <p data-in><b>Refunds?</b> All purchases are final, so please use Free first. If you were charged twice or your plan did not switch on, contact us and we will fix it. See the <a href="refund.html">refund policy</a>.</p>
-      <p data-in><b>Is BenchPilot affiliated with LinkedIn?</b> No. It is an independent tool, not affiliated with or endorsed by LinkedIn Corporation. You remain responsible for following LinkedIn’s terms and the email laws that apply to you.</p>
+    <div class="wrap faq-in">
+      <h2 id="faq-title" data-in>Questions</h2>
+      <div class="faq-list">
+        <details data-in><summary>Does BenchPilot send emails for me?</summary><p>No. It opens a draft in Gmail or Outlook. You review the recipient, résumé and message, then press Send yourself.</p></details>
+        <details data-in><summary>What does the “Already submitted?” check look at?</summary><p>Your saved BenchPilot submission history in this browser. The same consultant and a known end client within 90 days triggers a warning. Missing client names, unrecorded submissions and teammates’ activity are outside it. Vendors you marked Avoid get a “Draft email anyway” button.</p></details>
+        <details data-in><summary>What counts as a contact saved this month?</summary><p>Saving, copying or pitching a new recruiter. The same recruiter again is free. Free has 25 a month, Basic 300, and Pro is unlimited under fair use. After that, new contacts show masked, such as r***@company.com, until next month or an upgrade.</p></details>
+        <details data-in><summary>Is my data uploaded anywhere?</summary><p>No. Leads, consultants, captured contact details and settings stay in your browser. With an account, your sign-in, plan and payment details are kept on our account server (Supabase, Mumbai). Feedback is sent only when you send it. Read the <a href="privacy.html">privacy policy</a>.</p></details>
+        <details data-in><summary>How do I buy Basic or Pro?</summary><p>Open the Upgrade page in the extension, sign in with email or Google, pick a plan and pay on Razorpay with UPI or a card. If the plan does not appear within 15 minutes, write to support with your Razorpay payment ID. An older licence key still works on the Upgrade page.</p></details>
+        <details data-in><summary>What are Trust and Vendor tier?</summary><p>Two separate labels on each vendor. Trust is Trusted, Neutral or Avoid. Vendor tier is where the vendor sits, such as prime vendor or implementation partner.</p></details>
+        <details data-in><summary>What is the autosave guard?</summary><p>Autosave uses one monthly contact for each new recruiter it saves. With 3 left it turns itself off, and you can turn it on anyway. Pro is never paused, and saving by hand is not affected.</p></details>
+        <details data-in><summary>Can I extend my plan early?</summary><p>Yes. In the last 14 days of Basic or Pro, the Upgrade page offers Extend, and the days you have left are kept.</p></details>
+        <details data-in><summary>What happens when my plan ends?</summary><p>You go back to Free. Nothing is deleted. Higher contact limits, extra consultants and templates, follow-up dates, exports and, for Pro, the tech matcher pause until you renew.</p></details>
+        <details data-in><summary>What is the founding offer?</summary><p>The first 50 buyers can get Pro at ₹399 a month instead of ₹599, while founding places last.</p></details>
+        <details data-in><summary>Can I use it on two computers?</summary><p>Yes. Sign in on each and your plan is there. Your leads stay in each browser.</p></details>
+        <details data-in><summary>What does the profile card read?</summary><p>Only the profile you are viewing. For 1st-degree connections, it keeps the details LinkedIn shows when you open Contact info. Nothing is read in the background.</p></details>
+        <details data-in><summary>Is payment secure?</summary><p>Payments go through Razorpay, an RBI-authorised payment aggregator. BenchPilot never sees your card or UPI details.</p></details>
+        <details data-in><summary>Refunds?</summary><p>All purchases are final, so please use Free first. If you were charged twice or your plan did not switch on, contact us and we will fix it. See the <a href="refund.html">refund policy</a>.</p></details>
+        <details data-in><summary>Is BenchPilot affiliated with LinkedIn?</summary><p>No. It is an independent tool, not affiliated with or endorsed by LinkedIn Corporation. You remain responsible for following LinkedIn’s terms and the email laws that apply to you.</p></details>
+      </div>
     </div>
   </section>
 
   <section class="close" aria-labelledby="close-title">
-    <div class="close-copy">
-      <h2 id="close-title" data-in>Your bench, tonight.</h2>
+    <div class="wrap close-in">
+      <h2 id="close-title" data-in>Your bench,<br><span>matched tonight.</span></h2>
       <p data-in>Install the free plan, add one consultant and open LinkedIn. Matches appear as you scroll.</p>
+      <a class="btn btn-y btn-lg" href="https://chromewebstore.google.com/detail/benchpilot-recruiter-lead/apmkfnppjohjoiacehfjehcegldkkami" data-in>Add to Chrome, free</a>
     </div>
-    <form class="dialog" data-ui id="start" action="https://chromewebstore.google.com/detail/benchpilot-recruiter-lead/apmkfnppjohjoiacehfjehcegldkkami" method="get" data-in>
-      <p class="dlg-title">Add your first consultant</p>
-      <label class="dlg-l" for="c-name">Name</label>
-      <input class="dlg-f" id="c-name" value="Ravi Kumar" autocomplete="off">
-      <label class="dlg-l" for="c-skills">Skills</label>
-      <input class="dlg-f" id="c-skills" value="Java, Spring Boot, AWS, Kafka" autocomplete="off">
-      <p class="dlg-l" id="auto-l">Autosave</p>
-      <div class="seg" role="radiogroup" aria-labelledby="auto-l">
-        <button type="button" role="radio" aria-checked="true">Save every recruiter</button>
-        <button type="button" role="radio" aria-checked="false">I’ll pick each one</button>
-      </div>
-      <button class="btn btn-p dlg-go" type="submit">Add to Chrome and finish</button>
-      <p class="dlg-note" id="dlg-note">You finish this in the extension’s welcome page after installing.</p>
-    </form>
   </section>
 </main>
 
 <footer class="foot">
-  <span>BenchPilot, for bench sales recruiters</span>
-  <nav aria-label="Footer">
-    <a href="privacy.html">Privacy</a>
-    <a href="terms.html">Terms</a>
-    <a href="refund.html">Refund policy</a>
-    <a href="shipping.html">Shipping &amp; delivery</a>
-    <a href="contact.html">Contact us</a>
-  </nav>
-  <span class="foot-r">© 2026 · Not affiliated with LinkedIn Corporation</span>
+  <div class="wrap foot-in">
+    <div class="foot-brand">
+      <a class="mark" href="index.html"><img src="assets/logo-target.svg" alt="" width="30" height="30"><span>BenchPilot</span></a>
+      <p>The Chrome extension for bench sales recruiters. Made in Hyderabad, India.</p>
+    </div>
+    <nav class="foot-col" aria-label="Product"><b>Product</b><a href="#product">The drawer</a><a href="#try">Try it</a><a href="#pricing">Pricing</a><a href="#questions">Questions</a></nav>
+    <nav class="foot-col" aria-label="Company"><b>Company</b><a href="contact.html">Contact us</a><a href="refund.html">Refund policy</a><a href="shipping.html">Shipping &amp; delivery</a></nav>
+    <nav class="foot-col" aria-label="Legal"><b>Legal</b><a href="privacy.html">Privacy</a><a href="terms.html">Terms</a></nav>
+  </div>
+  <div class="wrap foot-base"><span>© 2026 BenchPilot</span><span>Not affiliated with LinkedIn Corporation. LinkedIn is a trademark of its owner.</span></div>
 </footer>
 
 <script src="assets/signin-notice.js"></script>

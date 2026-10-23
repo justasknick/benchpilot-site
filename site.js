@@ -1,85 +1,76 @@
-/* BenchPilot home page: live clocks, the docked drawer that follows the section you read, entrances, and the
-   "Paste a post" reader. The reader uses BenchPilot's own library files (assets/bp/*.js, copies of
-   BenchPilot-Extension/lib; website/test/bp-libs.test.js keeps them identical) and runs only in this page. */
+/* BenchPilot website: load sequence, solid nav on scroll, the hero film (pause button, paused off screen and under
+   reduced motion), entrances, the price period switch, and the "Paste a post" reader. The reader uses BenchPilot's
+   own library files (assets/bp/*.js, copies of BenchPilot-Extension/lib; website/test/bp-libs.test.js keeps them
+   identical) and runs only in this page. */
 (function () {
   'use strict';
+  var root = document.documentElement;
   var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var $ = function (id) { return document.getElementById(id); };
 
-  // ── Clocks: Hyderabad and New York, right now ──
-  function paintClocks() {
-    var els = document.querySelectorAll('[data-clock]');
-    for (var i = 0; i < els.length; i++) {
-      try {
-        els[i].textContent = new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute: '2-digit', timeZone: els[i].getAttribute('data-clock') })
-          .format(new Date()).replace('AM', 'am').replace('PM', 'pm');
-      } catch (_) { /* keep the written time */ }
+  // ── Load sequence: the headline lines rise, then the film window (settled inside about 1.5 s) ──
+  requestAnimationFrame(function () { requestAnimationFrame(function () { root.classList.add('ready'); }); });
+
+  // ── Nav: transparent on the purple hero, solid after it ──
+  var nav = $('nav');
+  function paintNav() { if (nav) nav.classList.toggle('solid', window.scrollY > 40 || document.body.classList.contains('page')); }
+  paintNav();
+  window.addEventListener('scroll', paintNav, { passive: true });
+
+  // ── The hero film ──
+  var v = $('film-v'), fbtn = $('film-btn');
+  if (v) {
+    if (reduce) { v.removeAttribute('autoplay'); try { v.pause(); } catch (_) {} }
+    var userPaused = reduce;
+    var paint = function () {
+      var paused = v.paused;
+      fbtn.setAttribute('aria-label', paused ? 'Play the film' : 'Pause the film');
+      fbtn.setAttribute('aria-pressed', String(paused));
+      fbtn.innerHTML = paused
+        ? '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M8 5l11 7-11 7z" fill="currentColor"/></svg>'
+        : '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M8 5h3v14H8zM13 5h3v14h-3z" fill="currentColor"/></svg>';
+    };
+    fbtn.addEventListener('click', function () {
+      if (v.paused) { userPaused = false; v.play().catch(function () {}); } else { userPaused = true; v.pause(); }
+    });
+    v.addEventListener('play', paint); v.addEventListener('pause', paint); paint();
+    if ('IntersectionObserver' in window) {
+      new IntersectionObserver(function (e) {
+        if (e[0].isIntersecting) { if (!userPaused) v.play().catch(function () {}); } else v.pause();
+      }, { threshold: 0.2 }).observe(v);
     }
-    var ny = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/New_York' }));
-    var h = ny.getHours(), day = ny.getDay();
-    var tail = document.querySelector('#clocks');
-    if (tail) {
-      var open = day > 0 && day < 6 && h >= 8 && h < 18;
-      var last = tail.lastChild;
-      if (last && last.nodeType === 3) last.nodeValue = open ? ', and recruiters are posting.' : '. US recruiters are offline; matches wait in the drawer.';
-    }
+    document.addEventListener('visibilitychange', function () { if (document.hidden) v.pause(); else if (!userPaused) v.play().catch(function () {}); });
   }
-  paintClocks();
-  setInterval(paintClocks, 30000);
 
-  // ── Entrances: each part of a section rises in turn, once ──
+  // ── Entrances: the parts of each section rise in turn, once ──
+  var groups = document.querySelectorAll('section, .bento, .plans, .step-row, .promise-list, .faq-list');
+  for (var g = 0; g < groups.length; g++) {
+    var parts = groups[g].querySelectorAll(':scope > [data-in], :scope > * > [data-in]');
+    for (var i = 0; i < parts.length; i++) parts[i].style.setProperty('--d', (Math.min(i, 5) * 70) + 'ms');
+  }
   var items = document.querySelectorAll('[data-in]');
-  function stagger(root) {
-    var parts = root.querySelectorAll('[data-in]');
-    for (var i = 0; i < parts.length; i++) parts[i].style.setProperty('--d', (Math.min(i, 4) * 80) + 'ms');
-  }
-  var groups = document.querySelectorAll('section, .mod');
-  for (var g = 0; g < groups.length; g++) stagger(groups[g]);
-  // The first screen arrives on load (settled well inside 1.2 s); everything below waits for its section.
-  var heroParts = document.querySelectorAll('.hero [data-in]');
-  requestAnimationFrame(function () { for (var hp = 0; hp < heroParts.length; hp++) heroParts[hp].classList.add('in'); });
-  if ('IntersectionObserver' in window) {
+  if ('IntersectionObserver' in window && !reduce) {
     var io = new IntersectionObserver(function (entries) {
-      for (var i = 0; i < entries.length; i++) {
-        if (entries[i].isIntersecting) { entries[i].target.classList.add('in'); io.unobserve(entries[i].target); }
-      }
-    }, { rootMargin: '0px 0px -8% 0px', threshold: 0.05 });
-    for (var k = 0; k < items.length; k++) io.observe(items[k]);
+      for (var k = 0; k < entries.length; k++) if (entries[k].isIntersecting) { entries[k].target.classList.add('in'); io.unobserve(entries[k].target); }
+    }, { rootMargin: '0px 0px -6% 0px', threshold: 0.01 });
+    for (var n = 0; n < items.length; n++) io.observe(items[n]);
   } else {
     for (var j = 0; j < items.length; j++) items[j].classList.add('in');
   }
 
-  // ── The docked drawer shows the screen of the module you are reading ──
-  var shots = {};
-  var stageImgs = document.querySelectorAll('.stage img');
-  for (var s = 0; s < stageImgs.length; s++) shots[stageImgs[s].getAttribute('data-shot')] = stageImgs[s];
-  var current = 'matches';
-  function show(name) {
-    if (!shots[name] || name === current) return;
-    shots[current].classList.remove('on');
-    shots[name].classList.add('on');
-    current = name;
-  }
-  if ('IntersectionObserver' in window) {
-    var mods = document.querySelectorAll('[data-stage]');
-    var so = new IntersectionObserver(function (entries) {
-      for (var i = 0; i < entries.length; i++) if (entries[i].isIntersecting) show(entries[i].target.getAttribute('data-stage'));
-    }, { rootMargin: '-45% 0px -45% 0px' });
-    for (var m = 0; m < mods.length; m++) so.observe(mods[m]);
-    var hero = document.querySelector('.hero');
-    if (hero) new IntersectionObserver(function (e) { if (e[0].isIntersecting) show('matches'); }, { rootMargin: '-45% 0px -45% 0px' }).observe(hero);
-  }
-
-  // ── Autosave choice in the closing dialog ──
-  var seg = document.querySelectorAll('.seg [role="radio"]');
-  for (var r = 0; r < seg.length; r++) {
-    seg[r].addEventListener('click', function () {
-      for (var q = 0; q < seg.length; q++) seg[q].setAttribute('aria-checked', seg[q] === this ? 'true' : 'false');
+  // ── Price period: monthly or yearly ──
+  var period = $('period'), plans = $('plans');
+  if (period && plans) {
+    var pb = period.querySelectorAll('button');
+    for (var p = 0; p < pb.length; p++) pb[p].addEventListener('click', function () {
+      plans.setAttribute('data-p', this.getAttribute('data-p'));
+      for (var q = 0; q < pb.length; q++) pb[q].setAttribute('aria-pressed', pb[q] === this ? 'true' : 'false');
     });
   }
 
   // ── Paste a post: BenchPilot's reader in the page ──
   var SAMPLES = {
-    ai: document.getElementById('post') ? document.getElementById('post').value : '',
+    ai: $('post') ? $('post').value : '',
     java: 'Hiring: Sr. Java Developer\nLocation: Dallas, TX (Hybrid, 3 days onsite)\nDuration: 12+ months contract, C2C\nVisa: H1B, GC, USC\nSkills: Java 17, Spring Boot, Microservices, Kafka, AWS\n\nPlease share resumes to asha.menon@example.com',
     hot: 'Hotlist of available consultants\n\nRavi - Java Developer - H1B - 10 yrs - Plano, TX\nPriya - .NET Full Stack - GC - 8 yrs\nArjun - DevOps / AWS - H1B - 9 yrs\n\nShare your C2C requirements to bench@northgate.example.com'
   };
@@ -87,7 +78,7 @@
   function roleOf(text) {
     var label = text.match(/\b(?:Job\s+Title|Position\s+Title|Job\s+Role|Title|Role|Position|Requirement)\b\s*[:\-–]\s*([^\n\r•|;,()]+)|\bHiring(?:\s+for\b\s*[:\-–]?|\s*:)\s*([^\n\r•|;,()]+)/i);
     var clean = function (raw) {
-      return raw.replace(/^(?:an?\s+|urgent\s+|immediate\s+|hiring\s+for\s+|hiring\s*:\s*)/i, '')
+      return raw.replace(/^(?:an?\s+|urgent\s+|immediate\s+|hiring\s+for\s+|hiring\s*:\s*|need\s+)/i, '')
         .replace(/\s+(?:remote|urgent|c2c|w2|contract|in\s+usa|fulltime).*$/i, '').replace(/[\s\-–—|:,/]+$/, '').trim();
     };
     if (label && (label[1] || label[2])) {
@@ -99,7 +90,6 @@
         !/\b(?:hiring|looking|urgent|please|share|we are|i am|hotlist)\b/i.test(first)) return clean(first);
     return '';
   }
-  var $ = function (id) { return document.getElementById(id); };
   function setRow(id, value) {
     var el = $(id);
     if (!el) return;
@@ -108,8 +98,8 @@
   }
   function readPost() {
     var BP = window.BP;
+    if (!BP || !BP.classifyPost || !$('post')) return;
     var text = $('post').value;
-    if (!BP || !BP.classifyPost) return;
     var t0 = performance.now();
     var kind = BP.classifyPost({ text: text, headline: '' });
     var fields = BP.parseRequirementFields(text) || {};
