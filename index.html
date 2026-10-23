@@ -28,7 +28,6 @@
     <a class="mark" href="index.html" aria-label="BenchPilot home"><img src="assets/logo-target.svg" alt="" width="30" height="30"><span>BenchPilot</span></a>
     <nav class="nav-links" aria-label="Main">
       <a href="#product">Product</a>
-      <a href="#try">Try it</a>
       <a href="#pricing">Pricing</a>
       <a href="#questions">Questions</a>
     </nav>
@@ -48,14 +47,7 @@
         </div>
       </div>
     </div>
-    <div class="wrap film-wrap">
-      <figure class="film" id="film">
-        <video id="film-v" autoplay muted loop playsinline preload="metadata" poster="assets/film/hero-poster.webp" aria-label="BenchPilot at work, with sample data: it reads a LinkedIn requirement post, shows a 95% match for Ravi Kumar, checks his submission history and opens a ready Gmail draft">
-          <source src="assets/film/hero-film.mp4" type="video/mp4">
-        </video>
-        <button class="film-btn" id="film-btn" type="button" aria-label="Pause the film" aria-pressed="false"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M8 5h3v14H8zM13 5h3v14h-3z" fill="currentColor"/></svg></button>
-      </figure>
-    </div>
+    <div class="band" aria-hidden="true"><div class="band-run"><span>Role</span><span>Location</span><span>Visa</span><span>Rate</span><span>C2C</span><span>Client</span><span>Skills</span><span>Recruiter</span><span>Role</span><span>Location</span><span>Visa</span><span>Rate</span><span>C2C</span><span>Client</span><span>Skills</span><span>Recruiter</span></div></div>
   </section>
 
   <section class="facts" aria-label="What BenchPilot is">
@@ -71,72 +63,29 @@
     <div class="wrap">
       <div class="sec-head">
         <h2 id="product-title" data-in>One drawer.<br>Your whole desk.</h2>
-        <p data-in>It docks beside LinkedIn and fills as you scroll. Every screen below is the real product, with sample data.</p>
+        <p data-in>It docks beside LinkedIn and fills as you scroll: requirements, matches, recruiters, vendors and your bench, in one place.</p>
       </div>
       <div class="bento">
         <article class="tile t-big" data-in>
           <div class="tile-text"><h3>Matches for your bench</h3><p>Each requirement is scored against every consultant. Open a card to see the skills that matched, what is missing, and why.</p></div>
-          <div class="tile-pic"><img src="assets/shots/match-open.webp" width="400" height="900" alt="An open match: Sr. Java Developer at Northbay Staffing, 95% for Ravi Kumar, with Java, Spring Boot, AWS and Microservices matched" loading="lazy" style="object-position:50% 34%"></div>
+          <div class="tile-art"><svg class="art" viewBox="0 0 240 240" aria-hidden="true"><circle cx="120" cy="120" r="92" fill="none" stroke="#d9d1fb" stroke-width="18"/><circle cx="120" cy="120" r="92" fill="none" stroke="#6a4fd0" stroke-width="18" stroke-linecap="round" stroke-dasharray="549 578" transform="rotate(-90 120 120)"/><text x="120" y="136" text-anchor="middle" font-family="Inter Tight" font-weight="700" font-size="52" fill="#17132a">95%</text></svg></div>
         </article>
         <article class="tile t-tall t-dark" data-in>
           <div class="tile-text"><h3>Already submitted?</h3><p>Sent the same consultant to the same client in the last 90 days? The card says so before you draft.</p></div>
-          <div class="tile-pic"><img src="assets/shots/matches.webp" width="400" height="900" alt="A match card with the red line: Already submitted to Lakeview Motors via TekSys Partners on 19 Oct" loading="lazy" style="object-position:50% 66%"></div>
+          <div class="tile-art"><svg class="art" viewBox="0 0 240 240" aria-hidden="true"><circle cx="120" cy="120" r="84" fill="none" stroke="#ffd84d" stroke-width="16"/><path d="M61 179 179 61" stroke="#ffd84d" stroke-width="16" stroke-linecap="round"/></svg></div>
         </article>
         <article class="tile" data-in>
           <div class="tile-text"><h3>Every recruiter, one tap away</h3><p>Email, phone, WhatsApp and LinkedIn from the post, on the card.</p></div>
-          <div class="tile-pic"><img src="assets/shots/requirements.webp" width="400" height="900" alt="Requirement cards with the recruiter's profile, email, phone and chat buttons" loading="lazy" style="object-position:50% 46%"></div>
+          <div class="tile-art"><svg class="art" viewBox="0 0 360 100" aria-hidden="true"><g fill="none" stroke="#6a4fd0" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="22" width="64" height="52" rx="10"/><path d="m10 28 30 22 30-22"/><path d="M108 24c0 30 22 52 52 52l9-13-15-10-8 8c-12-6-18-12-22-22l8-8-10-15z"/><path d="M206 78l5-16a32 32 0 1 1 13 11z"/><rect x="290" y="22" width="56" height="56" rx="12"/><path d="M306 46v18M306 36v1M320 64V50m0 5c0-4 4-6 8-6s7 3 7 7v8"/></g></svg></div>
         </article>
         <article class="tile t-y" data-in>
           <div class="tile-text"><h3>Vendors you trust</h3><p>Mark each vendor Trusted, Neutral or Avoid, and set its tier.</p></div>
-          <div class="tile-pic"><img src="assets/shots/vendors.webp" width="400" height="900" alt="The Vendors tab: QuickHire Corp marked Avoid, Northbay Staffing a trusted prime vendor" loading="lazy" style="object-position:50% 36%"></div>
+          <div class="tile-art"><svg class="art" viewBox="0 0 340 170" aria-hidden="true"><rect x="0" y="10" width="150" height="46" rx="23" fill="#17132a"/><text x="75" y="40" text-anchor="middle" font-family="Inter" font-weight="600" font-size="20" fill="#fff">Trusted</text><rect x="95" y="66" width="150" height="46" rx="23" fill="#fff6d6"/><text x="170" y="96" text-anchor="middle" font-family="Inter" font-weight="600" font-size="20" fill="#17132a">Neutral</text><rect x="190" y="122" width="150" height="46" rx="23" fill="#fff"/><text x="265" y="152" text-anchor="middle" font-family="Inter" font-weight="600" font-size="20" fill="#c0362c">Avoid</text></svg></div>
         </article>
         <article class="tile t-wide" data-in>
           <div class="tile-text"><h3>Your bench at a glance</h3><p>Days on the bench, this week’s submissions and interviews, and today’s best match for each consultant. Add one by dropping a PDF or Word résumé.</p></div>
-          <div class="tile-pic"><img src="assets/shots/bench.webp" width="400" height="900" alt="The Bench tab: Ravi K., Azure Databricks Architect, 31 days on bench; Priya S., 3 matches today" loading="lazy" style="object-position:50% 44%"></div>
+          <div class="tile-art"><svg class="art" viewBox="0 0 360 140" aria-hidden="true"><text x="0" y="62" font-family="Inter Tight" font-weight="700" font-size="64" fill="#17132a">31 days</text><rect x="0" y="92" width="360" height="16" rx="8" fill="#e2dbfb"/><rect x="0" y="92" width="266" height="16" rx="8" fill="#6a4fd0"/></svg></div>
         </article>
-      </div>
-    </div>
-  </section>
-
-  <section class="try" id="try" aria-labelledby="try-title">
-    <div class="wrap">
-      <div class="sec-head on-dark">
-        <h2 id="try-title" data-in>Paste a post.<br>See what it reads.</h2>
-        <p data-in>This box runs BenchPilot’s own reader inside this page. Edit the post or pick a sample; nothing leaves your computer.</p>
-      </div>
-      <div class="try-grid">
-        <div class="try-in" data-in>
-          <div class="try-samples" role="group" aria-label="Sample posts">
-            <button type="button" class="chip-btn" data-sample="ai" aria-pressed="true">AI engineer</button>
-            <button type="button" class="chip-btn" data-sample="java" aria-pressed="false">Java, C2C</button>
-            <button type="button" class="chip-btn" data-sample="hot" aria-pressed="false">A hotlist</button>
-          </div>
-          <label class="sr" for="post">A LinkedIn requirement post</label>
-          <textarea id="post" spellcheck="false">Job Role - AI Engineer
-Minneapolis, MN (Remote)
-Visa: USC/GC
-Rate: $65/hr C2C
-Client: Halcyon Motors
-
-Required skillset: Databricks, Python (pandas, scikit-learn, NumPy), SQL, LangChain.
-
-Heena K.
-heena@softsnippets.example.com</textarea>
-        </div>
-        <div class="record" data-ui id="record" aria-live="polite" data-in>
-          <div class="rec-head"><b>What BenchPilot read</b><span class="rec-type" id="r-type">Requirement</span></div>
-          <dl class="rec-rows">
-            <div><dt>Role</dt><dd id="r-role">AI Engineer</dd></div>
-            <div><dt>Role group</dt><dd id="r-group">AI / ML</dd></div>
-            <div><dt>Client</dt><dd id="r-client">Halcyon Motors</dd></div>
-            <div><dt>Where</dt><dd id="r-where">MN · Remote</dd></div>
-            <div><dt>Visa</dt><dd id="r-visa">USC, GC</dd></div>
-            <div><dt>Rate</dt><dd id="r-rate">$65/hr C2C</dd></div>
-            <div><dt>Recruiter</dt><dd id="r-email">heena@softsnippets.example.com</dd></div>
-          </dl>
-          <div class="rec-skills" id="r-skills"><span>Databricks</span><span>Python</span><span>Pandas</span><span>scikit-learn</span><span>NumPy</span><span>SQL</span></div>
-          <p class="rec-foot" id="r-foot">Read in this page in 1 ms. Nothing was sent.</p>
-        </div>
       </div>
     </div>
   </section>
@@ -242,7 +191,7 @@ heena@softsnippets.example.com</textarea>
       <a class="mark" href="index.html"><img src="assets/logo-target.svg" alt="" width="30" height="30"><span>BenchPilot</span></a>
       <p>The Chrome extension for bench sales recruiters. Made in Hyderabad, India.</p>
     </div>
-    <nav class="foot-col" aria-label="Product"><b>Product</b><a href="#product">The drawer</a><a href="#try">Try it</a><a href="#pricing">Pricing</a><a href="#questions">Questions</a></nav>
+    <nav class="foot-col" aria-label="Product"><b>Product</b><a href="#product">The drawer</a><a href="#pricing">Pricing</a><a href="#questions">Questions</a></nav>
     <nav class="foot-col" aria-label="Company"><b>Company</b><a href="contact.html">Contact us</a><a href="refund.html">Refund policy</a><a href="shipping.html">Shipping &amp; delivery</a></nav>
     <nav class="foot-col" aria-label="Legal"><b>Legal</b><a href="privacy.html">Privacy</a><a href="terms.html">Terms</a></nav>
   </div>
@@ -250,11 +199,6 @@ heena@softsnippets.example.com</textarea>
 </footer>
 
 <script src="assets/signin-notice.js"></script>
-<script src="assets/bp/shared.js" defer></script>
-<script src="assets/bp/email-extract.js" defer></script>
-<script src="assets/bp/roles.js" defer></script>
-<script src="assets/bp/classify.js" defer></script>
-<script src="assets/bp/requirement.js" defer></script>
 <script src="site.js" defer></script>
 </body>
 </html>
