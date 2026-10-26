@@ -333,3 +333,15 @@ p{margin:0}
   .guide-pn .pn-next{text-align:left}
 }
 .legal .btn-y{color:var(--on-yellow)}
+
+/* goodbye.html: the uninstall survey */
+.bye{display:grid;gap:14px;max-width:560px}
+.bye fieldset{border:0;margin:0;padding:0;display:grid;gap:8px}
+.bye legend{font:700 22px/1.25 var(--f-d);letter-spacing:-.02em;margin-bottom:10px}
+.bye fieldset label{display:flex;gap:12px;align-items:center;padding:14px 16px;border-radius:14px;background:var(--paper-2);cursor:pointer;font-size:17px}
+.bye fieldset label:has(input:checked){background:var(--lilac);outline:2px solid var(--purple)}
+.bye input[type=radio]{accent-color:var(--purple);width:18px;height:18px}
+.bye-l{font-weight:600;font-size:17px;margin-top:12px}
+.bye .opt{font-weight:400;color:var(--ink-3)}
+.bye textarea,.bye select{font:400 17px/1.5 var(--f-t);color:var(--ink);background:#fff;border:1px solid #cfcadc;border-radius:14px;padding:12px 14px}
+.bye .btn{justify-self:start;margin-top:8px}
