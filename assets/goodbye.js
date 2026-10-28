@@ -1,6 +1,6 @@
 // website/goodbye.html: the page Chrome opens after BenchPilot is removed (chrome.runtime.setUninstallURL, 26 Oct 2026).
 // Sends one anonymous "idea" report to the feedback function: the chosen reason, the optional text and the source.
-// Only the version number from the link (?v=1.12.1) goes with it. No cookies, no ids, no email.
+// Only the version number from the link (?v=1.13.0) goes with it. No cookies, no ids, no email.
 (function () {
   'use strict';
   var URL_ = 'https://uhgtlyxarozzdgdizoaz.supabase.co/functions/v1/feedback';
