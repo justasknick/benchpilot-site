@@ -13,7 +13,7 @@
 //   POST   /auth/v1/factors/{id}/verify              {challenge_id, code}                   -> new session at aal2
 // Admin function: POST /functions/v1/admin (Bearer access token, aal2 required by the server).
 // Actions: metrics, growth, list_users, get_user, grant, revoke, grant_bulk, suspend, unsuspend, sign_out_everywhere,
-// send_password_reset, delete_user, list_payments, list_audit, list_payment_issues, resolve_payment_issue (contract: docs/ADMIN_V2_PLAN.md).
+// send_password_reset, delete_user, list_payments, list_audit, list_payment_issues, resolve_payment_issue (contract: docs/archive/ADMIN_V2_PLAN.md).
 (function () {
   'use strict';
 
