@@ -1,43 +1,67 @@
-/* BenchPilot website: load sequence, solid nav on scroll, entrances and the price period switch.
-   The site shows no product screens or demos (Nick, 23 Oct 2026). */
+/* BenchPilot home page: billing period, currency (rupees for India, dollars elsewhere) and the film.
+   No product screens are built in code; the hero film is a rendered video (assets/five-apps.mp4). */
 (function () {
   'use strict';
-  var root = document.documentElement;
-  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var $ = function (id) { return document.getElementById(id); };
+  var C = window.BPCurrency;
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  // ── Load sequence: the headline lines rise, then the word band fades in ──
-  requestAnimationFrame(function () { requestAnimationFrame(function () { root.classList.add('ready'); }); });
-
-  // ── Nav: transparent on the purple hero, solid after it ──
-  var nav = $('nav');
-  function paintNav() { if (nav) nav.classList.toggle('solid', window.scrollY > 40 || document.body.classList.contains('page')); }
-  paintNav();
-  window.addEventListener('scroll', paintNav, { passive: true });
-
-  // ── Entrances: the parts of each section rise in turn, once ──
-  var groups = document.querySelectorAll('section, .bento, .plans, .step-row, .promise-list, .faq-list');
-  for (var g = 0; g < groups.length; g++) {
-    var parts = groups[g].querySelectorAll(':scope > [data-in], :scope > * > [data-in]');
-    for (var i = 0; i < parts.length; i++) parts[i].style.setProperty('--d', (Math.min(i, 5) * 70) + 'ms');
-  }
-  var items = document.querySelectorAll('[data-in]');
-  if ('IntersectionObserver' in window && !reduce) {
-    var io = new IntersectionObserver(function (entries) {
-      for (var k = 0; k < entries.length; k++) if (entries[k].isIntersecting) { entries[k].target.classList.add('in'); io.unobserve(entries[k].target); }
-    }, { rootMargin: '0px 0px -6% 0px', threshold: 0.01 });
-    for (var n = 0; n < items.length; n++) io.observe(items[n]);
-  } else {
-    for (var j = 0; j < items.length; j++) items[j].classList.add('in');
+  // ── Film: autoplays muted and loops; with reduced motion it shows the still poster instead ──
+  var film = $('film');
+  if (film && reduce) {
+    var still = document.createElement('img');
+    still.src = film.getAttribute('poster');
+    still.alt = film.getAttribute('aria-label') || '';
+    still.width = 720; still.height = 900;
+    film.pause();
+    film.parentNode.replaceChild(still, film);
   }
 
-  // ── Price period: monthly or yearly ──
-  var period = $('period'), plans = $('plans');
-  if (period && plans) {
-    var pb = period.querySelectorAll('button');
-    for (var p = 0; p < pb.length; p++) pb[p].addEventListener('click', function () {
-      plans.setAttribute('data-p', this.getAttribute('data-p'));
-      for (var q = 0; q < pb.length; q++) pb[q].setAttribute('aria-pressed', pb[q] === this ? 'true' : 'false');
-    });
+  // ── Plans: monthly or yearly, rupees or dollars ──
+  var grid = $('plan-grid');
+  if (!grid || !C) return;
+  var state = { p: 'm', c: C.detectCurrency(tz(), navigator.language) };
+  var saved = readSaved();
+  if (saved) state.c = saved;
+
+  function tz() { try { return Intl.DateTimeFormat().resolvedOptions().timeZone; } catch (e) { return ''; } }
+  function readSaved() { try { var v = localStorage.getItem('bp-currency'); return v === 'INR' || v === 'USD' ? v : ''; } catch (e) { return ''; } }
+  function save(v) { try { localStorage.setItem('bp-currency', v); } catch (e) { /* private mode: the choice just is not remembered */ } }
+  function pressed(group, attr, val) {
+    var b = group.querySelectorAll('button');
+    for (var i = 0; i < b.length; i++) b[i].setAttribute('aria-pressed', b[i].getAttribute(attr) === val ? 'true' : 'false');
   }
+
+  function render() {
+    grid.setAttribute('data-p', state.p);
+    grid.setAttribute('data-c', state.c);
+    var tiers = ['basic', 'pro'];
+    for (var i = 0; i < tiers.length; i++) {
+      var t = tiers[i];
+      grid.querySelector('[data-tier="' + t + '"]').textContent = C.priceFor(state.c, t, state.p);
+      var sub = grid.querySelector('[data-sub="' + t + '"]');
+      sub.textContent = state.p === 'm'
+        ? 'Or ' + C.priceFor(state.c, t, 'y') + ' a year. No auto-renewal.'
+        : 'About ' + C.priceFor(state.c, t, 'ym') + ' a month. No auto-renewal.';
+    }
+    var pers = grid.querySelectorAll('[data-per]');
+    for (var j = 0; j < pers.length; j++) pers[j].textContent = state.p === 'm' ? '/month' : '/year';
+    grid.querySelector('[data-free]').textContent = state.c === 'INR' ? '₹0' : '$0';
+    var founding = grid.querySelector('[data-inr-only]');
+    if (founding) founding.hidden = state.c !== 'INR';
+    $('usd-note').hidden = state.c !== 'USD';
+    $('save-tag').textContent = state.c === 'INR' ? 'save up to 30%' : 'save up to 18%';
+    pressed($('period'), 'data-p', state.p);
+    pressed($('currency'), 'data-c', state.c);
+  }
+
+  $('period').addEventListener('click', function (e) {
+    var b = e.target.closest('button'); if (!b) return;
+    state.p = b.getAttribute('data-p'); render();
+  });
+  $('currency').addEventListener('click', function (e) {
+    var b = e.target.closest('button'); if (!b) return;
+    state.c = b.getAttribute('data-c'); save(state.c); render();
+  });
+  render();
 })();
