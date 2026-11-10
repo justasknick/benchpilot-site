@@ -39,12 +39,17 @@
     <label><input type="radio" name="why" value="I use something else"> I use something else</label>
     <label><input type="radio" name="why" value="Other"> Other</label>
   </fieldset>
+  <div id="why-more" class="why-more" hidden>
+    <label class="bye-l" for="why-text" id="why-text-l">What do you use instead? <span class="opt">(optional)</span></label>
+    <input type="text" id="why-text" maxlength="300" autocomplete="off">
+  </div>
   <label class="bye-l" for="keep">What would have made you keep it? <span class="opt">(optional)</span></label>
   <textarea id="keep" maxlength="600" rows="4"></textarea>
   <label class="bye-l" for="heard">How did you hear about BenchPilot? <span class="opt">(optional)</span></label>
   <select id="heard">
     <option value="">Choose one</option>
     <option>A LinkedIn post</option>
+    <option>A LinkedIn group</option>
     <option>A colleague or friend</option>
     <option>Chrome Web Store search</option>
     <option>Google search</option>

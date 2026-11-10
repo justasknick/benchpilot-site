@@ -343,5 +343,9 @@ p{margin:0}
 .bye input[type=radio]{accent-color:var(--purple);width:18px;height:18px}
 .bye-l{font-weight:600;font-size:17px;margin-top:12px}
 .bye .opt{font-weight:400;color:var(--ink-3)}
-.bye textarea,.bye select{font:400 17px/1.5 var(--f-t);color:var(--ink);background:#fff;border:1px solid #cfcadc;border-radius:14px;padding:12px 14px}
+.bye .why-more{display:grid;gap:6px}
+.bye .why-more[hidden]{display:none}
+.bye .why-more .bye-l{margin-top:0}
+.bye input[type=text]{width:100%;box-sizing:border-box}
+.bye textarea,.bye select,.bye input[type=text]{font:400 17px/1.5 var(--f-t);color:var(--ink);background:#fff;border:1px solid #cfcadc;border-radius:14px;padding:12px 14px}
 .bye .btn{justify-self:start;margin-top:8px}
