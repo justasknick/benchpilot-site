@@ -59,8 +59,10 @@
       <a href="#growth" data-route="growth">Growth</a>
       <a href="#users" data-route="users">Users</a>
       <a href="#payments" data-route="payments">Payments</a>
+      <a href="#teams" data-route="teams">Teams</a>
       <a href="#feedback" data-route="feedback">Feedback</a>
       <a href="#audit" data-route="audit">Audit log</a>
+      <a href="#remote" data-route="remote">Remote config</a>
       <a href="#settings" data-route="settings">Settings</a>
     </nav>
 
@@ -132,7 +134,7 @@
         <div class="adm-pagehead"><h1 id="h-users">Users</h1></div>
         <form id="form-users" class="adm-card adm-filters" novalidate>
           <label class="adm-grow">Search email<input id="u-q" type="search" autocomplete="off" maxlength="100" placeholder="name@example.com"></label>
-          <label>Plan<select id="u-plan"><option value="">Any</option><option value="free">Free</option><option value="basic">Basic</option><option value="pro">Pro</option></select></label>
+          <label>Plan<select id="u-plan"><option value="">Any</option><option value="free">Free</option><option value="solo">Solo</option><option value="pro">Pro</option><option value="basic">Basic</option></select></label>
           <label>Source<select id="u-source"><option value="">Any</option><option value="paid">Paid</option><option value="grant">Granted</option></select></label>
           <label>Status<select id="u-status"><option value="">Any</option><option value="active">Active</option><option value="suspended">Suspended</option><option value="unconfirmed">Unconfirmed</option></select></label>
           <label>Signed up from<input id="u-after" type="date"></label>
@@ -176,7 +178,7 @@
         <form id="form-payments" class="adm-card adm-filters" novalidate>
           <label class="adm-grow">Search email or payment ID<input id="p-q" type="search" autocomplete="off" maxlength="100"></label>
           <label>Status<select id="p-status"><option value="">Any</option><option value="captured">Captured</option><option value="refunded">Refunded</option><option value="failed">Failed</option></select></label>
-          <label>Plan<select id="p-plan"><option value="">Any</option><option value="basic">Basic</option><option value="pro">Pro</option></select></label>
+          <label>Plan<select id="p-plan"><option value="">Any</option><option value="solo_monthly">Solo monthly</option><option value="solo_yearly">Solo yearly</option><option value="solo_founding">Solo founding</option><option value="pro_monthly">Pro monthly</option><option value="pro_yearly">Pro yearly</option><option value="founding">Pro founding</option><option value="basic_monthly">Basic monthly</option><option value="basic_yearly">Basic yearly</option></select></label>
           <label>From<input id="p-from" type="date"></label>
           <label>To<input id="p-to" type="date"></label>
           <button type="button" id="p-reset" class="adm-btn adm-btn-ghost">Reset</button>
@@ -221,7 +223,7 @@
         <div class="adm-pagehead"><h1 id="h-audit">Audit log</h1></div>
         <form id="form-audit" class="adm-card adm-filters" novalidate>
           <label class="adm-grow">Action<input id="a-action" type="text" list="a-actions" autocomplete="off" maxlength="60" placeholder="e.g. grant_plan"></label>
-          <datalist id="a-actions"><option value="grant_plan"><option value="revoke_grant"><option value="suspend_user"><option value="unsuspend_user"><option value="sign_out_everywhere"><option value="send_password_reset"><option value="delete_user"><option value="delete_user_failed"><option value="resolve_payment_issue"><option value="update_feedback"><option value="view_feedback_screenshot"><option value="purge_feedback"></datalist>
+          <datalist id="a-actions"><option value="grant_plan"><option value="revoke_grant"><option value="suspend_user"><option value="unsuspend_user"><option value="sign_out_everywhere"><option value="send_password_reset"><option value="delete_user"><option value="delete_user_failed"><option value="resolve_payment_issue"><option value="update_feedback"><option value="view_feedback_screenshot"><option value="purge_feedback"><option value="set_remote_config"></datalist>
           <label>From<input id="a-from" type="date"></label>
           <label>To<input id="a-to" type="date"></label>
           <button type="button" id="a-reset" class="adm-btn adm-btn-ghost">Reset</button>
@@ -234,6 +236,67 @@
           <tbody></tbody>
         </table></div></div>
         <div class="adm-pager"><button type="button" class="adm-btn adm-btn-ghost adm-btn-sm" id="a-prev">Previous</button><span id="a-range" class="adm-muted"></span><button type="button" class="adm-btn adm-btn-ghost adm-btn-sm" id="a-next">Next</button></div>
+      </section>
+
+      <!-- Teams: scorecard (S6). Counts and dates only, never anything from a team's book. -->
+      <section id="page-teams" hidden aria-labelledby="h-teams">
+        <div class="adm-pagehead"><h1 id="h-teams">Teams</h1></div>
+        <div class="adm-toolbar">
+          <p id="t-summary" class="adm-muted" aria-live="polite"></p>
+          <button type="button" id="t-refresh" class="adm-btn adm-btn-ghost adm-btn-sm">Refresh</button>
+        </div>
+        <p class="adm-muted">Last 7 days. Active = signed in or did something in the team. Guard warnings = the submission guard showed a match; overrides = the user went ahead with a reason. Inbox = mails received (handled).</p>
+        <p id="t-error" class="adm-err" role="alert" hidden></p>
+        <div class="adm-card adm-flush"><div class="adm-scroll"><table class="adm-table" id="tbl-teams">
+          <caption class="adm-sr">Team scorecard. Column buttons sort the table.</caption>
+          <thead><tr id="t-head"></tr></thead>
+          <tbody></tbody>
+        </table></div></div>
+      </section>
+
+      <!-- Remote config (S7): feature OFF switches, announcements, minimum version. Served to the extension through `me`. -->
+      <section id="page-remote" hidden aria-labelledby="h-remote">
+        <div class="adm-pagehead"><h1 id="h-remote">Remote config</h1></div>
+        <p class="adm-muted">The extension reads this on its next account check (the server caches it for a minute). It can only switch features off, never on, and announcements show in the popup and dashboard, never on LinkedIn. Every change needs a reason and goes to the audit log.</p>
+        <p id="r-error" class="adm-err" role="alert" hidden></p>
+
+        <form id="form-r-features" class="adm-card adm-form" novalidate aria-labelledby="h-r-features">
+          <h2 id="h-r-features">Feature switches</h2>
+          <p class="adm-muted">Ticked = switched off for everyone. A feature the build has off stays off whatever this says.</p>
+          <div id="r-features" class="adm-row"></div>
+          <label>Reason<input id="r-features-reason" type="text" maxlength="300" autocomplete="off" required></label>
+          <p id="r-features-meta" class="adm-muted"></p>
+          <div><button type="submit" class="adm-btn adm-btn-primary" id="r-features-save">Save switches</button></div>
+        </form>
+
+        <section class="adm-card" aria-labelledby="h-r-ann">
+          <h2 id="h-r-ann">Announcements</h2>
+          <p id="r-ann-meta" class="adm-muted"></p>
+          <ul id="r-ann-list" class="adm-links"></ul>
+          <form id="form-r-ann" class="adm-form" novalidate>
+            <label>Text (plain text, up to 280 characters)<input id="r-ann-text" type="text" maxlength="280" autocomplete="off" required></label>
+            <label>Link (optional, a page on the website)<input id="r-ann-link" type="url" maxlength="300" autocomplete="off" placeholder="https://justasknick.github.io/benchpilot-site/"></label>
+            <div class="adm-row">
+              <label>Severity<select id="r-ann-sev"><option value="info">Info</option><option value="warning">Warning</option><option value="critical">Critical</option></select></label>
+              <label>Start<input id="r-ann-start" type="date" required></label>
+              <label>End<input id="r-ann-end" type="date" required></label>
+              <label class="adm-inline"><input id="r-ann-dismiss" type="checkbox" checked> Users can dismiss it</label>
+            </div>
+            <label>Reason<input id="r-ann-reason" type="text" maxlength="300" autocomplete="off" required></label>
+            <div><button type="submit" class="adm-btn adm-btn-primary" id="r-ann-add">Publish announcement</button></div>
+          </form>
+        </section>
+
+        <form id="form-r-min" class="adm-card adm-form" novalidate aria-labelledby="h-r-min">
+          <h2 id="h-r-min">Minimum version</h2>
+          <p class="adm-muted">Below this version the popup and dashboard say "Please update BenchPilot" and how. Nothing stops working. Leave empty to clear.</p>
+          <div class="adm-row">
+            <label>Version<input id="r-min-version" type="text" maxlength="11" autocomplete="off" placeholder="1.19.0" pattern="[0-9]+[.][0-9]+[.][0-9]+"></label>
+            <label class="adm-grow">Reason<input id="r-min-reason" type="text" maxlength="300" autocomplete="off" required></label>
+          </div>
+          <p id="r-min-meta" class="adm-muted"></p>
+          <div><button type="submit" class="adm-btn adm-btn-primary" id="r-min-save">Save minimum version</button></div>
+        </form>
       </section>
 
       <!-- Settings -->
@@ -274,6 +337,13 @@
     </table></div>
     <p id="grants-empty" class="adm-muted" hidden>No grants.</p>
 
+    <h3>Team referrals</h3>
+    <div class="adm-scroll"><table class="adm-table" id="tbl-referrals">
+      <thead><tr><th>Link made</th><th>Code</th><th>Status</th><th>Team</th><th>Rewarded</th><th>Team payment</th></tr></thead>
+      <tbody></tbody>
+    </table></div>
+    <p id="referrals-empty" class="adm-muted" hidden>No team links.</p>
+
     <h3>Payments</h3>
     <div class="adm-scroll"><table class="adm-table" id="tbl-payments">
       <thead><tr><th>Date</th><th>Plan</th><th>Amount</th><th>Status</th><th>Razorpay payment</th></tr></thead>
@@ -306,7 +376,7 @@
     <div id="dlg-grant" hidden>
       <div class="adm-row">
         <label>Plan
-          <select id="dg-tier"><option value="pro">Pro</option><option value="basic">Basic</option></select>
+          <select id="dg-tier"><option value="solo">Solo</option><option value="pro">Pro</option><option value="basic">Basic</option></select>
         </label>
         <div>
           <span class="adm-lab">Days</span>

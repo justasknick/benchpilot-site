@@ -1,0 +1,495 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<!-- Built by scripts/build-changelog.mjs from CHANGELOG.md. Do not edit by hand. -->
+<title>Changelog – BenchPilot</title>
+<meta name="description" content="What changed in each BenchPilot release.">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#f8f7f2" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#17141f" media="(prefers-color-scheme: dark)">
+<meta name="color-scheme" content="light dark">
+<link rel="icon" type="image/svg+xml" href="assets/logo-target.svg">
+<link rel="stylesheet" href="site.css">
+</head>
+<body class="page">
+<a class="skip" href="#main">Skip to content</a>
+<header class="nav" id="nav">
+  <div class="nav-in">
+    <a class="mark" href="index.html" aria-label="BenchPilot home"><img src="assets/logo-target.svg" alt="" width="28" height="28"><span>BenchPilot</span></a>
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="nav-menu" aria-label="Open menu"><span></span></button>
+    <div class="nav-menu" id="nav-menu">
+      <nav class="nav-links" aria-label="Main">
+        <a href="index.html#how">Product</a>
+        <a href="pricing.html">Pricing</a>
+        <a href="index.html#teams">Teams</a>
+        <a href="security.html">Security</a>
+        <a href="help/index.html">Help</a>
+      </nav>
+      <div class="nav-end">
+        <a class="nav-signin" href="https://justasknick.github.io/benchpilot-app/">Sign in</a>
+        <a class="btn btn-y btn-sm" href="https://chromewebstore.google.com/detail/benchpilot-recruiter-lead/apmkfnppjohjoiacehfjehcegldkkami">Add to Chrome</a>
+      </div>
+    </div>
+  </div>
+  <script src="assets/nav.js" defer></script>
+</header>
+<main id="main" class="legal"><div class="wrap narrow">
+<p class="eyebrow">Changelog</p>
+<h1>What’s new in BenchPilot</h1>
+<p class="lead">Every release of the Chrome extension, newest first. 20 releases since 30 September 2026.</p>
+<section class="log-ver" id="v1-19-0">
+<h2>Version 1.19.0 <time datetime="2026-11-12">12 November 2026</time></h2>
+<h3>Vendor memory and follow-through (v1.19)</h3>
+<ul>
+<li><strong>Every post a saved recruiter makes is kept.</strong> Before, a second requirement from a recruiter you had already saved was dropped. Now BenchPilot keeps up to 50 later posts per recruiter (role, posted date, location, skills, rate, link to the post), on your computer only. The lead panel on the dashboard shows them under <strong>Posts from this recruiter</strong> (&quot;12 posts saved, 4 in the last 30 days&quot;). No contact is used up for this, and with autosave off it still learns about recruiters you already saved.</li>
+<li><strong>Later posts are matched too.</strong> Each one is a requirement of its own on Matches, Today and the Match workspace, with the same rules as before: last 14 days, closed or stale posts out, already submitted or dismissed for a consultant out.</li>
+<li><strong>One question on first use: how should recruiters be saved?</strong> New users are asked once in the LinkedIn drawer: &quot;I'll pick each one&quot; or &quot;Save every recruiter I see&quot;. The Autosave switch in the toolbar button changes it later.</li>
+<li><strong>The drawer and Matches agree.</strong> When matching posts on the page are not saved yet, Matches says how many and offers to save them, instead of looking empty. The Requirements &quot;Matches&quot; chip now says 14 days, the same window Matches uses.</li>
+<li><strong>Draft email, then Mark as sent.</strong> BenchPilot opens an email draft and cannot know whether you sent it. The submission now waits as <strong>not marked as sent</strong> (the Already submitted? check still counts it) until you tap <strong>Mark as sent</strong> (drawer, or Follow-ups due on Today). The follow-up date counts from that day. <strong>Not sent</strong> closes it. Older submissions count as sent.</li>
+<li>Merging duplicate contacts moves their posts to the kept contact (Undo puts them back); editing a contact's email keeps its posts.</li>
+</ul>
+<h3>Matches you can trust (v1.18)</h3>
+<ul>
+<li><strong>Honest match scores.</strong> Must-have skills (the ones in the post's title and skills line, or under &quot;must have / required&quot;) count double, so a missing one costs points. Visa (the post's allowed and not-allowed lists), C2C / W2 terms, rate (when both the post and the consultant have one) and how new the post is are now scored. A part that is not known earns only a few points, never full marks. Expect a real spread (for example 92, 81, 67) instead of a wall of 95 to 98 %. The 60 % line is unchanged.</li>
+<li><strong>Why this score.</strong> The drawer's &quot;Why N%&quot; panel lists the points per part (skills, title, location, experience, visa, terms, rate, posted) and says which parts were not known. The dashboard's match evidence says the same.</li>
+<li><strong>Same role from many vendors, one card in the drawer.</strong> Posts with the same job ID, or the same title and end client within 14 days, show as one card: the best vendor first (Trusted, then Prime / Tier 1, then the best match), &quot;Same role from N vendors&quot; and a &quot;Show all&quot; link. Same rule as the Match workspace.</li>
+<li><strong>&quot;Needs a look&quot;.</strong> Posts BenchPilot could not read clearly (unclear post type, maybe a job seeker, or no skills readable) carry a &quot;Needs a look&quot; label, are never a strong match (75 %+), stay out of the drawer's Matches list and have their own &quot;Needs a look&quot; list behind More.</li>
+<li><strong>Recruiter type filter on the dashboard</strong>, and one shared filter state: Terms and recruiter Type chosen in the drawer, on Requirements or in the Match workspace carry over to the others.</li>
+<li><strong>New Requirements filters:</strong> a visa the post takes, rate (stated, not stated, up to $50/h, $50 to $70/h, $70/h and up), end client (named, confidential, not stated), contacted or not, company email or free mail (Gmail, Yahoo and others), and closes in 3, 7 or 14 days. Saved views keep them.</li>
+</ul>
+<h3>Team web app: import, export, settings, delete (pilot)</h3>
+<ul>
+<li><strong>Import from Excel or CSV.</strong> Owners and managers drop an .xlsx or .csv file; columns are matched with the extension's own import rules, the first 20 rows of each sheet are shown, then &quot;Import N vendors, M consultants&quot; and a summary. Vendor contacts merge by email (companies by email domain), consultants by name; existing records only get empty fields filled.</li>
+<li><strong>Export everything.</strong> The bench, vendor companies, contacts, requirements and submissions as CSV files in one .zip. The owner can always export; managers and recruiters only when the export policy allows, checked on the server.</li>
+<li><strong>Workspace settings save in your own workspace:</strong> name, morning report time and time zone (your browser's zone by default), and who can export. Owner only.</li>
+<li><strong>Delete workspace</strong> with the typed workspace name (owner only). Everyone loses access at once; the data is kept so support can undo it.</li>
+<li><strong>Requirements:</strong> skill, work mode and tax-term tags in the list, a Source filter (extension, pasted, import), and the job reference from a pasted requirement is now kept in your own workspace.</li>
+</ul>
+<h3>Team billing and the 14-day pilot</h3>
+<ul>
+<li><strong>Plan and billing in Team settings.</strong> The owner sees the current plan, the days left and a Pay button for Starter, Team and Agency (prices come from the server). Paying adds one month from the day the current plan or pilot ends. US teams see &quot;Pay by invoice&quot; until US dollar payments are switched on.</li>
+<li><strong>Pilot reminder.</strong> From day 12 of the 14-day pilot (and 2 days before a paid month ends) the owner gets an email and everyone sees a banner with a link to pay.</li>
+<li><strong>Read-only after the plan ends.</strong> If the plan is not paid, the workspace becomes read-only for 30 days: everyone can still see and export everything, but nothing can be added or changed. After that it is closed and marked for deletion, with an email to the owner.</li>
+<li><strong>One more pilot fortnight on request.</strong> The owner can ask for 14 more days once; Nick grants it.</li>
+<li>The demo workspace shows a sample pilot on day 12.</li>
+</ul>
+<h3>Team morning report (pilot)</h3>
+<ul>
+<li><strong>Morning report email</strong> to the workspace owner at the report time (default 08:00, India time): yesterday's submissions by recruiter, interviews, consultants with no submission this week, bench over 30 days, new vendors and guard warnings people went past. Only your own consultants and recruiters are named; no vendor emails or phones. One &quot;Open BenchPilot&quot; button. Sent at most once a day; a failed send is retried (up to 3 tries) and never sent more than 6 hours late.</li>
+<li><strong>&quot;Also send the morning report to managers&quot;</strong> in Team settings (off by default).</li>
+<li><strong>Today</strong> shows &quot;Last morning report: &lt;date&gt;, sent/failed&quot;.</li>
+</ul>
+<h3>Clean data (v1.17)</h3>
+<ul>
+<li><strong>The whole post is read.</strong> A long post cut at &quot;…see more&quot; is now read in full (what LinkedIn already has on the page; BenchPilot still clicks nothing), so the role, rate, client and visa further down are picked up.</li>
+<li><strong>Job seekers are kept apart.</strong> People looking for a job who post their own email (#OpenToWork, &quot;I am looking for a new role&quot;, &quot;my resume&quot;) are not treated as recruiters: they are left out of matches, Radar and Today, and listed under <strong>Candidates</strong> in Requirements (Post type filter). When BenchPilot is not sure, the contact shows a <strong>&quot;Check: recruiter or job seeker?&quot;</strong> label.</li>
+<li><strong>Settings → Fix my data → Possible job seekers</strong> finds them among what you already saved. Move them to Candidates or keep them as recruiters, one at a time or all clear cases at once, with Undo.</li>
+<li><strong>Job seekers and team mailboxes don't use up your monthly contacts.</strong></li>
+<li><strong>Team mailboxes</strong> (hr@, jobs@, info@) get a &quot;Team mailbox&quot; label and are never given a made-up person name such as &quot;Hr&quot;.</li>
+<li><strong>Unknown stays unknown.</strong> Vendor tier and client type are left blank when the post does not say, instead of a made-up &quot;Tier 1&quot; and &quot;Direct Client&quot;. Saved records are cleaned the same way. Settings → Defaults has a &quot;Leave blank&quot; choice; a default you pick is still used.</li>
+<li><strong>Closed and old requirements drop out of matches.</strong> A post that says the position is filled or closed, a passed deadline, or a post older than 30 days is no longer matched, and shows a &quot;Closed&quot;, &quot;Deadline passed&quot; or &quot;Old&quot; label.</li>
+<li><strong>One set of matches everywhere.</strong> The drawer, Radar, Today, the Bench and the Match workspace all use the same requirements: the last 14 days, not closed, and not already submitted or skipped for that consultant. The Match workspace opens on 14 days (7 and 30 days are one click away).</li>
+<li><strong>Fixed: wrong &quot;posted&quot; dates.</strong> A job tenure such as &quot;1 yr&quot; or &quot;11 mos&quot; near the post, or the time on a comment or a re-shared post, was read as the post's age, so some requirements showed a 2025 date. Those dates are now ignored, and saved records with such a date fall back to the day you saved them.</li>
+</ul>
+<h3>Added</h3>
+<ul>
+<li><strong>A Match workspace for each consultant.</strong> On the Bench, &quot;482 matching requirements&quot; now opens a full-width page instead of a narrow list inside the card. Your consultants are on the left with how many new matches each has. The matches are in the middle, as short rows with the title, the company and recruiter, the score, how long ago it was posted and where you are with it. The requirement you pick opens on the right in full: title, company, end client, location, rate and terms, why it matches (what the consultant has, what is missing, what blocks it), the recruiter with their contact buttons, and the whole post to read and scroll. You never leave the page to read a post. It has its own address, <code>#matches-&lt;consultant&gt;</code>, and Today's match links open it too. On a smaller window the requirement slides in over the list; on a phone it fills the screen with a Back button.</li>
+<li><strong>Remember what you did with each match.</strong> Every match is New, Pitched, Submitted, Skipped or Not relevant, for that consultant. <strong>Draft email</strong> opens the draft in your mail app and marks it Pitched (you still press Send; BenchPilot sends nothing, and it is not counted as a submission). <strong>Mark submitted</strong> records the submission with the &quot;Already submitted?&quot; check, and asks for a reason if you are about to submit the same role twice. <strong>Skip</strong> and <strong>Not relevant</strong> clear it from your list. Every action has an <strong>Undo</strong> in the message that appears. To do, Pitched, Submitted and Skipped are tabs; only To do is open by default, so you see what is left.</li>
+<li><strong>It opens on what matters.</strong> To do, posted in the last 7 days, with what BenchPilot saved since your last visit on top and a line saying &quot;9 new since your last visit&quot;. Chips for Posted (today, 3 days, 7 days, 30 days, any age), Remote or Local, Terms (C2C, W2, Full-time), Type (bench sales are left out unless you ask) and &quot;Not yet submitted&quot;. BenchPilot remembers your choices.</li>
+<li><strong>Better order than every card saying 95%.</strong> Matches are ordered by score, then by the day they were posted (newest first), then by vendor: Prime vendors, Tier 1, Tier 2, others, and vendors you labelled Avoid last. Each row has a short line saying why (&quot;Java, Spring Boot · same role · Remote&quot;).</li>
+<li><strong>The same role from several vendors is one row.</strong> &quot;Same role from 3 vendors&quot; opens to show each vendor with their tier, recruiter, age and rate, so you pick whose post to answer. Same title and same end client, or the same job ID, posted within 14 days of each other. If you already submitted that role through one vendor, the others say so.</li>
+<li><strong>Keyboard:</strong> J and K move, Enter opens, E drafts the email, S marks it submitted, X skips, U undoes, / searches. The shortcuts are listed at the bottom of the page.</li>
+</ul>
+</section>
+<section class="log-ver" id="v1-16-0">
+<h2>Version 1.16.0 <time datetime="2026-11-10">10 November 2026</time></h2>
+<h3>Added</h3>
+<ul>
+<li><strong>Who posted it: Tech recruiter, Bench sales or Company HR.</strong> BenchPilot reads the post, the poster's headline and the company label, and puts a small chip on each recruiter in the LinkedIn drawer and in the dashboard Recruiters list. A headline such as &quot;US IT Bench Sales&quot; or &quot;Bench Marketing&quot; marks a bench sales contact, even when the post is a requirement. A company called &quot;Bench Sales Inc&quot; does not make its recruiters bench sales.</li>
+<li><strong>Change the type in one click.</strong> Click the chip and pick Tech recruiter, Bench sales or Company HR. Your choice always wins. When you pick Bench sales, BenchPilot asks whether to mark the other contacts at that company the same way.</li>
+<li><strong>A Type filter:</strong> All, Technical recruiters, Bench sales, Company HR, in the drawer's Requirements tab and the dashboard Recruiters list. BenchPilot remembers your choice. Bench sales contacts stay in their own list: they never show in your pitch list or in matches. Contacts BenchPilot could not tell count as technical recruiters.</li>
+<li><strong>A Type filter in exports.</strong> Export by role and the Recruiters export have the same three boxes. Technical recruiters and Company HR are ticked, Bench sales is not, and every file has a Contact type column.</li>
+<li><strong>&quot;A LinkedIn group&quot;</strong> as an answer to &quot;How did you hear about BenchPilot?&quot;, on the welcome page and on the page you see after removing BenchPilot.</li>
+<li><strong>Two optional follow-up boxes on the page after you remove BenchPilot.</strong> Pick &quot;I use something else&quot; and it asks &quot;What do you use instead?&quot;. Pick &quot;Other&quot; and it asks &quot;What was the reason?&quot;. Both are up to 300 characters, optional and sent without your name or email.</li>
+</ul>
+<h3>Changed</h3>
+<ul>
+<li>The <strong>Bench sellers</strong> chip hidden under More in the drawer is replaced by the Type filter's Bench sales button, so it is easy to find.</li>
+<li>&quot;Mark as bench seller&quot; on a card and in the recruiter panel is now the Type chip and the Type buttons.</li>
+<li>The old &quot;Include bench sellers&quot; box in Export by role is now the Bench sales box in the Type filter.</li>
+</ul>
+</section>
+<section class="log-ver" id="v1-15-0">
+<h2>Version 1.15.0 <time datetime="2026-11-09">9 November 2026</time></h2>
+<h3>Added</h3>
+<ul>
+<li><strong>Tax terms on every consultant:</strong> C2C, W2, 1099 or Any. Pick it where you add or edit a consultant (the welcome page and the Bench). The consultant card shows it.</li>
+<li><strong>W2 matches.</strong> A W2 consultant is matched to W2 posts and to posts that don't state any terms. Posts that say C2C or 1099 only are left out, and so are full-time posts (unless the post also says W2 contract). &quot;Any&quot; matches C2C, W2 and 1099 posts. The reason line says &quot;W2 ok&quot; next to the other reasons.</li>
+<li><strong>A Terms filter</strong> (All, C2C, W2, Full-time) on the requirements in the LinkedIn drawer and in the dashboard. BenchPilot remembers your choice.</li>
+<li><strong>&quot;I mostly work on&quot; (C2C, W2 or Both)</strong> in Settings, and as a question in the welcome page (&quot;Do you work on C2C, W2 or both?&quot;). It sets the tax terms a new consultant starts with and the Terms filter you start on. It stays on your computer.</li>
+</ul>
+<h3>Changed</h3>
+<ul>
+<li><strong>Everyone you already have stays on C2C,</strong> so nothing changes for existing consultants until you change their tax terms.</li>
+</ul>
+</section>
+<section class="log-ver" id="v1-14-0">
+<h2>Version 1.14.0 <time datetime="2026-11-06">6 November 2026</time></h2>
+<h3>Added</h3>
+<ul>
+<li><strong>A 5-step welcome journey after install:</strong></li>
+<li><strong>Email verification by 6-digit code</strong> (<code>AUTH_VERIFY_CODE</code>). The link in the email still works.</li>
+<li><strong>Prices in US dollars</strong> on the plans page for visitors outside India ($4.99 Basic, $9.99 Pro), with a ₹ / $ switch. Checkout is still in rupees through Razorpay.</li>
+</ul>
+<h3>Changed</h3>
+<ul>
+<li><strong>A free account is now part of setup</strong> for new installs, with Google or with email and a code.</li>
+<li>The &quot;save every recruiter / pick each one&quot; question is no longer in setup. New installs start on &quot;pick each one&quot;. The choice is still in the popup and Settings.</li>
+<li><strong>&quot;resume&quot; replaces &quot;résumé&quot;</strong> everywhere a user can read it. The consultant export column is now &quot;Resume link&quot;.</li>
+<li><strong>Plans page:</strong> the same story as the new website, plan cards in plain words, and the full comparison folded into &quot;Compare every feature&quot;.</li>
+<li><strong>Store summary</strong> (manifest <code>description</code>): &quot;Your bench sales day in one place: recruiters from LinkedIn posts, matched to your bench. Data stays on your computer.&quot;</li>
+</ul>
+</section>
+<section class="log-ver" id="v1-13-0">
+<h2>Version 1.13.0 <time datetime="2026-10-28">28 October 2026</time></h2>
+<h3>Added</h3>
+<ul>
+<li><strong>Uninstall survey:</strong> when someone removes BenchPilot, Chrome opens <code>goodbye.html</code> on the website. The page asks three optional questions: why they removed it (6 reasons), what would have made them keep it, and how they heard about BenchPilot. Answers arrive as an anonymous <strong>Idea</strong> in admin → Feedback, with only the version number attached.</li>
+<li><strong>&quot;How did you hear about BenchPilot?&quot;</strong> is an optional dropdown on the welcome page. It is sent once and anonymously, even when the user is signed in.</li>
+<li>Both privacy policies have a new section, &quot;Two optional questions&quot;.</li>
+</ul>
+<h3>Changed</h3>
+<ul>
+<li><strong>A simpler, cleaner LinkedIn drawer</strong> (clean-UI redesign, step 1; Nick, 27 Oct). It has a white header instead of the purple one, and the three numbers are plain instead of yellow on dark plates. The search bar is larger. Requirements and vendors are flat rows with thin dividers instead of floating cards. Chips are quiet outlines, and colour only appears where it means something: red for a double-submission risk. Lighter type throughout, with purple as the one accent. Purple and yellow stay on the dock, the collapsed rail, the logo and the Pro badge. Nothing moved and no feature changed: it is the same drawer, restyled. Light and dark themes both work.</li>
+<li><strong>Sample data uses only clearly fictional companies.</strong> &quot;Orion Talent&quot;, &quot;Vector Consulting&quot; and &quot;QuickHire Corp&quot; in the sample data (shown when you try BenchPilot with sample data) are now Harborlight Talent, Quillon Consulting and Fastlane Corp. The first is a real staffing firm, and the others sounded real. The dev previews used for videos and store images change the same way, and also replace &quot;TekSys Partners&quot; with Brightpath Partners. Sample records are still removed by their sample tag, so anyone who already loaded the old sample data can remove it as before.</li>
+<li><strong>The same clean look on every page</strong> (clean-UI redesign, step 2): popup, dashboard, Settings, Account, Welcome, Upgrade and Help. Headers, top bars, dialogs and the dashboard sidebar are now white with a thin divider instead of purple bands. The header numbers are plain instead of yellow on dark plates. Cards are outlined instead of shadowed, and chips are quiet outlines. The Trusted / Avoid switch uses soft tints. The upgrade page's main button is purple. Nothing moved and no feature changed.</li>
+<li><strong>New store summary</strong> (manifest <code>description</code>): &quot;Every recruiter email from LinkedIn posts you read, sorted by role. Find who hires for each consultant. Data stays on your computer.&quot; It leads with recruiter contacts by role (growth plan Step 2, approved by Nick on 26 Oct). The full store text is in <code>store-assets/STORE_LISTING_v1.13.0.md</code>.</li>
+</ul>
+</section>
+<section class="log-ver" id="v1-12-0">
+<h2>Version 1.12.0 <time datetime="2026-10-22">22 October 2026</time></h2>
+<h3>Added</h3>
+<ul>
+<li><strong>Choose autosave on the welcome page:</strong> &quot;Save every recruiter automatically (uses your monthly contacts)&quot; or &quot;I'll pick each one&quot;. Skipping keeps it off, and the welcome text now says so.</li>
+<li><strong>First-5-minutes checklist</strong> on the welcome page and dashboard Today. It ticks itself: add a consultant, choose autosave, open LinkedIn, see a match, draft an email. Existing users never see it after updating.</li>
+<li><strong>Help guide</strong> (<code>help/help.html</code>): how BenchPilot works, where things live, a glossary and an FAQ. Open it from popup → More → Help, the &quot;?&quot; in the drawer, or Settings → Help.</li>
+<li><strong>Due follow-ups on the toolbar icon</strong> (Basic and Pro): the badge shows how many follow-ups are due today or overdue.</li>
+<li><strong>&quot;Back up now&quot;</strong> in the popup once you have 50+ recruiters and no backup this week. The backup reminder can't be snoozed for longer than 3 days at that size.</li>
+<li><strong>Capture warning:</strong> if a LinkedIn page clearly has requirement posts with emails but BenchPilot can't read them, the drawer says so once and offers &quot;Report it&quot;. With error reports on, an anonymous count-only report is sent.</li>
+</ul>
+<h3>Changed</h3>
+<ul>
+<li><strong>Words:</strong> &quot;reveals&quot; are now <strong>contacts saved this month</strong> (&quot;12 of 25 contacts saved this month · resets 1 Nov&quot;). Radar is <strong>Matches</strong>. &quot;Submit &lt;name&gt;&quot; is <strong>Draft email for &lt;name&gt;</strong>, and the done screen says the submission was logged when the draft opened. The duplicate guard is the <strong>&quot;Already submitted?&quot; check</strong>. Cleanup is <strong>Fix my data</strong>. &quot;Vendor type&quot; is <strong>Vendor tier</strong> (or <strong>Client type</strong> for the end-client field). Recruiter means the person and requirement means the post, everywhere. Exports use the new column names.</li>
+<li><strong>Popup is a doorway:</strong> your numbers, the scanner and autosave switches, &quot;Open LinkedIn&quot; and &quot;Open dashboard&quot;. Everything else is under <strong>More</strong>, and nothing was removed.</li>
+<li><strong>Matches agrees with Requirements:</strong> when posts are on the page but none are saved, the Matches tab says &quot;3 requirements on this page, none saved yet&quot; and offers &quot;Save these 3&quot;.</li>
+<li><strong>JSON export is included from Basic</strong> in the popup too, as decided on 16 Oct.</li>
+<li>Clearer messages for failed loads, saves, restores and licence keys. Empty Submissions and Vendors screens now say what to do next. Posts without a name or company show &quot;Name not shown&quot; / &quot;Company not shown&quot;.</li>
+<li>Store summary no longer says &quot;never double-submit&quot;.</li>
+<li>Fonts on LinkedIn load through a per-session address, so pages cannot detect BenchPilot by probing a fixed font URL.</li>
+<li><strong>Drawer header is lighter:</strong> pause, settings and report a bug are now under one <strong>More (⋯)</strong> button, and the header has four icons instead of seven. A yellow dot on More shows when the scanner is paused. The keyboard-shortcuts button at the bottom is now a keyboard icon, so the drawer has only one &quot;?&quot; (Help).</li>
+<li><strong>Matches opens on the matches:</strong> &quot;Already submitted?&quot; warnings are compact rows under the matches instead of big red boxes above them. A card with a red or yellow button says why on the card itself (&quot;Already submitted to Halcyon Motors via Brightpath Staffing on 18 Oct&quot;).</li>
+<li><strong>Two consultants with the same first name</strong> are told apart everywhere in the drawer: &quot;Draft email for Ravi K.&quot; and &quot;Ravi T.&quot; instead of two &quot;Ravi&quot;s.</li>
+</ul>
+<h3>Fixed</h3>
+<ul>
+<li><strong>Posts shown because a connection commented were missed:</strong> when LinkedIn shows a post with a line like &quot;Riya V commented&quot; (no &quot;on this&quot;), BenchPilot took the commenter for the author, and the real recruiter's requirement could be dropped. Now the commenter is skipped and the post is captured under the recruiter who wrote it. The same goes for &quot;reposted&quot;, &quot;replied&quot; and &quot;reacted&quot;. Posts that say &quot;Job Role&quot; or &quot;required skillset&quot; also count as requirements now. (Found from Nick's 22 Oct screenshot.)</li>
+<li><strong>Search finds a company typed as one word:</strong> &quot;softsnippets&quot; now finds &quot;Soft Snippets INC&quot;, also when the recruiter's email is hidden because the month's contacts are used up.</li>
+<li><strong>Matches is never an empty list under a count:</strong> when the only matches are from vendors you marked Avoid, the tab says so and points to Show all.</li>
+</ul>
+</section>
+<section class="log-ver" id="v1-11-0">
+<h2>Version 1.11.0 <time datetime="2026-10-16">16 October 2026</time></h2>
+<h3>Added</h3>
+<ul>
+<li><strong>Data &amp; export</strong> (Settings, Basic and up) (#158): download Requirements, Vendors, Recruiters, Consultants or Submissions, or Everything, as CSV, Excel (.xlsx) or JSON. Excel puts each dataset on its own sheet, and several CSVs come as one ZIP. Consultant files never include résumé files. The free Backup &amp; restore is unchanged and is still the way to move your data between computers.</li>
+<li><strong>Vendors by role</strong> (Settings, and Vendors → Recruiters → &quot;Export by role…&quot;, Basic and up) (#158): list the vendors that regularly post a role, with their recruiters, emails and phones, one row per vendor and role or one per recruiter.</li>
+<li><strong>9 new role groups</strong> (#157): ServiceNow, Workday, Oracle / PeopleSoft, Pega, Guidewire, Security / Cyber, Network / Infra, Data analyst / BI and Mainframe. Posts for these roles no longer land in &quot;Other&quot;. A platform name wins over generic tech words, so &quot;ServiceNow Developer (JavaScript)&quot; is ServiceNow.</li>
+</ul>
+<h3>Changed</h3>
+<ul>
+<li>Network and systems-admin roles moved from DevOps / Cloud to Network / Infra. Power BI, Tableau and analyst roles moved from Data engineer to Data analyst / BI (#157).</li>
+<li>Plans now say <strong>&quot;CSV, Excel and JSON export&quot;</strong> for Basic and Pro (#158). JSON export is no longer listed as Pro-only, here or in the Terms.</li>
+<li>Exported cells that start with <code>=</code>, <code>+</code>, <code>-</code> or <code>@</code> can't run as spreadsheet formulas (#158).</li>
+</ul>
+</section>
+<section class="log-ver" id="v1-10-0">
+<h2>Version 1.10.0 <time datetime="2026-10-16">16 October 2026</time></h2>
+<h3>Added</h3>
+<ul>
+<li><strong>Send anonymous error reports</strong> (#154): a switch in Settings and in the drawer settings sheet, <strong>off by default</strong>. When it's on, crashes in BenchPilot are reported with only the error message, BenchPilot's own code lines, the version and the screen. Emails, phone numbers, LinkedIn links and page content are removed first. At most 5 reports an hour. Details are in the privacy policy (section 5b).</li>
+</ul>
+<h3>Changed</h3>
+<ul>
+<li><strong>Sign-in and pricing pages</strong> (#153):</li>
+<li><strong>New short description</strong> in the Chrome Web Store and the extension list: &quot;Match bench consultants to LinkedIn C2C requirements, reach every recruiter in one click and never double-submit.&quot;</li>
+</ul>
+</section>
+<section class="log-ver" id="v1-9-0">
+<h2>Version 1.9.0 <time datetime="2026-10-15">15 October 2026</time></h2>
+<h3>Added</h3>
+<ul>
+<li><strong>Extend Pro or Basic early</strong> (#145): in the last 14 days of a paid plan, the upgrade page offers &quot;Extend Pro&quot; (or Basic) and shows the new end date. The remaining days are kept.</li>
+<li><strong>Settings inside the drawer</strong> (#143): the gear opens a sheet for Scanner, Mail client, Your name and Theme. It saves instantly, and &quot;All settings&quot; opens the full page.</li>
+<li><strong>Account page</strong> (#145): reveals used this month, and your last payment (needs the updated server).</li>
+<li><strong>Requirements CSV</strong> (#142): Rate, End client, Visa, Deadline and Posted (a date) columns, added at the end. Still Basic+.</li>
+<li><strong>Autosave guard</strong> (#144): a permanent &quot;Uses 1 reveal per new recruiter&quot; line. Autosave pauses itself at 3 reveals left, with &quot;Turn on anyway&quot;. Pro is never paused, and manual saves are unaffected.</li>
+</ul>
+<h3>Changed</h3>
+<ul>
+<li><strong>One BenchPilot mark everywhere</strong> (#141): the yellow target mark is now the toolbar icon, and it's on the dashboard, popup, settings pages and website.</li>
+<li><strong>Matching wording</strong> (#145): consultant matching is on every plan, and Pro adds the dashboard <strong>Tech matcher</strong>.</li>
+<li>The drawer plan strip shows when reveals reset (&quot;resets 1 Nov&quot;). At 0 it says saved contacts still work (#143).</li>
+<li>&quot;Manage plan&quot; reads &quot;Plan details&quot; when there is nothing to buy (#145).</li>
+<li>A one-line note explains follow-ups: on submissions for Free; dates on any recruiter for Basic+ (#145).</li>
+</ul>
+<h3>Removed</h3>
+<ul>
+<li>The &quot;Share hotlist (Coming soon)&quot; placeholder in the drawer and on the dashboard Bench page (#142, #143).</li>
+</ul>
+</section>
+<section class="log-ver" id="v1-8-1">
+<h2>Version 1.8.1 <time datetime="2026-10-15">15 October 2026</time></h2>
+<h3>Added</h3>
+<ul>
+<li><strong>Vendor panel links</strong> (#136): &quot;View their requirements&quot; and &quot;View submissions&quot; open those pages filtered to that vendor, with a removable &quot;Vendor: X&quot; chip.</li>
+<li><strong>Undo for merging vendors</strong> (#136): for 30 seconds after a merge, Undo puts both vendors and their recruiters back exactly as they were.</li>
+<li><strong>Fill company from email domain</strong> (#138), in Cleanup &gt; Missing data. It fills a company name for recruiters on a business domain, using your existing vendor name where there is one. You see a preview first, and one Undo reverses the lot.</li>
+</ul>
+<h3>Changed</h3>
+<ul>
+<li><strong>Drawer Submit sheet</strong> (#135): the RTR checkbox and note now sit right above Open in Gmail/Outlook, so you can see both together. RTR is still required.</li>
+<li><strong>Popup</strong> (#137): 4 recruiter rows fit again, through compact stats, toggles on one row and a thinner reveal meter.</li>
+</ul>
+</section>
+<section class="log-ver" id="v1-8-0">
+<h2>Version 1.8.0 <time datetime="2026-10-15">15 October 2026</time></h2>
+<h3>Added</h3>
+<ul>
+<li><strong>Recruiter contact everywhere</strong> (#124, #126): LinkedIn <strong>Profile</strong>, copy email, copy phone, WhatsApp and plain <strong>Email</strong> on every recruiter row in the dashboard (Recruiters tab, vendor rows, vendor panel) and the drawer (cards, vendor list, follow-ups, search). Copying in the drawer still uses reveals the same way.</li>
+<li><strong>Vendors</strong> (#124):</li>
+<li><strong>Requirements</strong> (#128):</li>
+<li><strong>Recruiter panel</strong> (#125): email and phone at the top with copy, LinkedIn, WhatsApp, a <code>tel:</code> link and a plain <strong>Email</strong> compose. Follow-up quick picks (+1 day, +3 days, +1 week).</li>
+<li><strong>Submissions</strong> (#125): each card shows the recruiter, with <strong>Follow up</strong> (opens a draft), <strong>Open recruiter</strong> and <strong>Open requirement</strong>. Sortable table.</li>
+<li><strong>Bench</strong> (#129):</li>
+<li><strong>Insights</strong> (#129): bars open the matching requirements or vendors. Real week dates. A &quot;Your pipeline&quot; card.</li>
+<li><strong>Drawer</strong> (#126, #127):</li>
+<li><strong>Popup</strong> (#131):</li>
+<li><strong>Pages</strong> (#130):</li>
+</ul>
+<h3>Changed</h3>
+<ul>
+<li><strong>Settings</strong> (#130):</li>
+<li><strong>The drawer gives the list more room</strong> (#127): one-line stats; the plan strip only when reveals are low; keyboard hints behind &quot;?&quot;.</li>
+<li>Requirements no longer reopens on &quot;Jobs for you&quot;, and search text no longer carries over to other screens (#128).</li>
+<li>&quot;Delete all requirements…&quot; is in a ⋯ menu, away from Import and Export. The filter reset is now &quot;Reset filters&quot; (#128).</li>
+<li>Changelog-style wording removed: &quot;moved from…&quot; and &quot;Where did Jobs go?&quot; now live in Settings &gt; Help (#128, #129).</li>
+<li>Day one on Today shows a 3-step start (#128).</li>
+<li>Submissions board: all 5 columns fit at 1280 px (#125).</li>
+<li>Upgrade page: the cards list only what changes per plan. One license-key entry (#130).</li>
+<li>Report a bug: Enter makes a new line, and Ctrl+Enter sends (#127).</li>
+</ul>
+<h3>Fixed</h3>
+<ul>
+<li>Choosing a vendor type in the vendor panel no longer removes Trusted or Avoid (#124).</li>
+<li>Phone extensions no longer lose the letter &quot;D&quot; (#125).</li>
+<li>A vendor's recruiter count in the drawer was capped at 6 (#126).</li>
+<li>&quot;Remote · Remote&quot; in card and job lines (#126, #128).</li>
+<li>The recruiter panel title changed after Save (#125).</li>
+<li>The panel now keeps keyboard focus inside it (#125).</li>
+<li>The upgrade table showed &quot;Up to 300&quot; for a fixed 300 reveals (#130).</li>
+</ul>
+</section>
+<section class="log-ver" id="v1-7-1">
+<h2>Version 1.7.1 <time datetime="2026-10-14">14 October 2026</time></h2>
+<h3>Added</h3>
+<ul>
+<li><strong>Recruiters tab</strong> on the Vendors page (Vendors · Recruiters · Rate book) (#117):</li>
+<li><strong>Vendors open in place</strong> (#117): the arrow on a company row lists its recruiters right under it. Big companies show 25, with a link to the rest. Clicking the company name still opens the side panel for editing.</li>
+</ul>
+<h3>Changed</h3>
+<ul>
+<li>Chrome Web Store screenshots and promo tiles redone in the purple design, with honest notes on scores and on what the duplicate check can see (#110, #116).</li>
+</ul>
+</section>
+<section class="log-ver" id="v1-7-0">
+<h2>Version 1.7.0 <time datetime="2026-10-08">8 October 2026</time></h2>
+<h3>Added</h3>
+<ul>
+<li><strong>New drawer, design B</strong> (#86):</li>
+<li><strong>Radar</strong> (#86): double-submit risks first, then new strong matches, follow-ups due, and <strong>&quot;Almost&quot;</strong> near-misses (50–59 % with what's missing).</li>
+<li><strong>Requirement cards</strong> (#86):</li>
+<li><strong>&quot;Not relevant&quot;</strong> with a reason (#86): lowers that kind of requirement for that consultant, with Undo.</li>
+<li><strong>Submit sheet</strong> (#88):</li>
+<li><strong>Duplicate / RTR guard</strong> (#83, #88):</li>
+<li><strong>Submission tracking</strong> (#88): Submitted → Vendor replied → Interview → Offer/Placed → Rejected/Closed, with follow-up dates (+1 day, +3 days, +1 week). Older &quot;Pitch&quot; actions are recorded as submissions too.</li>
+<li><strong>Bench tab</strong> (#90): days on bench, submissions and interviews this week, and matches today per consultant. <strong>Drop a résumé</strong> to add a consultant: it's read on your computer, you review the details, and it's saved only when you confirm.</li>
+<li><strong>Vendors tab</strong> (#90):</li>
+<li><strong>One-step start</strong> (#90): a new install asks for one thing, your consultant's résumé, and then shows &quot;N requirements match right now&quot;. <strong>&quot;Show me with sample data&quot;</strong> lets you try it before capturing anything. Sample data is clearly tagged, never counted or backed up, and removable in one click.</li>
+<li><strong>Every page in the new design</strong> (#94): dashboard, popup, Settings, welcome, upgrade and account pages now match the drawer (purple and yellow, light and dark).</li>
+<li><strong>Search everything from the drawer</strong> (#97): from any tab, search finds requirements, vendors and consultants (name, email, company, role, skills, location).</li>
+</ul>
+<h3>Changed</h3>
+<ul>
+<li>The welcome flow is one step instead of five. Sign-in is optional and comes later. Your email signature is asked once, the first time you submit.</li>
+<li><strong>Dashboard pages moved</strong> (old links still work):</li>
+<li><strong>Popup:</strong> compact header, about 5 leads visible.</li>
+<li>&quot;Matches for your bench&quot; is the name for 60 %+ matches; &quot;strong&quot; now always means 75 %+.</li>
+<li>Job titles typed in all capitals show in normal case (&quot;Senior Data Engineer&quot;). Tech terms like SAP ABAP, AI/ML and .NET stay as written. Saved data is not changed.</li>
+<li>Backups now include submissions and &quot;not relevant&quot; choices (#83).</li>
+</ul>
+<h3>Fixed</h3>
+<ul>
+<li>One-line requirement posts (fields separated by &quot;|&quot; or &quot;.&quot;) are read correctly. &quot;Visa: No OPT/CPT, H1B ok&quot; no longer marks H1B as not allowed (#83).</li>
+<li><strong>Your own details are never saved as a lead</strong> (#97): BenchPilot recognises you (your Settings profile and your LinkedIn &quot;Me&quot; link) and skips your email, profile and posts. Any it saved before are removed, with Undo.</li>
+<li>More requirement posts are captured (#97): the email in another text block or inside a re-share, &quot;Interested candidates: send your updated resume to…&quot;, and &quot;&amp;amp;&quot; shown as &quot;&amp;&quot;.</li>
+<li>Dashboard clocks show <strong>EDT / CDT / PDT</strong> in summer time, not EST / CST / PST.</li>
+<li>Button labels in the drawer (&quot;Submit …&quot;, &quot;Copy&quot;) were hard to read on real LinkedIn (#93).</li>
+<li>The drawer could fail to open on LinkedIn (a file was not loaded) (#92).</li>
+</ul>
+</section>
+<section class="log-ver" id="v1-6-1">
+<h2>Version 1.6.1 <time datetime="2026-10-06">6 October 2026</time></h2>
+<h3>Added</h3>
+<ul>
+<li><strong>Report a bug / Send feedback</strong> (#82): press <strong>Alt+Shift+F</strong>, or click &quot;Report&quot; in the drawer, popup or Settings, or &quot;Report a bug&quot; in the dashboard. Write one line, choose Bug or Idea, and press Enter. BenchPilot adds the page (no query string), screen, version and plan; it never adds your leads, contacts or consultants. An optional screenshot is off by default (on for the founder's admin account). Reports that can't be sent are saved and retried. They go to BenchPilot's server in Mumbai and are deleted after 12 months.</li>
+<li><strong>Grievance Officer</strong> in the privacy policy (India DPDP Act): acknowledgement within 7 days, resolution within 30 days.</li>
+<li><strong>Backup &amp; Restore, free on every plan</strong> (#77): Settings → Data → &quot;Download full backup&quot; saves one file with all leads, vendors, consultants, notes, jobs, templates, profile, settings and résumé files. &quot;Restore from backup&quot; checks the file, shows what's in it, saves a safety copy of your current data first, then replaces everything. Your account, plan and monthly reveal count are never in the file and are never restored. Settings shows &quot;Last backup&quot;, and the dashboard shows a reminder after 7 days without one.</li>
+</ul>
+<h3>Changed</h3>
+<ul>
+<li><strong>No desktop notifications</strong> (#80): BenchPilot never pops up on your desktop any more.</li>
+<li><strong>&quot;Match bench&quot; counts posts</strong> (#76): one post that fits three consultants counts once, not three times.</li>
+<li><strong>Pro list</strong> (#77): &quot;JSON backup export&quot; is now &quot;JSON export of leads&quot;; full backup is free for everyone.</li>
+</ul>
+<h3>Removed</h3>
+<ul>
+<li><strong>Desktop notifications, quiet hours and the night digest</strong> (#80), and the <code>notifications</code> permission. Old alert settings and alarms are cleaned up on update.</li>
+<li><strong>Auto-Scroller</strong> (#77). It scrolled LinkedIn on its own, which LinkedIn can treat as automation and restrict accounts for, and it broke our rule that BenchPilot never scrolls or clicks for you. Removed from the popup, Settings, the Pro plan and the upgrade page. Its old settings are cleaned up on update.</li>
+</ul>
+<h3>Fixed</h3>
+<ul>
+<li><strong>Fake emails</strong> (#75): ordinary sentences were read as emails (&quot;Java developer at google.com&quot; became developer@google.com; &quot;2:30 pm EST at abc.com&quot; became est@abc.com). Only real addresses are captured now, including &quot;name [at] company [dot] com&quot; and &quot;john.smith at abc dot com&quot;. An address glued to the next word (&quot;x@abc.comPhone&quot;) is cut correctly.</li>
+<li><strong>Wrong recruiter from comments</strong> (#75): an email in a comment or a chat window could be saved as the post's recruiter. Only emails in the post itself (or its author header) count.</li>
+<li><strong>Lost requirements</strong> (#75): when one recruiter posted several requirements, only the first was kept. Each post now gets its own card, and a post seen again fills in a missing role, location or posted time.</li>
+<li><strong>Wrong person on re-shared requirements</strong> (#69): the poster's name, profile and phone were saved on someone else's email. New Cleanup check &quot;Name doesn't match email&quot; repairs older leads.</li>
+<li><strong>Misleading match %</strong> (#76):</li>
+</ul>
+</section>
+<section class="log-ver" id="v1-6-0">
+<h2>Version 1.6.0 <time datetime="2026-10-05">5 October 2026</time></h2>
+<h3>Added</h3>
+<ul>
+<li><strong>Today</strong> (dashboard home, #58 #59 #62): requirements captured today (India time) with a split-flap counter, the last 2 hours, captures per hour, <strong>Today by role</strong> (13 role groups with C2C / Remote / Local counts; click a row for those leads), bench matches with % rings, follow-ups due, hot vendors this week, just captured and the pipeline this month. Updates live while you scroll LinkedIn.</li>
+<li><strong>Posted dates</strong> (#59 #61 #62): the post's age is read from LinkedIn (&quot;3h&quot;, &quot;2d&quot;) and every requirement shows &quot;Posted 3h ago&quot; (green when under a day). Leads filters: Posted (24 hours / 3 days / week), Role, Captured today; sort by newest posted.</li>
+<li><strong>Match alerts</strong> (#59 #60 #62): a desktop notification when a requirement you capture fits a bench consultant (60 % or more), with Open post and Pitch. One alert per post and consultant, at most 6 an hour (then one &quot;N new matches&quot;), toolbar badge for unseen matches, optional quiet hours and night digest (India time), per-consultant on/off. Free: 3 alerts a day; Basic and Pro: unlimited; quiet hours and the digest are Pro. Never for imports. Posts older than 48 hours don't alert.</li>
+<li><strong>Appearance</strong> (#58): Settings → System / Light / Dark and Reduce motion; every page and the drawer follow it live.</li>
+<li>Drawer <strong>Today strip</strong> (#61 #63): today's count, bench matches and top roles; a role chip opens today's requirements of that role in the dashboard.</li>
+</ul>
+<h3>Changed</h3>
+<ul>
+<li><strong>New design</strong> across the dashboard, LinkedIn drawer, popup, Settings, sign-in, welcome and upgrade pages (#58 #60 #61 #62): ink-and-amber board tiles, bento layout, Familjen Grotesk / IBM Plex type, animated counters, rings and bars. Colours meet WCAG AA contrast in both themes (checked by a test). Animations are lighter in the drawer and switch off with Reduce motion or the system setting.</li>
+<li>Drawer: search, filters and the Today strip scroll with the list (search stays pinned), leaving more room for leads; filter chips wrap.</li>
+<li>Popup: Today tile and Dashboard / Drawer / Settings shortcuts.</li>
+</ul>
+<h3>Fixed</h3>
+<ul>
+<li>Leads table layout broken by a style clash with the Rate calculator (#62).</li>
+<li>Engagement tags showed &quot;c2c&quot; / &quot;w2&quot; instead of C2C / W2 (#62).</li>
+<li>Popup time converter did not recognise times (#60).</li>
+</ul>
+</section>
+<section class="log-ver" id="v1-5-2">
+<h2>Version 1.5.2 <time datetime="2026-10-05">5 October 2026</time></h2>
+<h3>Fixed</h3>
+<ul>
+<li><strong>Bench matching</strong> (#54): a consultant could &quot;match&quot; hundreds of requirements (one shared skill was enough), including full-time jobs. Matching is now a 0–100 % score (skills 45, title 20, location 15, experience 10, visa and engagement 10) with a &quot;Why&quot; line, and only matches of <strong>60 % or more</strong> are shown. Never matched: hotlists, bench sellers, recruiter job openings, full-time / W2-only / &quot;no C2C&quot; posts, local-only posts in another state (unless the consultant relocates) and visa conflicts (&quot;GC/USC only&quot;, &quot;No H1B&quot;, &quot;Independent visa only&quot;). One shared skill is not a match; common words like AI, SQL, Data count for less.</li>
+<li><strong>Lead name</strong> (#53): a section heading in the post (&quot;Ideal Candidate Profile&quot;) could become the lead's name. The post author's name now wins; a name from the signature is used only when there is none, or when the post comes from a company page.</li>
+<li><strong>Local only</strong> (#53): a Location line ending in &quot;Locals&quot; (&quot;Chicago, IL (Hybrid) Locals&quot;), &quot;(Locals)&quot;, &quot;looking for locals&quot; and &quot;local candidates / profiles&quot; are tagged Local only.</li>
+<li><strong>Notes</strong> (#53): &quot;Experience&quot; with no value no longer shows as a cut-off &quot;erience&quot;.</li>
+</ul>
+<h3>Added</h3>
+<ul>
+<li><strong>Word résumés</strong> (#55): consultants and My profile accept <strong>.docx</strong> as well as PDF (up to 5 MB). Text is read on your computer by a built-in reader (no outside code) and fills the same suggestions. View downloads a Word file. Old <strong>.doc</strong> files show &quot;Please save it as .docx or PDF&quot;.</li>
+</ul>
+</section>
+<section class="log-ver" id="v1-5-1">
+<h2>Version 1.5.1 <time datetime="2026-10-02">2 October 2026</time></h2>
+<h3>Fixed</h3>
+<ul>
+<li>&quot;Bench Sales&quot; is no longer a default target designation (bench sales people are sellers, not leads).</li>
+</ul>
+<h3>Added</h3>
+<ul>
+<li><strong>Mark as bench seller</strong> (drawer menu and dashboard lead panel): marks the person and labels their company <strong>Bench seller (not hiring)</strong>, so future posts from that company are flagged. Never overwrites another company label without saying so.</li>
+<li><strong>Cleanup → Possible bench sellers</strong>: finds saved leads that look like bench sellers (hotlist posts, bench sales headlines, four or more unrelated role families) for one-click or bulk review. Free on every plan.</li>
+<li>Leads view: <strong>post type</strong> filter (Requirement / Hotlist / Unclear / Bench seller) and a Bench seller chip. Import suggests the Bench seller label for tabs named &quot;bench&quot;, &quot;hotlist&quot; or &quot;seller&quot;. Pitching a bench seller shows a reminder.</li>
+<li><strong>Jobs for you</strong> (#45): LinkedIn posts where a company hires a recruiter for itself are job openings for you, not consultant requirements. A new dashboard view keeps them apart: title, company, location and work mode, contact, status (New, Applied, Interview, Offer, Rejected, Closed), notes that save when you click away, <strong>Open post</strong> and <strong>Delete</strong>. <strong>Apply</strong> opens an email draft (your chosen email app) to the poster, written from the new <strong>My profile</strong> in Settings (name, title, email, phone, LinkedIn, summary and a résumé PDF), and marks the job Applied. Profile, résumé and jobs stay on your computer. New worker messages <code>SAVE_JOB</code>, <code>UPDATE_JOB</code>, <code>DELETE_JOB</code>, <code>GET_JOBS</code>, <code>SAVE_MY_PROFILE</code>.</li>
+<li>Requirement tags in Leads: Local (area), Remote / Hybrid / Onsite and engagement chips show on each lead and in the lead panel, with new filters for Local only, work mode and engagement. A lead that is really a job opening shows <strong>Move to Jobs for you</strong>.</li>
+<li><strong>Local-only requirements and tags</strong> (#44): the classifier also reads local-only phrases (&quot;local candidates only&quot;, &quot;must be local to …&quot;), work mode (Remote / Hybrid / Onsite, with negations) and engagement (C2C, W2, 1099, contract, full-time, C2H). Requirement cards show <strong>Local: &lt;area&gt;</strong> and the other tags; new <strong>Local only</strong> filter; Remote / C2C / W2 filters use the tags. For local-only posts, <strong>Matches my bench</strong> only suggests consultants in that state or willing to relocate.</li>
+<li><strong>Jobs for you in the drawer</strong> (#44): posts where a company hires a US IT / bench sales / technical recruiter (or talent acquisition, account manager, BDM for staffing) for itself are classified as job openings. They are never leads (no reveal, no autosave, no Pitch) and appear under a <strong>Jobs for you</strong> chip with <strong>Save job</strong> and <strong>Apply</strong> (email draft from My profile; you attach your résumé and send).</li>
+</ul>
+</section>
+<section class="log-ver" id="v1-5-0">
+<h2>Version 1.5.0 <time datetime="2026-10-01">1 October 2026</time></h2>
+<h3>Added</h3>
+<ul>
+<li><strong>Vendors view</strong>: recruiters grouped into companies by email domain (Gmail and similar never grouped), with labels (Trusted, Avoid, Direct client, Prime vendor, Implementation partner), notes, recruiter counts and last activity. Rename, merge (with domain aliases for future leads) and move recruiters between companies. Label chip and filter in the Leads view.</li>
+<li><strong>Avoid / Trusted badges</strong> in the LinkedIn drawer and on the profile card, including for recruiters not saved yet.</li>
+<li><strong>Excel and CSV import</strong> (free on every plan): built-in .xlsx reader (no third-party code), a label per workbook tab, automatic column mapping with manual override, preview (new, already saved, skipped with a download, duplicates), existing data kept by default, and Undo import until the next import.</li>
+<li><strong>Database cleanup</strong>: possible duplicates (same person at a company, mistyped email copies, same LinkedIn profile, same phone), missing-data filters, and bounced emails marked by the user. Merge (with Undo), &quot;not duplicates&quot; and clearing bounced emails need Basic or Pro.</li>
+<li><strong>Résumé PDF on consultants</strong>: upload (PDF up to 5 MB), view, download, replace and remove. Files stay in the extension's own database on the user's computer (new <code>unlimitedStorage</code> permission). Text is read with bundled pdf.js 5.7.284 and shown as suggestions to review before anything is applied. Pro keeps version history.</li>
+<li><strong>Consultant Email and Phone</strong> fields, filled from résumé suggestions.</li>
+<li><strong>Pitch messages</strong> for each consultant: LinkedIn connection note (200 characters or fewer), short direct message and hotlist line, personalised for the recruiter when known. Copy only; nothing is sent automatically.</li>
+<li><strong>Quick notes</strong>: saved message snippets with Copy, or Insert into the LinkedIn message box the user clicked (never sends). Free 3, Basic 20, Pro unlimited.</li>
+<li><strong>Rate calculator</strong>: W2 / 1099 / C2C gross margin per hour, percentage and month, and the highest pay rate for a target margin.</li>
+</ul>
+<h3>Changed</h3>
+<ul>
+<li>Free-mail detection is shared between the drawer and the vendor database, and now also covers zoho.com, mail.com, me.com and the Yandex/GMX families.</li>
+<li>Upgrade page lists quick notes, cleanup and résumé history per plan.</li>
+</ul>
+</section>
+<section class="log-ver" id="v1-4-1">
+<h2>Version 1.4.1 <time datetime="2026-10-01">1 October 2026</time></h2>
+<h3>Fixed</h3>
+<ul>
+<li>Sign-in page (<code>account/</code>) was missing from the release ZIP, so sign-in failed with <code>ERR_FILE_NOT_FOUND</code>. <code>build.ps1</code> now packages it and fails if any extension page is left out.</li>
+</ul>
+<h3>Changed</h3>
+<ul>
+<li>Website address moved to <code>https://justasknick.github.io/benchpilot-site</code>.</li>
+</ul>
+</section>
+<section class="log-ver" id="v1-4-0">
+<h2>Version 1.4.0 <time datetime="2026-09-30">30 September 2026</time></h2>
+<h3>Added</h3>
+<ul>
+<li>Three plans (Free / Basic / Pro) with monthly reveal credits and masked contacts.</li>
+<li>Time-zone helper, phone labels with WhatsApp links, free CSV import.</li>
+<li>LinkedIn profile card: identity, contact info capture, save contact, company and tenure.</li>
+<li>&quot;Departure Board&quot; redesign with bundled fonts, new logo and icons.</li>
+</ul>
+<h3>Fixed</h3>
+<ul>
+<li>Padlock icons stayed visible for paying users on Export, Auto-Scroller and New template.</li>
+</ul>
+</section>
+</div></main>
+<footer class="foot">
+  <div class="wrap foot-in">
+    <div class="foot-brand">
+      <a class="mark" href="index.html"><img src="assets/logo-target.svg" alt="" width="28" height="28"><span>BenchPilot</span></a>
+      <p>The Chrome extension for bench sales recruiters and US IT staffing teams.</p>
+      <a class="btn btn-y btn-sm" href="https://chromewebstore.google.com/detail/benchpilot-recruiter-lead/apmkfnppjohjoiacehfjehcegldkkami">Add to Chrome, free</a>
+    </div>
+    <nav class="foot-col" aria-label="Product"><b>Product</b><a href="index.html#how">How it works</a><a href="pricing.html">Pricing</a><a href="index.html#teams">Teams</a><a href="https://chromewebstore.google.com/detail/benchpilot-recruiter-lead/apmkfnppjohjoiacehfjehcegldkkami">Chrome Web Store</a></nav>
+    <nav class="foot-col" aria-label="Help"><b>Help</b><a href="guide/index.html">Playbook</a><a href="help/index.html">Help centre</a><a href="contact.html">Contact us</a></nav>
+    <nav class="foot-col" aria-label="Trust"><b>Trust</b><a href="security.html">Security</a><a href="privacy.html">Privacy</a><span>Never clicks or messages on LinkedIn.</span></nav>
+    <nav class="foot-col" aria-label="Legal"><b>Legal</b><a href="terms.html">Terms</a><a href="refund.html">Refund policy</a><a href="shipping.html">Shipping &amp; delivery</a></nav>
+  </div>
+  <div class="wrap foot-base"><span>© 2026 BenchPilot</span><span>Not affiliated with LinkedIn Corporation. LinkedIn is a trademark of its owner.</span></div>
+</footer>
+</body>
+</html>

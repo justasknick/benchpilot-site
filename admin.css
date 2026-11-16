@@ -1,12 +1,14 @@
-/* Admin page: plain, functional, Departure Board colours (ink + amber). Builds on styles.css tokens. */
+/* Admin page: plain, functional, on the product's look: the purple header band, purple in-product buttons, one purple focus ring on
+   fields (16 Nov 2026, one look with the extension and the web app). Builds on styles.css tokens. */
 [hidden]{display:none!important}
 .adm{min-height:100vh;--c-signups:#1d3f9e;--c-revenue:#a86a00;--c-free:#c3c9d4;--c-basic:#f5b83d;--c-pro:#101a2b;--c-gbasic:#7fa0e0;--c-gpro:#1d3f9e;--c-warn:#9b2118;--c-up:#14683a}
 .adm-wrap{width:100%;max-width:1080px;margin:0 auto;padding:0 16px}
-.adm-bar{background:var(--ink);border-bottom:1px solid var(--ink-line);color:var(--ink-text)}
+.adm-bar{background:var(--purple);color:#fff}
+.adm-bar :focus-visible{outline-color:#fff;box-shadow:none}
 .adm-bar-in{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:56px;flex-wrap:wrap;padding:0 20px}
 .adm-brand{display:inline-flex;align-items:center;gap:10px;font:700 1.05rem var(--display)}
-.adm-brand .pilot{color:var(--amber)}
-.adm-who{display:flex;align-items:center;gap:12px;font-size:.9rem;color:var(--ink-muted)}
+.adm-brand .pilot{color:inherit}
+.adm-who{display:flex;align-items:center;gap:12px;font-size:.9rem;color:var(--on-purple-2)}
 .adm-main{width:100%;max-width:1440px;margin:0 auto;padding:20px 20px 48px}
 .adm-card{background:var(--surface);border:1px solid var(--border-strong);border-radius:var(--r);box-shadow:var(--shadow);padding:20px;margin:0 0 18px}
 .adm-flush{padding:0;overflow:hidden}
@@ -18,7 +20,9 @@
 .adm-form{display:grid;gap:14px}
 .adm-form label,.adm-row label,.adm-filters label{display:grid;gap:6px;font-weight:600;font-size:.92rem}
 .adm input,.adm select,.adm textarea{font:inherit;padding:9px 11px;border:1px solid var(--border-strong);border-radius:8px;background:#fff;color:var(--text);min-height:42px;max-width:100%}
-.adm input[type=checkbox]{min-height:0;width:18px;height:18px;padding:0;accent-color:var(--ink)}
+/* fields: one purple focus ring (the extension's rule), not the dark outline plus the amber glow */
+.adm input:not([type=checkbox]):not([type=radio]):focus,.adm select:focus,.adm textarea:focus{outline:none;border-color:var(--purple);box-shadow:0 0 0 1px var(--purple),0 0 0 4px var(--purple-soft)}
+.adm input[type=checkbox]{min-height:0;width:18px;height:18px;padding:0;accent-color:var(--purple)}
 .adm textarea{resize:vertical}
 .adm-row{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap}
 .adm-tight{gap:6px;align-items:center}
@@ -27,14 +31,14 @@
 .adm-lab{display:block;font-weight:600;font-size:.92rem;margin-bottom:6px}
 .adm-sr{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
 #dg-days{width:96px}
-.adm-btn{display:inline-flex;align-items:center;justify-content:center;font:600 .92rem/1 var(--font);padding:11px 18px;border-radius:var(--r-sm);border:1px solid var(--ink);background:var(--ink);color:#fff;cursor:pointer;min-height:42px}
-.adm-btn:hover{background:#1c2a42}
+.adm-btn{display:inline-flex;align-items:center;justify-content:center;font:600 .92rem/1 var(--font);padding:11px 18px;border-radius:var(--r-sm);border:1px solid var(--purple);background:var(--purple);color:#fff;cursor:pointer;min-height:42px}
+.adm-btn:hover{background:var(--purple-hover);border-color:var(--purple-hover)}
 .adm-btn-ghost{background:var(--surface);color:var(--ink);border-color:var(--border-strong)}
-.adm-btn-ghost:hover{background:var(--surface-2);border-color:var(--ink)}
-.adm-bar .adm-btn-ghost{background:transparent;color:var(--ink-text);border-color:var(--ink-line)}
-.adm-bar .adm-btn-ghost:hover{border-color:var(--amber);color:var(--amber)}
-.adm-btn-primary{background:var(--amber);border-color:var(--amber);color:var(--ink)}
-.adm-btn-primary:hover{background:#e9a920}
+.adm-btn-ghost:hover{background:var(--surface-2);border-color:var(--purple)}
+.adm-bar .adm-btn-ghost{background:transparent;color:#fff;border-color:var(--on-purple-2)}
+.adm-bar .adm-btn-ghost:hover{background:var(--stat-bg);border-color:#fff;color:#fff}
+.adm-btn-primary{background:var(--purple);border-color:var(--purple);color:#fff}
+.adm-btn-primary:hover{background:var(--purple-hover);border-color:var(--purple-hover)}
 .adm-btn-danger{background:#fff;color:#9b2118;border-color:#d8a39e}
 .adm-btn-danger:hover{background:#fbeceb;border-color:#9b2118}
 .adm-btn[disabled]{opacity:.55;cursor:not-allowed}
@@ -59,6 +63,7 @@
 .adm-badge{display:inline-block;padding:2px 9px;border-radius:99px;font:600 .78rem var(--font);background:var(--surface-3);color:var(--text-2)}
 .adm-badge-pro{background:var(--ink);color:var(--amber)}
 .adm-badge-basic{background:var(--amber-soft);color:var(--amber-text)}
+.adm-badge-solo{background:var(--amber);color:var(--ink)}
 .adm-badge-active{background:var(--success-bg);color:var(--success)}
 .adm-badge-off{background:var(--surface-3);color:var(--text-3)}
 .adm-badge-bad{background:#fbeceb;color:#9b2118}
@@ -184,3 +189,5 @@
 .adm-goal-installs{display:block;max-width:420px;font-weight:600;margin-top:6px}
 .adm-goal-installs input{display:block;margin-top:4px;max-width:200px}
 .adm-delta-up{color:var(--c-up)}.adm-delta-down{color:var(--c-warn)}
+/* Teams scorecard: sortable column headers (S6) */
+.adm-sort{font:inherit;color:inherit;text-transform:inherit;letter-spacing:inherit;white-space:nowrap}
