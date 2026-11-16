@@ -4,102 +4,186 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Privacy Policy – BenchPilot</title>
-<meta name="description" content="How BenchPilot handles your data: leads and consultants stay in your browser; a small account and payment record is kept on our server. No analytics, no tracking.">
-<meta name="theme-color" content="#6a4fd0">
+<meta name="description" content="How BenchPilot handles your data: your book stays in your browser, or, with Solo sync (on by default) or the optional Free account backup, is stored encrypted so only you can read it; team workspaces are stored privately for the team; a small account and payment record is kept on our server. No AI, no analytics, no tracking.">
+<meta name="theme-color" content="#f8f7f2" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#17141f" media="(prefers-color-scheme: dark)">
+<meta name="color-scheme" content="light dark">
 <link rel="icon" type="image/svg+xml" href="assets/logo-target.svg">
 <link rel="canonical" href="https://justasknick.github.io/benchpilot-site/privacy.html">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Privacy Policy – BenchPilot">
-<meta property="og:description" content="How BenchPilot handles your data: leads and consultants stay in your browser; a small account and payment record is kept on our server. No analytics, no tracking.">
+<meta property="og:description" content="How BenchPilot handles your data: your book stays in your browser, or, with Solo sync (on by default) or the optional Free account backup, is stored encrypted so only you can read it; team workspaces are stored privately for the team; a small account and payment record is kept on our server. No AI, no analytics, no tracking.">
 <link rel="stylesheet" href="site.css">
 </head>
 <body class="page">
 <a class="skip" href="#main">Skip to content</a>
 <header class="nav" id="nav">
   <div class="nav-in">
-    <a class="mark" href="index.html" aria-label="BenchPilot home"><img src="assets/logo-target.svg" alt="" width="30" height="30"><span>BenchPilot</span></a>
-    <nav class="nav-links" aria-label="Main">
-      <a href="index.html#product">Product</a>
-      <a href="guide/index.html">Playbook</a>
-      <a href="index.html#pricing">Pricing</a>
-      <a href="index.html#questions">Questions</a>
-    </nav>
-    <a class="btn btn-y btn-sm" href="https://chromewebstore.google.com/detail/benchpilot-recruiter-lead/apmkfnppjohjoiacehfjehcegldkkami">Add to Chrome</a>
+    <a class="mark" href="index.html" aria-label="BenchPilot home"><img src="assets/logo-target.svg" alt="" width="28" height="28"><span>BenchPilot</span></a>
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="nav-menu" aria-label="Open menu"><span></span></button>
+    <div class="nav-menu" id="nav-menu">
+      <nav class="nav-links" aria-label="Main">
+        <a href="index.html#how">Product</a>
+        <a href="pricing.html">Pricing</a>
+        <a href="index.html#teams">Teams</a>
+        <a href="security.html">Security</a>
+        <a href="help/index.html">Help</a>
+      </nav>
+      <div class="nav-end">
+        <a class="nav-signin" href="https://justasknick.github.io/benchpilot-app/">Sign in</a>
+        <a class="btn btn-y btn-sm" href="https://chromewebstore.google.com/detail/benchpilot-recruiter-lead/apmkfnppjohjoiacehfjehcegldkkami">Add to Chrome</a>
+      </div>
+    </div>
   </div>
+  <script src="assets/nav.js" defer></script>
 </header>
 <main id="main" class="legal"><div class="wrap narrow">
 
 <h1>Privacy Policy</h1>
-<p class="meta">Last updated: 6 November 2026 · Operated by Rakessh.D</p>
-<div class="callout"><p><strong>Short version:</strong> Your leads, vendor companies, consultants, resume files, notes and settings are stored only in your own browser and are never uploaded. If you create a BenchPilot account, we (and our service providers) keep only your account email, sign-in details and plan and payment records. If you press Send on the feedback button, we also receive that report. If you turn on the optional "Send anonymous error reports" setting (off by default), we also receive anonymous error details when something breaks. We do not sell your data or track you.</p></div>
-<p style="margin-top:1.2em">BenchPilot ("the extension", "we") is a Chrome extension for recruiters and bench sales professionals, operated by Rakessh.D ("the seller"). This policy explains what the extension handles and where it goes. This website (the marketing site) does not use cookies, analytics or trackers.</p>
+<p class="meta">Last updated: 14 November 2026 · Operated by Rakessh.D</p>
+<div class="callout"><p><strong>Short version:</strong> BenchPilot is local-first. Your leads, vendor companies, consultants, resume files, notes and settings are stored in your own browser. On the Free plan they stay on your computer and are not uploaded, unless you turn on the optional account backup. On the Solo plan, <strong>encrypted sync</strong> is on by default (you can turn it off): your data is on every computer you sign in on, encrypted in your browser so only you can read it; our server holds only a locked copy it cannot read (section 2a). With sync on, your resume files are synced too, encrypted in your browser in the same way. Signed-in Free users can also choose an encrypted account backup (off until they turn it on), and if you do not sign in, nothing is uploaded. If your company uses a <strong>team workspace</strong>, the team's shared book is stored on our server so the team can work on it together; it is private to the team but it is <strong>not</strong> end-to-end encrypted (section 2b). If you create a BenchPilot account, we (and our service providers) keep your account email, sign-in details and plan and payment records. If you press Send on the feedback button, we also receive that report. If you turn on the optional "Send anonymous error reports" setting (off by default), we also receive anonymous error details when something breaks. You can delete your account yourself at any time (section 7). BenchPilot uses no AI. We do not sell your data or track you.</p></div>
+<p style="margin-top:1.2em">BenchPilot ("the extension", "we") is a Chrome extension and web app for recruiters and bench sales professionals, operated by Rakessh.D ("the seller"). This policy explains what BenchPilot handles, where it goes and who can read it. This website (the marketing site) does not use cookies, analytics or trackers.</p>
 
 <h2>1. What data the extension reads</h2>
 <ul>
 <li>On <strong>LinkedIn pages you are viewing</strong>, BenchPilot reads the text of the posts visible on the page to find recruiter contact and requirement details: names, email addresses, phone numbers, job titles, companies, locations and required skills.</li>
 <li>On <strong>other websites</strong>, the extension reads the page only when you click <strong>"Scan this page"</strong> in the extension popup. It does not read other sites in the background.</li>
-<li>BenchPilot does not read your LinkedIn password, private messages or browsing history, and does not collect data from pages you have not asked it to scan.</li>
+<li>BenchPilot does not read your LinkedIn password, private messages or browsing history, and does not collect data from pages you have not asked it to scan. It never clicks, scrolls or messages on LinkedIn for you.</li>
+<li><strong>Consent records and contact notes you type.</strong> For a consultant you can record the date and the way they agreed to be marketed (with a short note), and for a consultant or a saved recruiter you can type short notes of calls, WhatsApp chats and meetings. BenchPilot never reads WhatsApp, your phone or other apps, and sends nothing. These stay in your browser (and in your encrypted sync copy if sync is on). "Export this consultant" gives you everything kept about one person; "Erase this consultant" deletes their profile, resume files and notes on this computer and, through sync, on your other computers, and keeps your submission counts without their name.</li>
+<li><strong>Interviews and placements you record.</strong> For a submission you can record interview times (with the time zone), the round, the panel, your notes and the outcome, and a placement: the start and end date, the bill and pay rate, tax terms and a PO number. These stay in your browser (and in your encrypted sync copy if sync is on). "Calendar" saves an .ics file on your computer for your own calendar app. "Google" and "Outlook" open your own Google Calendar or Outlook with the interview's title, time and text filled in, for you to save: your browser sends that text to Google or Microsoft only when you click. BenchPilot does not connect to any calendar.</li>
+<li><strong>Timesheets, invoices and your commission rule.</strong> For a placement you can record the hours of each week (regular and overtime), who approved them and the status, and make invoices from the approved weeks (number, period, hours, rates, amount, invoice, due and payment dates, status and a note). On Solo you can also save your own invoice details (company name, address, billing email, phone, tax ID and payment details, printed on your invoices) and your own commission rule for an estimate. These stay in your browser (and in your encrypted sync copy if sync is on). BenchPilot never sends an invoice: you print it or save it as a PDF and send it from your own email.</li>
 </ul>
 
 <h2>1a. LinkedIn profile card</h2>
-<p>The LinkedIn profile card reads only the profile page you are viewing at that moment. For your 1st-degree connections, when you open LinkedIn's "Contact info" panel, BenchPilot captures the contact details shown there. Those details are stored only on your own computer (in your browser's local extension storage) and are never sent to BenchPilot servers or anyone else.</p>
+<p>The LinkedIn profile card reads only the profile page you are viewing at that moment. For your 1st-degree connections, when you open LinkedIn's "Contact info" panel, BenchPilot captures the contact details shown there. Those details are stored on your own computer (in your browser's local extension storage). They are never sent to BenchPilot servers or anyone else in readable form; with encrypted sync on (Solo) or an account backup, they are part of the locked copy described in section 2a.</p>
 
 <h2>1b. Resume files</h2>
-<p>Resumes (PDF or Word .docx) you attach to a consultant are stored only on your own computer, in the extension's own browser database. They are never uploaded or sent to BenchPilot servers or anyone else. BenchPilot reads their text on your computer, using a copy of the open-source pdf.js library bundled inside the extension for PDFs and its own built-in reader for Word files, only to suggest values for you to review. Removing a resume or deleting the consultant deletes the file.</p>
-
-<p>Your own profile and resume, saved in Settings, and the job openings you save in Jobs for you, stay on your computer. They are never uploaded or sent to BenchPilot servers or anyone else.</p>
+<p>Resumes (PDF or Word .docx) you attach to a consultant are stored on your own computer, in the extension's own browser database. BenchPilot reads their text on your computer, using a copy of the open-source pdf.js library bundled inside the extension for PDFs and its own built-in reader for Word files, only to suggest values for you to review. Removing a resume or deleting the consultant deletes the file.</p>
+<ul>
+<li><strong>Free, or Solo with sync off:</strong> resume files stay on your computer and are not uploaded.</li>
+<li><strong>Solo with sync on:</strong> your consultants' resume files are uploaded only encrypted, so we cannot read them (section 2a). Your own resume file, saved in Settings, is uploaded the same way, encrypted, so we cannot read it (section 2a).</li>
+<li><strong>Team workspace:</strong> a resume you add to a consultant in your team's workspace is stored with the team's book on our server, readable by the team's members (section 2b).</li>
+</ul>
+<p>You can record a consultant's work-authorisation type and end date (for example H1B, until a given day), with a minimum rate and the date they are available. In the extension this stays on your computer (and in the encrypted copy only with encrypted sync on or an account backup); in a team workspace it is stored with the team's consultant record. BenchPilot never stores visa, passport, I-9 or other identity documents or their numbers: only the type and the end date, which it uses for reminders on the Today screen.</p>
+<p>Your own profile details and the job openings you save in Jobs for you also stay on your computer; they are never sent to BenchPilot servers or anyone else in readable form, and are part of the locked copy only with encrypted sync on or an account backup (section 2a).</p>
 
 <h2>2. Where the data is stored</h2>
 <ul>
-<li>Everything BenchPilot finds and everything you save (leads, notes, statuses, follow-up dates, consultants, email templates and settings) is stored <strong>only in your browser</strong>, using Chrome's local extension storage (<code>chrome.storage</code>).</li>
-<li>BenchPilot does <strong>not upload your leads, consultants, notes, templates or browsing data</strong> to the seller or to any third party. The only data that reaches a server is your account and payment information described in section 5 and, only when you press Send, a feedback report described in section 5a and, only if you turn it on, the anonymous error reports described in section 5b and, only if you answer them, the two optional questions described in section 5c.</li>
+<li>Everything BenchPilot finds and everything you save (leads, notes, statuses, follow-up dates, consultants, email templates and settings) is stored <strong>in your browser</strong>, using Chrome's local extension storage (<code>chrome.storage</code>). Unless encrypted sync or an account backup is on (section 2a), or you save to a team workspace (section 2b), it is stored <strong>only</strong> there.</li>
+<li><strong>Vendor book history.</strong> To keep your saved recruiters up to date, BenchPilot keeps, on your computer, the requirement details of the later posts it has read from each saved recruiter while you scroll (the same kind of details as the first saved post: title, skills, location, rate, date) and a history of the changes it made to a contact (for example a new title or a phone number that was missing), so you can see and undo each one. It never visits profiles, clicks or messages on LinkedIn to do this. Both are in your backups; the change history is part of each saved recruiter, so it is also in the encrypted sync copy if you turn sync on.</li>
+<li>BenchPilot does <strong>not upload your personal leads, consultants, notes, templates or browsing data</strong> in readable form to the seller or to any third party. What reaches a server is: your account and payment information (section 5); with sync on (on by default for Solo) or an account backup you turn on, the encrypted sync copy or backup, and, if you create one, your personal inbox (sections 2a and 2d), which we cannot read; only if you belong to a team, what you save to the team's workspace and the team inbox (sections 2b and 2c); only when you press Send, a feedback report (section 5a); only if you turn it on, the anonymous error reports (section 5b); and only if you answer them, the two optional questions (section 5c).</li>
 <li>The extension contains <strong>no analytics, advertising or tracking</strong> code. The only automatic reporting is the optional, off-by-default error reports in section 5b.</li>
 </ul>
 
+<h2>2a. Optional encrypted sync (Solo)</h2>
+<p>On the Solo plan (and the older Pro plan), <strong>Sync across computers</strong> is <strong>on by default</strong>: when you are signed in, BenchPilot sets it up and starts syncing, with nothing for you to do. Your BenchPilot data is then on every computer you sign in on, encrypted in your browser so only you can read it. You can turn it off at any time (see "Turning sync off" below). The Free plan has no sync; signed-in Free users can choose the optional account backup described below. If you do not sign in, nothing changes: there is no sync and no account backup, and your data stays only on your computer.</p>
+<ul>
+<li><strong>How it is locked:</strong> your computer makes a random data key, and your data is encrypted in your browser with it (AES-GCM, using Chrome's built-in WebCrypto) before anything leaves your computer. BenchPilot shows you a <strong>recovery code</strong> to save (Copy, Download or write it down); it always unlocks your data. A <strong>sync passphrase</strong> is optional: you can add one in Settings &gt; Sync to unlock with something you remember. Your recovery code, your passphrase and the data key itself are never sent to us; we store the data key only in wrapped (locked) form.</li>
+<li><strong>What is stored on our server:</strong> encrypted copies of your data sets (leads, vendor companies, consultants, submissions, notes, saved jobs, templates, "not relevant" items and a short list of settings), and the technical values needed to unlock them on your computers: your data key in wrapped (encrypted) form, locked with your recovery code and, if you added a passphrase, with your passphrase; a key id; a key check value and a one-way hash of a key proof, so a computer can confirm it has the right key and only someone who holds the key can change it; and, only if you added a passphrase, a random salt and a passphrase check value (verifier). We also keep the size, the time and the computer id of each upload, so the copies stay in step.</li>
+<li><strong>Resume files:</strong> With sync on, your resume files are synced too, encrypted in your browser in the same way. Each file is encrypted in your browser with its own random key, and that key is locked with your data key, before the file leaves your computer. We store only the locked file and its size, never its name or contents, so we cannot read it.</li>
+<li><strong>Limits:</strong> your data sets can use up to <strong>50 MB</strong> per account (5 MB per data set). Resume files are counted separately: up to <strong>5 MB a file</strong>, <strong>200 MB</strong> and <strong>1,000 files</strong> per account. A file over the limit stays only on the computer where it is.</li>
+<li><strong>Approving another computer:</strong> to set up a new computer or the web app, you can approve it from a computer that already has sync. The new computer shows a short code; you type it on the computer that already has sync and press Approve, then confirm on the new computer. The new computer then receives your data key, locked so that only that new computer can open it. For this, our server briefly keeps a pairing request: the public keys and random numbers the two computers exchange, a short name for the new computer, and the one locked copy of the key, which we cannot open. A request expires after <strong>10 minutes</strong>, the locked key is removed once the new computer collects it, and requests are deleted within a day.</li>
+<li><strong>Remember on this computer:</strong> so that you are not asked for your recovery code after every browser restart, a computer that set sync up, was approved, or was unlocked with "Remember on this computer" (ticked by default) keeps your data key on that computer, sealed with a browser key that web pages and other extensions cannot read. It is never in your backup files and never sent to us. It is not protected against someone who can read this computer's files (for example malware, or a stolen computer without disk encryption): with it and your sign-in they could also open your synced copy. Use disk encryption, and Forget the key on shared computers. It is used only for the same account. <strong>Forget the key on this computer</strong> in Settings &gt; Sync removes it; turning sync off and deleting your account remove it too.</li>
+<li><strong>Who can read it:</strong> only you, on a computer that holds your key: one where you entered your recovery code or passphrase, one you approved from another of your computers, or one that remembers the key. We cannot read the synced data, and neither can Supabase. The admin console shows only whether sync is on, its size and the last sync time.</li>
+<li><strong>My book on the web:</strong> the BenchPilot web app can open your synced book in a browser tab. It downloads the locked copy and unlocks it in that tab with your recovery code, your passphrase if you added one, or by approving the tab from your computer; the key and the unlocked book are kept only in that tab's memory and are dropped when you sign out, close the tab or leave it idle for 30 minutes.</li>
+<li><strong>Where:</strong> our server on Supabase, project hosted in Mumbai, India.</li>
+<li><strong>What is not synced:</strong> your sign-in, licence and plan, usage counters, the error-report switch, display preferences (such as theme), undo history and sample data. These stay only on the computer where they are.</li>
+<li><strong>If you lose your recovery code and your passphrase</strong> (if you added one), and none of your computers still has the key: the synced copy cannot be recovered, by you or by us; we cannot reset it. The data already on each of your computers is not affected.</li>
+<li><strong>Turning sync off:</strong> in Settings &gt; Sync, choose <strong>Turn off sync</strong>. This deletes the copy on our server, and BenchPilot remembers your choice for your account: sync does not turn itself on again until you press <strong>Turn on sync</strong>.</li>
+<li><strong>Retention:</strong> the synced copy is kept while sync is on. When you <strong>turn sync off</strong>, the copy on our server is deleted, resume files included. Your personal inbox (section 2d) is deleted too. If you <strong>delete your account</strong>, it is deleted too. If your <strong>Solo plan ends</strong>, sync pauses and the synced copy is deleted <strong>60 days</strong> later (it stays if you renew within that time); an account backup, if you made one, is kept under its own rule below. The data on your computers is never touched.</li>
+<li><strong>Purpose:</strong> only to give you the same data on your computers. It is not used for anything else, never analysed and never sold.</li>
+<li><strong>Service provider:</strong> Supabase (database, file storage and server functions).</li>
+</ul>
+<h3 id="account-backup">Account backup (Free, optional)</h3>
+<p>If you are signed in on the Free plan (or an older Basic plan), you can choose <strong>Back up to my account</strong> in Settings &gt; Sync. It is <strong>off until you turn it on</strong>. It is not live sync: it is one saved copy (a snapshot) of your BenchPilot data, encrypted so only you can read it.</p>
+<ul>
+<li><strong>How it works:</strong> press <strong>Back up now</strong>, or turn on <strong>Back up automatically every week</strong> (off by default). The snapshot is encrypted in your browser with your own data key before it leaves your computer, the same way as sync (above): a recovery code that always works, an optional passphrase, and "Remember on this computer". We cannot read it.</li>
+<li><strong>What is in it:</strong> the same data as the backup file in Settings, <strong>without resume files</strong> (they are not uploaded). One snapshot per account, up to <strong>5 MB</strong> encrypted; a new backup replaces the previous one.</li>
+<li><strong>What is stored on our server:</strong> the encrypted snapshot, its size and time, and the same key values as for sync (the wrapped data key, a key id, a key check value and a hash of the key proof; a salt and a verifier only if you add a passphrase). Where: Supabase, Mumbai, India.</li>
+<li><strong>Restoring:</strong> on a new computer, sign in, choose <strong>Restore from my account</strong> and unlock with your recovery code or approve it from your other computer. BenchPilot saves a safety backup of that computer first.</li>
+<li><strong>Retention:</strong> kept while your account exists, and deleted after <strong>365 days without a new backup</strong>. <strong>Delete my account backup</strong> in Settings deletes it at once; deleting your account deletes it too. If you later buy Solo, sync starts with the same key.</li>
+</ul>
+
+<h2>2b. Team workspace</h2>
+<p>A company can use BenchPilot as a team: a shared workspace in the BenchPilot web app, which members can also save to from the extension. The team's data belongs to the company (the "customer"). For that data, the customer decides why and how it is used and we act on its instructions: <strong>the customer is the controller and BenchPilot is the processor.</strong></p>
+<p>Under India's Digital Personal Data Protection Act, 2023, <strong>the company is the data fiduciary for its consultants' and contacts' data and BenchPilot is its data processor</strong> (the data-processing terms are in section 7f of the <a href="terms.html">Terms</a>). The company answers its consultants' requests (a copy of their data, a correction, deletion, withdrawing consent); BenchPilot gives it the tools: "Export this consultant", and "Erase this consultant", which deletes their profile, resume files and notes and keeps the team's submission counts without their name.</p>
+<ul>
+<li><strong>What is stored for a team</strong> (entered, imported or saved by members): the team's consultants (name, title, skills, visa status (the work-authorisation type and end date, and a note; never a document), tax terms, rate and minimum rate, location, availability, status, notes and resume files, and consent records: the date, how it was given and a short note, and the location preference the consultant gave); contact notes your team types (calls, WhatsApp chats and meetings with consultants and vendor contacts; nothing is read from WhatsApp or a phone); consultant links (when an owner or manager made a link for one consultant, when it was opened and answered, and the answers the consultant gave: availability date, minimum rate, location preference, consent to be marketed and, for one submission, the right to represent); the vendor book (companies and recruiter contacts: name, email, phone, LinkedIn page address, title, tiers, notes, "do not contact" marks); saved requirements, including trimmed post text; submissions (consultant, vendor and the vendor chain to the end client, end client, rate, the right-to-represent (RTR) day, end date and agreed rate, bill rate, stage, dates); the pay rate of a submission, which only the owner and managers can see unless the owner lets recruiters see it; interviews (times and time zone, round, panel, notes, outcome) and placements (start and end date, bill rate, tax terms, PO number, status), with the placement pay rate under the same rule as the submission pay rate; timesheets (the week, regular and overtime hours, who approved them and the status); invoices made from them (number, period, hours, rates, amount, invoice, due and payment dates, status and a note) and the commission rules the owner or a manager sets (per member: a percentage of the margin or a fixed amount per placement, and a share for a lead), which only the owner and managers see; the team's invoice details (billing address, email, phone, tax ID, payment details and the invoice number prefix, printed on the team's invoices); the team inbox (section 2c); an activity log of who did what and when (by id, with no emails or phone numbers); targets the owner or a manager sets (submissions, interviews and placements per day, week or month, for the team, a desk or one member) and how often the duplicate check warned each member (a count per day), which owners and managers see and each member sees for themselves; and the members' names, emails, roles and invitations.</li>
+<li><strong>Not end-to-end encrypted.</strong> Team data is stored readable on our server (Supabase, Mumbai, India), encrypted at rest and in transit, because the service has to work on it (for example the team-wide "Already submitted?" check and the morning report). Row-level security keeps each team's data visible only to that team's members. Resume files sit in private storage with short-lived links. Only the founder has admin access, and looks at team data only to give support the team asked for or where the law requires it.</li>
+<li><strong>Roles:</strong> the owner (one at a time; ownership can be transferred), managers and recruiters. Every member sees the team's book. The owner decides whether managers and recruiters may export it. Removing a member ends their access at once; what they added stays with the team.</li>
+<li><strong>Consultant links.</strong> An owner or manager can send one consultant a private link (it ends after 14 days and can be cancelled) to confirm their availability, minimum rate, location preference and consent, and to give or decline the right to represent for one submission. The consultant needs no account. The page shows only the firm's name, the consultant's first name and, for the right to represent, the role and end client; nothing else from the team's data. We store only a fingerprint of the link, never the link itself. To limit abuse we keep a keyed fingerprint of the visitor's IP address for at most one day, never the address. The answers are saved on the consultant's record in the team's data; erasing the consultant deletes their links and answers.</li>
+<li><strong>Company sign-in rule.</strong> The owner can restrict who joins the workspace to one email domain (for example the company's own). We store the domain in the workspace settings.</li>
+<li><strong>Two books.</strong> Your personal book (Free or Solo) stays yours. Joining a team does not copy it; what you choose to save to the team then belongs to the company. Please tell your members that the company can see what they save to the team.</li>
+<li><strong>Pilot and closing:</strong> a new workspace starts with a 14-day pilot (no card; one 14-day extension on request). If the pilot or a paid plan ends without payment, the workspace becomes <strong>read-only for 30 days</strong> (export still works) and is then closed. The owner can also delete the workspace at any time.</li>
+<li><strong>Deletion for good:</strong> a closed workspace is deleted for good <strong>30 days after it closes</strong>. We email the owner a warning at least <strong>7 days</strong> before. Everything in it is deleted: the book, resume files, inbox, activity log, members and invitations. We keep only a record that a team with that id was deleted, when and why, with row counts (no names, emails or content), payment records (section 5) and the members' own accounts and Solo data, which are not the team's.</li>
+<li><strong>Team emails (Brevo):</strong> invitations, the daily and weekly morning report (counts and the names of the company's own consultants and recruiters, never vendor emails or phone numbers), and plan and closing notices to the owner.</li>
+</ul>
+
+<h2>2c. Team inbox</h2>
+<p>A team on a plan that includes it can create a team inbox address and forward requirement emails to it.</p>
+<ul>
+<li><strong>How mail arrives:</strong> email sent to the address is received by Cloudflare Email Routing and passed to our server. We store the sender, subject, date and text (cut to 20,000 characters). Attachments are not stored.</li>
+<li><strong>Who can read it:</strong> the members of that team. It is stored readable, like the rest of the team's data (section 2b).</li>
+<li><strong>Retention:</strong> each message is deleted <strong>90 days</strong> after it arrives, and a message marked ignored is deleted <strong>30 days</strong> after it was ignored. A requirement a member made from a message stays in the team's book. Turning the address off stops new mail.</li>
+<li>Only forward mail you have the right to share with your team (see the <a href="terms.html">Terms</a>).</li>
+</ul>
+
+<h2>2d. Personal inbox (Solo)</h2>
+<p>With Solo sync on, you can create a personal inbox address and forward requirement emails to it.</p>
+<ul>
+<li><strong>Encrypted on arrival:</strong> email sent to the address is received by Cloudflare Email Routing and passed to our server, which encrypts it at once to your personal inbox key and stores only the encrypted message. The key that opens it is locked with your sync data key, so only you can read the stored messages. Like any email, a message is readable while it travels to us and while our server encrypts it; it is never stored readable.</li>
+<li><strong>What we can see:</strong> the arrival time, size and status of each message, never its sender, subject or text.</li>
+<li><strong>Retention:</strong> each message is deleted <strong>90 days</strong> after it arrives, and a message marked ignored <strong>30 days</strong> after it was ignored. The whole inbox is deleted when you turn sync off or delete your account.</li>
+</ul>
+
+<h2>2e. The web app on your computer</h2>
+<p>The BenchPilot web app (the team workspace and My book) keeps a few things in your browser's local storage: your sign-in session, your theme choice and, if you opened a "Bring BenchPilot to your team" link, its code (for up to 30 days, until a workspace is created). A team invitation link is kept only for the browser session. It uses no cookies for tracking, no analytics and no advertising code. Your unlocked Solo book is never written to the browser's storage (section 2a).</p>
+
 <h2>3. We do not sell or transfer your data</h2>
-<p>We do not sell, rent, trade or transfer user data to third parties. We do not use or transfer user data for purposes unrelated to the extension's single purpose (helping you find and manage recruiter leads and pitch consultants), and we do not use it to determine creditworthiness or for lending purposes.</p>
+<p>We do not sell, rent, trade or transfer user data to third parties. We do not use or transfer user data for purposes unrelated to BenchPilot's single purpose (helping you find and manage recruiter leads and pitch consultants), and we do not use it to determine creditworthiness or for lending purposes. BenchPilot uses no AI, and your data is never used to train any model.</p>
 
 <h2>4. Chrome Web Store User Data Policy</h2>
 <p>BenchPilot's use of data complies with the Chrome Web Store User Data Policy, including the Limited Use requirements.</p>
 
 <h2>5. Accounts, license keys and payments</h2>
-<p>From version 1.14 (November 2026), setting up BenchPilot includes creating a free <strong>account</strong> (email and password with a 6-digit email code, or "Continue with Google"). The account holds your plan; your recruiters, consultants and submissions still stay in your browser. For the account, the following is handled:</p>
+<p>From version 1.14 (November 2026), setting up BenchPilot includes creating a free <strong>account</strong> (email and password with a 6-digit email code, or "Continue with Google"). The account holds your plan; your recruiters, consultants and submissions still stay in your browser (and, with Solo sync on or an account backup, in the encrypted copy described in section 2a). For the account, the following is handled:</p>
 <ul>
 <li><strong>Sign-in and account database (Supabase, hosted in Mumbai, India):</strong> your email address and either a securely hashed password (we never see or store your password in readable form) or your Google account identity (email, name and Google user id; we never receive your Google password). Supabase also keeps sign-in technical data such as timestamps.</li>
-<li><strong>Our server functions and database (Supabase):</strong> your account email, your account user id, your plan dates, and payment records: Razorpay payment and payment-link ids, plan and amount. They also receive the sign-in token your extension sends when it checks your plan.</li>
-<li><strong>Account emails (Brevo, if enabled):</strong> confirmation and password-reset emails may be sent through Brevo, a transactional email provider, which processes your email address only to deliver those messages.</li>
+<li><strong>Our server functions and database (Supabase):</strong> your account email, your account user id, your plan dates, your team membership and role, and payment records: Razorpay payment and payment-link ids, plan, amount and currency. They also receive the sign-in token your extension sends when it checks your plan.</li>
+<li><strong>Emails (Brevo):</strong> account emails (confirmation and password reset), team invitations, team morning reports and plan or closing notices are sent through Brevo, a transactional email provider, which processes the email address and the message only to deliver it.</li>
 <li><strong>Payments (Razorpay):</strong> you pay on a Razorpay page (UPI, cards, netbanking or wallets). Razorpay processes your payment details under its own privacy policy; we never see or store your card, UPI or bank details.</li>
-<li><strong>Purpose:</strong> only to sign you in, activate and verify your plan on your account across your computers, handle duplicate or failed payment reversals, send account emails (verification, password reset, payment receipt), provide support, and meet tax and accounting duties.</li>
-<li><strong>Retention:</strong> account data is kept while your account exists. Payment records (payment ids, amounts, dates, email) are kept for as long as Indian tax and accounting law requires, currently up to <strong>8 years</strong>, even if the account is deleted.</li>
-<li><strong>Deletion:</strong> email <a href="mailto:nicklennox30@gmail.com">nicklennox30@gmail.com</a> from your account email to delete your account. We delete it from Supabase, except payment records we must legally keep.</li>
-<li><strong>Service providers (subprocessors):</strong> Supabase (authentication, database and server functions; project hosted in Mumbai, India), Brevo (transactional account emails, if configured) and Razorpay (payments, Razorpay Software Pvt. Ltd.). Some providers may process limited data in countries outside India. We share data with them only to run the service, not for their own marketing.</li>
-<li><strong>Still local only:</strong> your leads, consultants, notes, templates and settings are <strong>never</strong> sent to our servers or to these providers.</li>
+<li><strong>Purpose:</strong> only to sign you in, activate and verify your plan on your account across your computers, run your team's workspace, handle duplicate or failed payment reversals, send account and team emails, provide support, and meet tax and accounting duties.</li>
+<li><strong>Retention:</strong> account data is kept while your account exists. Payment records (payment ids, plan, amount, currency and dates) are kept for as long as Indian tax and accounting law requires, currently up to <strong>8 years</strong>, even if the account is deleted; when you delete your account, they are kept without your user id, so they no longer point to your name or email. Razorpay keeps its own record of the payment under its own policy.</li>
+<li><strong>Deletion:</strong> you can delete your account yourself (section 7).</li>
 <li>Your plan is delivered to the extension as a digitally signed license, which the extension verifies offline. Older license keys issued by email continue to work the same way.</li>
 <li>Messages you send us by email are handled by your email provider under its own privacy policy.</li>
 </ul>
 
+<h3>Service providers (sub-processors)</h3>
+<ul>
+<li><strong>Supabase</strong>: sign-in, database, file storage and server functions; project hosted in Mumbai, India. Holds account data, team data, the encrypted Solo copy and inbox, and feedback.</li>
+<li><strong>Razorpay</strong> (Razorpay Software Pvt. Ltd., India): payments.</li>
+<li><strong>Cloudflare</strong>: Email Routing receives mail sent to team and personal inbox addresses and passes it to our server.</li>
+<li><strong>Cloudflare</strong> (DNS lookups): when you type a contact's email in the web app, our server asks Cloudflare's public DNS service whether that email's <em>domain</em> takes mail (the part after the @, never the full address). The answer is kept for 7 days per domain.</li>
+<li><strong>Brevo</strong>: account emails, team invitations, morning reports and plan notices.</li>
+<li><strong>Google</strong>: "Continue with Google" sign-in, only if you choose it.</li>
+<li><strong>Microsoft</strong>: "Continue with Microsoft" sign-in in the web app, only if you choose it.</li>
+</ul>
+<p>Some providers may process limited data in countries outside India. We share data with them only to run the service, not for their own marketing. Your personal leads, consultants, notes, templates and settings are <strong>never</strong> sent to our servers or to these providers in readable form; with Solo sync on or an account backup, only the encrypted copy in section 2a is stored, and we cannot read it.</p>
+
 <h2>5a. Feedback and bug reports</h2>
 <p>BenchPilot has a <strong>Report a bug / Send feedback</strong> button (in the LinkedIn drawer, the popup, the dashboard and Settings, and the Alt+Shift+F shortcut). <strong>Nothing is sent unless you press Send.</strong></p>
 <ul>
-<li><strong>What is sent:</strong> the message you type, whether it is a Bug or an Idea, and a small fixed set of details: the page address (without any query string or fragment; on LinkedIn only the path, for example "/feed/"), which BenchPilot screen you were on (drawer, popup, dashboard view or settings), the extension version, your plan (Free, Basic or Pro), your browser and operating system in short form (for example "Chrome 130 / Windows"), your language and the time. If you are signed in, your account email and user id are attached so we can reply to you.</li>
+<li><strong>What is sent:</strong> the message you type, whether it is a Bug or an Idea, and a small fixed set of details: the page address (without any query string or fragment; on LinkedIn only the path, for example "/feed/"), which BenchPilot screen you were on (drawer, popup, dashboard view or settings), the extension version, your plan (Free, Solo, or an older Basic or Pro plan), your browser and operating system in short form (for example "Chrome 130 / Windows"), your language and the time. If you are signed in, your account email and user id are attached so we can reply to you.</li>
 <li><strong>Never sent:</strong> your leads, contacts, consultants, notes, templates, resumes or any other data from your browser storage.</li>
 <li><strong>Optional screenshot:</strong> only if you tick "Include a screenshot of this screen". The picture shows what is on your screen, which may include other people's names and posts on LinkedIn. It is off by default. If you do not tick it, no picture is taken. You can untick it at any time before sending.</li>
 <li><strong>Where it goes:</strong> to our server on Supabase (hosted in Mumbai, India). Reports are stored in a private database table and screenshots in a private storage area that is not publicly accessible. Only the founder can read them, through a protected admin console.</li>
 <li><strong>If you are offline:</strong> the report is kept on your computer (up to 20) and sent automatically when you are back online. Unsent reports stay only in your browser.</li>
 <li><strong>Spam protection:</strong> to limit abuse we keep a salted one-way hash of your account id (or, if you are not signed in, of your IP address and browser). We do not store your raw IP address.</li>
 <li><strong>Purpose:</strong> to fix bugs, answer you and improve BenchPilot. Reports are not used for advertising and are never sold.</li>
-<li><strong>Retention:</strong> reports and their screenshots are deleted after <strong>12 months</strong>.</li>
+<li><strong>Retention:</strong> reports and their screenshots are deleted after <strong>12 months</strong>. If you delete your account sooner, your reports are kept as anonymous reports, with your email and user id removed.</li>
 <li><strong>Deletion:</strong> to have a report or screenshot deleted sooner, email <a href="mailto:nicklennox30@gmail.com">nicklennox30@gmail.com</a> from your account email (or quote the time you sent it).</li>
 <li><strong>Service provider:</strong> Supabase (database and storage).</li>
-</ul>
-
-<h2>5c. Two optional questions</h2>
-<p>BenchPilot asks two short questions. Both are optional, and nothing is sent unless you answer.</p>
-<ul>
-<li><strong>"How did you hear about BenchPilot?"</strong> on the welcome page after you install. If you pick an answer, BenchPilot sends that answer and its version number, once. It is not linked to your account, even if you are signed in.</li>
-<li><strong>After you remove BenchPilot,</strong> Chrome opens a short page on this website asking why. The page address carries only the BenchPilot version (for example "?v=1.13.0"). If you press Send, your answers (the reason you picked, anything you type, and how you heard about BenchPilot) are sent with that version number. Please do not type your name, email or other personal details.</li>
-<li><strong>Never sent:</strong> your name, email, account or user id, leads, contacts, consultants or any other data from your browser.</li>
-<li><strong>Where it goes:</strong> the same private feedback table on Supabase (Mumbai, India), with the same spam protection, purpose and 12-month retention as feedback reports (section 5a).</li>
 </ul>
 
 <h2>5b. Anonymous error reports (optional, off by default)</h2>
@@ -115,33 +199,81 @@
 <li><strong>Service provider:</strong> Supabase (database).</li>
 </ul>
 
-<h2>6. Emails you send</h2>
-<p>The "Draft email" button opens Gmail, Outlook or your default email app with a pre-filled message. The email is sent by that service under its own privacy policy. BenchPilot does not send emails itself and cannot read your mailbox.</p>
-
-<h2>7. Your rights and choices</h2>
+<h2>5c. Two optional questions</h2>
+<p>BenchPilot asks two short questions. Both are optional, and nothing is sent unless you answer.</p>
 <ul>
-<li><strong>Delete your data:</strong> delete individual leads or clear all leads from the dashboard at any time, or uninstall the extension to remove all locally stored data.</li>
-<li><strong>Export:</strong> Basic and Pro users can export their data (leads, consultants and vendors) as CSV, Excel or JSON files. On every plan, Settings has a free full backup: a single file saved on your computer with your data and resumes (never your sign-in, licence or usage counts) that you can restore later. It is not sent to us.</li>
-<li><strong>Account and payment records:</strong> to access, correct or delete your account or license record, email <a href="mailto:nicklennox30@gmail.com">nicklennox30@gmail.com</a>. We may retain payment references where the law requires it for accounting.</li>
+<li><strong>"How did you hear about BenchPilot?"</strong> on the welcome page after you install. If you pick an answer, BenchPilot sends that answer and its version number, once. It is not linked to your account, even if you are signed in.</li>
+<li><strong>After you remove BenchPilot,</strong> Chrome opens a short page on this website asking why. The page address carries only the BenchPilot version (for example "?v=1.13.0"). If you press Send, your answers (the reason you picked, anything you type, and how you heard about BenchPilot) are sent with that version number. Please do not type your name, email or other personal details.</li>
+<li><strong>Never sent:</strong> your name, email, account or user id, leads, contacts, consultants or any other data from your browser.</li>
+<li><strong>Where it goes:</strong> the same private feedback table on Supabase (Mumbai, India), with the same spam protection, purpose and 12-month retention as feedback reports (section 5a).</li>
 </ul>
 
-<h2>8. Your responsibilities</h2>
-<p>You are responsible for using contact information you collect in line with the laws that apply to you (for example CAN-SPAM in the US, and India's data protection rules) and with the terms of the websites you use, including LinkedIn's terms.</p>
+<h2>5d. Plan checks, feature switches and announcements</h2>
+<p>While you are signed in, the extension asks our server from time to time which plan your account has. The request carries only your sign-in token. The answer also carries a short list of settings we control: switches that can turn a feature off (for example if LinkedIn changes and a feature misbehaves), short announcements, and the oldest BenchPilot version that still works well. Your extension compares that version with its own on your computer. Nothing from your book is sent.</p>
 
-<h2>9. Children</h2>
+<h2>5e. "Bring BenchPilot to your team" referral</h2>
+<p>You can share a pilot link with a firm. If the firm creates its team workspace through your link and makes its <strong>first payment</strong>, you get <strong>90 days of Solo</strong>, once per firm. We store the link's code, your user id, the team it was used for and its state. We never store the name or email of the person you shared it with. If that first payment is fully refunded, the reward is taken back. If you delete your account, a reward already given is kept as an anonymous record (without your user id); open links are deleted.</p>
+
+<h2>6. Emails you send</h2>
+<p>The "Draft email" button opens Gmail, Outlook or your default email app with a pre-filled message. The email is sent by that service under its own privacy policy. BenchPilot does not send your emails and cannot read your mailbox. Only our own account, invitation, report and notice emails are sent through Brevo (section 5).</p>
+
+<h2>7. Deleting your account and your data</h2>
+<ul>
+<li><strong>Delete your account yourself:</strong> open Account in the extension (or in the web app), choose <strong>Delete my account</strong> and type your account email to confirm. This deletes your sign-in, your plan, your encrypted synced copy and resume files, your account backup, and your personal inbox, straight away.</li>
+<li><strong>If you own a team</strong>, transfer ownership or delete the workspace first; until then the account cannot be deleted. If you are a member, you leave the team, and what you added stays with the team.</li>
+<li><strong>What is kept:</strong> payment records, without your user id, for tax and accounting (section 5); feedback reports, as anonymous reports without your email or user id, until their 12 months end (section 5a); a referral reward already given, as an anonymous record (section 5e); an internal audit entry that an account deleted itself (counts only, no email); and, if you ever started a team pilot, a one-way hash of your email (never the email itself), kept to stop repeat free pilots.</li>
+<li><strong>On your computers:</strong> the data in your browser is not touched by account deletion. Delete individual leads or clear all leads from the dashboard at any time, or uninstall the extension to remove all locally stored data.</li>
+<li>If you cannot sign in, email <a href="mailto:nicklennox30@gmail.com">nicklennox30@gmail.com</a> from your account email and we will delete the account for you.</li>
+</ul>
+
+<h2>8. Retention at a glance</h2>
+<ul>
+<li><strong>Data on your computer:</strong> until you delete it or uninstall the extension.</li>
+<li><strong>Account:</strong> while your account exists.</li>
+<li><strong>Payment records:</strong> up to 8 years (tax and accounting law), without your user id once you delete your account.</li>
+<li><strong>Solo synced copy and resume files:</strong> until you turn sync off or delete your account; <strong>60 days</strong> after your Solo plan ends.</li>
+<li><strong>Account backup (Free, optional):</strong> while your account exists; deleted after <strong>365 days</strong> without a new backup, or when you delete it.</li>
+<li><strong>Device pairing requests:</strong> expire after 10 minutes; deleted within a day.</li>
+<li><strong>Personal inbox:</strong> 90 days per message (30 days after you ignore one); all of it when sync is turned off.</li>
+<li><strong>Team workspace:</strong> while the team has a pilot or paid plan; then 30 days read-only, then closed; deleted for good 30 days after closing, with a warning to the owner at least 7 days before.</li>
+<li><strong>Team inbox:</strong> 90 days per message (30 days after it is ignored).</li>
+<li><strong>Free team pilot record:</strong> a one-way hash of your email is kept to stop repeat free pilots, also after you delete your account. It is used only to check whether an email has already had a free pilot.</li>
+<li><strong>Feedback, optional answers and error reports:</strong> 12 months.</li>
+</ul>
+
+<h2>9. Your rights and choices</h2>
+<ul>
+<li><strong>Access and export:</strong> on every plan, Settings has a free full backup: a single file saved on your computer with your data and resumes (never your sign-in, licence or usage counts) that you can restore later. It is not sent to us. Solo users (and holders of an older Basic or Pro plan) can also export their data (leads, consultants and vendors) as CSV, Excel or JSON files. A team owner can export the whole team book. To get a copy of the account and payment data we hold about you, email us.</li>
+<li><strong>Correction:</strong> you can edit your data in BenchPilot. To correct your account or payment record, email us.</li>
+<li><strong>Erasure:</strong> delete your account yourself (section 7), turn sync off, delete your account backup, or delete data in BenchPilot.</li>
+<li><strong>Withdraw consent:</strong> switch off error reports, turn sync off, delete your account backup, turn an inbox address off, or delete your account. Withdrawing does not affect what was done before.</li>
+<li><strong>Nominate:</strong> you can name another person to exercise these rights for you if you die or become unable to; email us with their name and contact details.</li>
+<li><strong>Team data:</strong> if your details are in a company's team book (as a member, a consultant or a vendor contact), that company controls them; please ask it first. If you write to us, we will pass your request to the company. Details in someone's Free book stay on their own computer, and we cannot see them.</li>
+<li><strong>Complaints:</strong> contact our Grievance Officer (section 15). If you are not satisfied with the answer, you can complain to the Data Protection Board of India.</li>
+<li>We answer requests from your account email within the times in section 15.</li>
+</ul>
+
+<h2>10. Transfers outside India</h2>
+<p>Our main database and file storage are in Mumbai, India. If you use BenchPilot from outside India, your data is sent to and stored in India. Some of our service providers (section 5) may process limited data, such as email addresses for delivery or email in transit, in other countries. We transfer data outside India only as Indian law allows.</p>
+
+<h2>11. Your responsibilities</h2>
+<p>You are responsible for using contact information you collect in line with the laws that apply to you (for example CAN-SPAM in the US, and India's data protection rules) and with the terms of the websites you use, including LinkedIn's terms. Only add contacts you have the right to add, and never import an employer's or client's confidential lists.</p>
+
+<h2>12. Children</h2>
 <p>BenchPilot is a professional tool and is not directed to children under 16. We do not knowingly collect personal information from children.</p>
 
-<h2>10. Changes to this policy</h2>
-<p>If we change this policy we will update the effective date above and, for material changes, note it in the extension's release notes. Continued use after a change means you accept the updated policy.</p>
+<h2>13. Changes to this policy</h2>
+<p>If we change this policy we will update the date above and, for material changes, note it in the extension's release notes or tell account holders by email. Continued use after a change means you accept the updated policy.</p>
 
-<h2>11. Contact</h2>
-<p>Questions or deletion requests: <a href="mailto:nicklennox30@gmail.com">nicklennox30@gmail.com</a>. Operator: Rakessh.D, India.</p>
+<h2>14. Contact</h2>
+<p>Questions, requests and complaints: <a href="mailto:nicklennox30@gmail.com">nicklennox30@gmail.com</a>. Operator: Rakessh.D, India.</p>
 
-<h2>12. Grievance Officer (India, Digital Personal Data Protection Act, 2023)</h2>
+<h2>15. Grievance Officer (India, Digital Personal Data Protection Act, 2023)</h2>
 <ul>
 <li><strong>Grievance Officer:</strong> Rakessh D (founder), BenchPilot, Hyderabad, Telangana, India</li>
 <li><strong>Email:</strong> <a href="mailto:nicklennox30@gmail.com">nicklennox30@gmail.com</a></li>
 <li><strong>Response times:</strong> we acknowledge your complaint within <strong>7 days</strong> and resolve it within <strong>30 days</strong>.</li>
+<li><strong>Escalation:</strong> if we do not resolve your complaint, you can take it to the Data Protection Board of India.</li>
 </ul>
 <p>BenchPilot is not affiliated with or endorsed by LinkedIn Corporation.</p>
 </div></main>
@@ -149,12 +281,14 @@
 <footer class="foot">
   <div class="wrap foot-in">
     <div class="foot-brand">
-      <a class="mark" href="index.html"><img src="assets/logo-target.svg" alt="" width="30" height="30"><span>BenchPilot</span></a>
+      <a class="mark" href="index.html"><img src="assets/logo-target.svg" alt="" width="28" height="28"><span>BenchPilot</span></a>
       <p>The Chrome extension for bench sales recruiters and US IT staffing teams.</p>
+      <a class="btn btn-y btn-sm" href="https://chromewebstore.google.com/detail/benchpilot-recruiter-lead/apmkfnppjohjoiacehfjehcegldkkami">Add to Chrome, free</a>
     </div>
-    <nav class="foot-col" aria-label="Product"><b>Product</b><a href="index.html#product">The drawer</a><a href="guide/index.html">Playbook</a><a href="index.html#pricing">Pricing</a><a href="index.html#questions">Questions</a></nav>
-    <nav class="foot-col" aria-label="Company"><b>Company</b><a href="contact.html">Contact us</a><a href="refund.html">Refund policy</a><a href="shipping.html">Shipping &amp; delivery</a></nav>
-    <nav class="foot-col" aria-label="Legal"><b>Legal</b><a href="privacy.html">Privacy</a><a href="terms.html">Terms</a></nav>
+    <nav class="foot-col" aria-label="Product"><b>Product</b><a href="index.html#how">How it works</a><a href="pricing.html">Pricing</a><a href="index.html#teams">Teams</a><a href="https://chromewebstore.google.com/detail/benchpilot-recruiter-lead/apmkfnppjohjoiacehfjehcegldkkami">Chrome Web Store</a></nav>
+    <nav class="foot-col" aria-label="Help"><b>Help</b><a href="guide/index.html">Playbook</a><a href="help/index.html">Help centre</a><a href="contact.html">Contact us</a></nav>
+    <nav class="foot-col" aria-label="Trust"><b>Trust</b><a href="security.html">Security</a><a href="privacy.html">Privacy</a><span>Never clicks or messages on LinkedIn.</span></nav>
+    <nav class="foot-col" aria-label="Legal"><b>Legal</b><a href="terms.html">Terms</a><a href="refund.html">Refund policy</a><a href="shipping.html">Shipping &amp; delivery</a></nav>
   </div>
   <div class="wrap foot-base"><span>© 2026 BenchPilot</span><span>Not affiliated with LinkedIn Corporation. LinkedIn is a trademark of its owner.</span></div>
 </footer>

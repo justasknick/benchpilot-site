@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Encrypted sync (Solo) – BenchPilot help</title>
+<meta name="description" content="Sync puts your BenchPilot book and resume files on every computer you sign in on, encrypted in your browser so only you can read them.">
+<!-- DRAFT for Nick: noindex, not in sitemap.xml and not linked from the other pages until he publishes it. -->
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#f8f7f2" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#17141f" media="(prefers-color-scheme: dark)">
+<meta name="color-scheme" content="light dark">
+<link rel="icon" type="image/svg+xml" href="../assets/logo-target.svg">
+<link rel="stylesheet" href="../site.css">
+</head>
+<body class="page">
+<a class="skip" href="#main">Skip to content</a>
+<header class="nav" id="nav">
+  <div class="nav-in">
+    <a class="mark" href="../index.html" aria-label="BenchPilot home"><img src="../assets/logo-target.svg" alt="" width="28" height="28"><span>BenchPilot</span></a>
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="nav-menu" aria-label="Open menu"><span></span></button>
+    <div class="nav-menu" id="nav-menu">
+      <nav class="nav-links" aria-label="Main">
+        <a href="../index.html#how">Product</a>
+        <a href="../pricing.html">Pricing</a>
+        <a href="../index.html#teams">Teams</a>
+        <a href="../security.html">Security</a>
+        <a href="../help/index.html">Help</a>
+      </nav>
+      <div class="nav-end">
+        <a class="nav-signin" href="https://justasknick.github.io/benchpilot-app/">Sign in</a>
+        <a class="btn btn-y btn-sm" href="https://chromewebstore.google.com/detail/benchpilot-recruiter-lead/apmkfnppjohjoiacehfjehcegldkkami">Add to Chrome</a>
+      </div>
+    </div>
+  </div>
+  <script src="../assets/nav.js" defer></script>
+</header>
+<main id="main" class="legal"><div class="wrap narrow">
+<p class="crumb"><a href="index.html">Help</a> · Sync</p>
+<h1>Encrypted sync (Solo)</h1>
+<p class="lead">Sync puts your BenchPilot book and resume files on every computer you sign in on, encrypted in your browser so only you can read them. On Solo it is on by default.</p>
+
+<h2 id="turn-on">What happens on Solo</h2>
+<ol>
+<li>Sign in to BenchPilot on the Solo plan. Sync turns on by itself. You do not need to set anything up.</li>
+<li>BenchPilot makes your own encryption key on your computer. Your data is encrypted before it leaves your computer, and the first sync uploads it.</li>
+<li>A sheet says "Your book now syncs to your account, encrypted. Save your recovery code". Save the code (see below).</li>
+</ol>
+<p>If this computer has data from a different BenchPilot account, sync does not start by itself. Open <strong>Settings &gt; Sync</strong> and choose what to do.</p>
+
+<h2 id="recovery-code">Save your recovery code</h2>
+<ul>
+<li>The recovery code has 24 characters. It always unlocks your synced data.</li>
+<li>Press <strong>Copy</strong> or <strong>Download</strong> (a .txt file) and keep it somewhere safe, for example in your password manager. Then press <strong>I saved it</strong>.</li>
+<li>Until you press I saved it, the popup and Settings show a small reminder.</li>
+<li>We never receive your recovery code or your key, so <strong>we cannot read your synced data and we cannot reset it for you</strong>.</li>
+</ul>
+
+<h2 id="pairing">Set up a second computer or the web app</h2>
+<ol>
+<li>On the new computer, press <strong>Send a request</strong>. It shows a 6-letter code like ABC-DEF.</li>
+<li>On a computer that already syncs, open <strong>Settings &gt; Sync</strong> and keep it open. An approve card shows the new computer's name and the time. Press <strong>Continue</strong>.</li>
+<li><strong>Type the code from the new computer</strong> into the approve card, then press <strong>Approve</strong>. A wrong code cancels the request and sends nothing.</li>
+<li>Back on the new computer, tick <strong>I approved on my other computer and typed this code there</strong>. It then gets your key and starts syncing. A request expires after 10 minutes.</li>
+</ol>
+<p><strong>Only approve if you are setting up BenchPilot on another computer right now.</strong> If you did not ask for it, press <strong>Not me</strong>.</p>
+<p>No other computer at hand? Use your recovery code instead, or your passphrase if you added one.</p>
+
+<h2 id="passphrase">Add a passphrase (optional)</h2>
+<ul>
+<li>A passphrase is not needed. Add one in <strong>Settings &gt; Sync &gt; Add a passphrase</strong> if you want to unlock with something you remember.</li>
+<li>Use at least 12 characters. Weak ones are refused. This is not your account password: use a different one.</li>
+<li>Your recovery code keeps working after you add a passphrase.</li>
+<li>Forgot the passphrase? Use your recovery code, or approve the computer from another computer, then change the passphrase.</li>
+<li>Lost the recovery code and the passphrase, and no computer still has the key? The synced copy cannot be recovered, by you or by us. The data on each of your computers is not affected: turn sync off and on again to start a new synced copy from a computer that has your data.</li>
+</ul>
+
+<h2 id="remember">Remember the key on this computer</h2>
+<ul>
+<li>A computer that set up sync, was approved, or was unlocked with <strong>Remember on this computer</strong> (ticked by default) keeps your key. You are not asked for your recovery code after every browser restart.</li>
+<li>The key is sealed with a browser key that web pages and other extensions cannot read. It is never in your backup files and never sent to us. It is <strong>not</strong> protected against someone who can read your computer's files (for example malware, or a stolen computer without disk encryption): with it and your sign-in they could open your synced copy. Turn on disk encryption (BitLocker on Windows, FileVault on Mac).</li>
+<li>The key is used only for the same account. If someone else signs in here, it is not used.</li>
+<li>On a shared computer, press <strong>Settings &gt; Sync &gt; Forget the key on this computer</strong>. BenchPilot then asks for your recovery code (or passphrase) after every browser restart.</li>
+</ul>
+
+<h2 id="replace-keys">Replace my keys</h2>
+<p>Use <strong>Settings &gt; Sync &gt; Replace my keys</strong> if you think someone saw your recovery code or had your key. It makes a new encryption key and a new recovery code and uploads your synced data again under the new key. Your old recovery code stops working. Your other computers ask once to be approved or unlocked again. Tick <strong>Also re-encrypt resume files</strong> to give every synced resume file a new key too; the old copies are deleted from the server.</p>
+
+<h2 id="limits">Limits</h2>
+<ul>
+<li>Your book: up to 50 MB per account (5 MB per data set).</li>
+<li>Resume files: up to 5 MB a file, 200 MB and 1,000 files per account. A file over the limit stays only on the computer where it is.</li>
+</ul>
+
+<h2 id="turn-off">Turning sync off</h2>
+<p>Open <strong>Settings &gt; Sync &gt; Turn off sync</strong> and type <strong>DELETE</strong> to confirm. This deletes your synced copy, resume files and personal inbox from our server, and the key on this computer. The data on your computers stays exactly as it is.</p>
+<p>BenchPilot remembers your choice for your account. Sync does not turn itself on again. To use it again, press <strong>Turn on sync</strong> in Settings.</p>
+
+<h2 id="plan-ends">When your Solo plan ends</h2>
+<p>Sync pauses. The synced copy stays on our server for <strong>60 days</strong>; renew within that time and sync carries on. After 60 days it is deleted. We email you about 7 days and again 1 day before a paid plan ends, and about 7 days before the paused copy is deleted. The data on your computers is never touched. An account backup (below) is not deleted after 60 days; it follows its own rule.</p>
+
+<h2 id="web">My book on the web</h2>
+<p>With sync on, you can open your book in the BenchPilot web app. Unlock it by approving it from your computer (type the code the web app shows into the extension), with your recovery code, or with your passphrase if you added one. The key is kept only in the tab's memory and is dropped when you sign out, close the tab or leave it idle for 30 minutes.</p>
+
+<h2 id="account-backup">Free plan: back up to your account</h2>
+<p>On the Free plan, when you are signed in, you can keep one encrypted backup in your account. It is <strong>off until you turn it on</strong>. It is not live sync.</p>
+<ul>
+<li>Open <strong>Settings &gt; Sync &gt; Back up to my account</strong> and press <strong>Back up now</strong>. Save the recovery code it shows, like on Solo.</li>
+<li>Tick <strong>Back up automatically every week</strong> if you want it done for you. It is off by default.</li>
+<li>One backup per account, up to 5 MB encrypted. Resume files are not included. A new backup replaces the old one. Settings shows the date of the last one.</li>
+<li>Only you can read it. We cannot.</li>
+<li>It is kept while your account exists. It is deleted after 365 days without a new backup. <strong>Delete my account backup</strong> deletes it at once.</li>
+</ul>
+<h3 id="restore">Restore it on a new computer</h3>
+<ol>
+<li>Install BenchPilot and sign in to the same account.</li>
+<li>Open <strong>Settings &gt; Sync &gt; Restore from my account</strong>.</li>
+<li>Approve the new computer from your old one (type the code the new computer shows), or enter your recovery code.</li>
+<li>BenchPilot saves a safety backup of the new computer first, then shows the normal restore screen.</li>
+</ol>
+<p>If you buy Solo later, sync starts with the same key.</p>
+<p>Not signed in? Nothing changes. Your data stays only on your computer.</p>
+
+<p>More detail: <a href="../privacy.html">Privacy Policy</a>, section 2a.</p>
+</div></main>
+
+<footer class="foot">
+  <div class="wrap foot-in">
+    <div class="foot-brand">
+      <a class="mark" href="../index.html"><img src="../assets/logo-target.svg" alt="" width="28" height="28"><span>BenchPilot</span></a>
+      <p>The Chrome extension for bench sales recruiters and US IT staffing teams.</p>
+      <a class="btn btn-y btn-sm" href="https://chromewebstore.google.com/detail/benchpilot-recruiter-lead/apmkfnppjohjoiacehfjehcegldkkami">Add to Chrome, free</a>
+    </div>
+    <nav class="foot-col" aria-label="Product"><b>Product</b><a href="../index.html#how">How it works</a><a href="../pricing.html">Pricing</a><a href="../index.html#teams">Teams</a><a href="https://chromewebstore.google.com/detail/benchpilot-recruiter-lead/apmkfnppjohjoiacehfjehcegldkkami">Chrome Web Store</a></nav>
+    <nav class="foot-col" aria-label="Help"><b>Help</b><a href="../guide/index.html">Playbook</a><a href="../help/index.html">Help centre</a><a href="../contact.html">Contact us</a></nav>
+    <nav class="foot-col" aria-label="Trust"><b>Trust</b><a href="../security.html">Security</a><a href="../privacy.html">Privacy</a><span>Never clicks or messages on LinkedIn.</span></nav>
+    <nav class="foot-col" aria-label="Legal"><b>Legal</b><a href="../terms.html">Terms</a><a href="../refund.html">Refund policy</a><a href="../shipping.html">Shipping &amp; delivery</a></nav>
+  </div>
+  <div class="wrap foot-base"><span>© 2026 BenchPilot</span><span>Not affiliated with LinkedIn Corporation. LinkedIn is a trademark of its owner.</span></div>
+</footer>
+</body>
+</html>

@@ -11,7 +11,12 @@
   var MIN_DAYS = 1;
   var MAX_DAYS = 366;
   var DAY_PRESETS = [7, 30, 90];
-  var TIERS = { basic: 'Basic', pro: 'Pro', free: 'Free' };
+  var TIERS = { solo: 'Solo', basic: 'Basic', pro: 'Pro', free: 'Free' };
+  // Paid tiers an admin may grant, best first (mirrors PAID_TIERS in supabase/functions/_shared/plans.js).
+  var GRANT_TIERS = ['solo', 'pro', 'basic'];
+  // Plan ids the payments filter accepts (mirrors PLANS in plans.js; the server rejects anything else).
+  var PLAN_IDS = ['solo_monthly', 'solo_yearly', 'solo_founding', 'basic_monthly', 'basic_yearly', 'pro_monthly', 'pro_yearly', 'founding',
+    'team_starter', 'team_team', 'team_agency', 'team_starter_yearly', 'team_team_yearly', 'team_agency_yearly'];
   var IST_OFFSET_MS = 5.5 * 60 * 60 * 1000;
   var UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
   var CONTROL_RE = /[\u0000-\u001f\u007f]/;
@@ -69,7 +74,7 @@
   function validateGrantForm(f) {
     f = f || {};
     var errors = {};
-    if (f.tier !== 'basic' && f.tier !== 'pro') errors.tier = 'Choose Basic or Pro.';
+    if (GRANT_TIERS.indexOf(f.tier) < 0) errors.tier = 'Choose Solo, Pro or Basic.';
     var days = typeof f.days === 'number' ? f.days : (/^\d+$/.test(String(f.days == null ? '' : f.days).trim()) ? Number(String(f.days).trim()) : NaN);
     if (!Number.isInteger(days) || days < MIN_DAYS || days > MAX_DAYS) errors.days = 'Days must be a whole number from ' + MIN_DAYS + ' to ' + MAX_DAYS + '.';
     var reason = normaliseReason(f.reason);
@@ -119,8 +124,10 @@
     amount_mismatch: 'Wrong amount',
     checkout_missing: 'No checkout on record',
     checkout_mismatch: 'Checkout is for another user or plan',
-    founding_over_cap: 'Founding offer was full (paid, plan granted)',
-    partial_refund: 'Partial refund (plan unchanged)'
+    founding_over_cap: 'Founding offer was full (paid, plan granted; a team also kept its founding price lock)',
+    lower_tier_paid: 'Paid an older, lower plan while a higher one was active (granted; offer a refund)',
+    partial_refund: 'Partial refund (plan unchanged)',
+    referral_refunded: 'Team payment refunded: the referrer\'s 3 free Solo months were taken back (re-grant by hand if fair)'
   };
   /** Machine reason -> short words; an unknown reason is shown as-is. */
   function issueReasonLabel(reason) {
@@ -129,6 +136,15 @@
   function issueCountText(n) {
     var c = Number.isFinite(n) && n > 0 ? Math.floor(n) : 0;
     return c === 0 ? 'No open payment issues' : c + (c === 1 ? ' open payment issue' : ' open payment issues');
+  }
+  // ---- team referrals (0021): one row of the user detail's "Team referrals" table ----
+  var REFERRAL_STATES = { open: 'Link not used yet', joined: 'Pilot started', rewarded: 'Rewarded (90 days Solo)', refunded: 'Reward taken back (payment refunded)', void: 'No reward' };
+  function referralStatus(r) {
+    var x = r || {};
+    var label = Object.prototype.hasOwnProperty.call(REFERRAL_STATES, x.state) ? REFERRAL_STATES[x.state] : '-';
+    if (x.state === 'open' && x.expires_at && Date.parse(x.expires_at) < Date.now()) label = 'Expired, not used';
+    if (x.state === 'void' && x.void_reason === 'self') label = 'No reward (own team)';
+    return label;
   }
   function paymentIssuesBody() { return { action: 'list_payment_issues' }; }
   function resolveIssueBody(issueId, note) { return { action: 'resolve_payment_issue', issue_id: issueId, note: note }; }
@@ -370,10 +386,10 @@
     return out;
   }
   var USER_FILTERS = {
-    q: 'text', plan: ['free', 'basic', 'pro'], source: ['paid', 'grant'], status: ['active', 'suspended', 'unconfirmed'],
+    q: 'text', plan: ['free'].concat(GRANT_TIERS), source: ['paid', 'grant'], status: ['active', 'suspended', 'unconfirmed'],
     signed_up_after: 'date', signed_up_before: 'date', sort: ['created_desc', 'created_asc', 'last_sign_in_desc', 'email_asc']
   };
-  var PAYMENT_FILTERS = { status: ['captured', 'refunded', 'failed'], plan: ['basic', 'pro'], from: 'date', to: 'date', q: 'text' };
+  var PAYMENT_FILTERS = { status: ['captured', 'refunded', 'failed'], plan: PLAN_IDS, from: 'date', to: 'date', q: 'text' };
   var AUDIT_FILTERS = { action: 'text', from: 'date', to: 'date', target_user: 'text' };
   function userFilter(raw) { return cleanFilter(raw, USER_FILTERS); }
   function paymentFilter(raw) { return cleanFilter(raw, PAYMENT_FILTERS); }
@@ -496,7 +512,9 @@
       { key: 'paid_basic', label: 'Basic (paid)', value: t.paid_basic | 0 },
       { key: 'paid_pro', label: 'Pro (paid)', value: t.paid_pro | 0 },
       { key: 'granted_basic', label: 'Basic (granted)', value: t.granted_basic | 0 },
-      { key: 'granted_pro', label: 'Pro (granted)', value: t.granted_pro | 0 }
+      { key: 'granted_pro', label: 'Pro (granted)', value: t.granted_pro | 0 },
+      { key: 'paid_solo', label: 'Solo (paid)', value: t.paid_solo | 0 },
+      { key: 'granted_solo', label: 'Solo (granted)', value: t.granted_solo | 0 }
     ];
     var total = segs.reduce(function (a, s) { return a + s.value; }, 0);
     var x = 0;
@@ -562,7 +580,137 @@
     return { cur: cur, prev: prev, delta: delta, hasPrev: hasPrev, text: text, dir: delta > 0 ? 'up' : delta < 0 ? 'down' : 'flat' };
   }
 
+  // Global caps (server hardening, migration 0030): metrics.rate_limits -> one dashboard row per cap.
+  // null (migration 0030 not applied yet) -> no rows. warn = refused at least once in 24 h, or at 80 % of the cap this hour.
+  var RATE_LIMIT_ROWS = [
+    { key: 'checkout_links', scope: 'checkout_global', cap: 'checkout_per_hour', label: 'Checkout links, last hour' },
+    { key: 'feedback_anon', scope: 'feedback_anon', cap: 'feedback_anon_per_hour', label: 'Anonymous reports, last hour' },
+    { key: 'feedback_error', scope: 'feedback_error', cap: 'feedback_error_per_hour', label: 'Error reports, last hour' },
+    { key: 'feedback_screenshot', scope: 'feedback_screenshot', cap: 'feedback_screenshot_per_hour', label: 'Screenshots, last hour' }
+  ];
+  function rateLimitRows(rl) {
+    if (!rl || typeof rl !== 'object') return [];
+    var last = rl.last_hour || {}, r24 = rl.refused_24h || {}, r7 = rl.refused_7d || {}, caps = rl.caps || {};
+    return RATE_LIMIT_ROWS.map(function (row) {
+      var n = Number(last[row.key]) || 0, cap = Number(caps[row.cap]) || 0, day = Number(r24[row.scope]) || 0, week = Number(r7[row.scope]) || 0;
+      return {
+        label: row.label,
+        value: formatCount(n) + (cap ? ' of ' + formatCount(cap) : ''),
+        sub: day ? formatCount(day) + ' refused in the last 24 hours (' + formatCount(week) + ' in 7 days)' : (week ? formatCount(week) + ' refused in 7 days' : 'None refused'),
+        warn: day > 0 || (cap > 0 && n >= cap * 0.8)
+      };
+    });
+  }
+
+  // ---------- team scorecard (S6, migration 0035) ----------
+  // Columns of the Teams table. type: 'text' sorts A-Z, 'num' and 'date' sort biggest / newest first on the first click.
+  var SCORECARD_COLUMNS = [
+    { key: 'name', label: 'Team', type: 'text' },
+    { key: 'tier', label: 'Plan', type: 'text' },
+    { key: 'state', label: 'State', type: 'text' },
+    { key: 'days_left', label: 'Days left', type: 'num' },
+    { key: 'members', label: 'Members', type: 'num' },
+    { key: 'weekly_active', label: 'Active 7d', type: 'num' },
+    { key: 'requirements_week', label: 'Reqs 7d', type: 'num' },
+    { key: 'submissions_week', label: 'Subs 7d', type: 'num' },
+    { key: 'guard_warned_week', label: 'Guard warnings 7d', type: 'num' },
+    { key: 'guard_overrides_week', label: 'Overrides 7d', type: 'num' },
+    { key: 'inbox_received_week', label: 'Inbox 7d', type: 'num' },
+    { key: 'last_report_on', label: 'Last report', type: 'date' }
+  ];
+  function scorecardBody() { return { action: 'team_scorecard' }; }
+  /** Sorted copy. Missing values always go last; ties keep the team name order. */
+  function sortScorecard(rows, key, dir) {
+    var col = SCORECARD_COLUMNS.filter(function (c) { return c.key === key; })[0] || SCORECARD_COLUMNS[0];
+    var sign = dir === 'asc' ? 1 : -1;
+    return (Array.isArray(rows) ? rows.slice() : []).sort(function (a, b) {
+      var x = a[col.key], y = b[col.key];
+      var xn = x == null || x === '', yn = y == null || y === '';
+      if (xn || yn) return xn && yn ? String(a.name || '').localeCompare(String(b.name || '')) : xn ? 1 : -1;
+      var c = col.type === 'num' ? Number(x) - Number(y) : String(x).localeCompare(String(y));
+      return c !== 0 ? c * sign : String(a.name || '').localeCompare(String(b.name || ''));
+    });
+  }
+  /** First click on a column: text A-Z, numbers and dates biggest first. Same column again: flip. */
+  function nextSort(cur, key) {
+    if (cur && cur.key === key) return { key: key, dir: cur.dir === 'asc' ? 'desc' : 'asc' };
+    var col = SCORECARD_COLUMNS.filter(function (c) { return c.key === key; })[0];
+    return { key: key, dir: col && col.type === 'text' ? 'asc' : 'desc' };
+  }
+  function scorecardTotals(rows) {
+    var list = Array.isArray(rows) ? rows : [];
+    var sum = function (k) { return list.reduce(function (t, r) { return t + (Number(r[k]) || 0); }, 0); };
+    return {
+      teams: list.length,
+      active_teams: list.filter(function (r) { return (Number(r.weekly_active) || 0) > 0; }).length,
+      pilots: list.filter(function (r) { return r.tier === 'pilot'; }).length,
+      guard_warned_week: sum('guard_warned_week'), submissions_week: sum('submissions_week')
+    };
+  }
+
+  // ---------- remote config (S7, migration 0035) ----------
+  // Mirrors supabase/functions/_shared/remote-config.js; the server checks everything again.
+  var REMOTE_FEATURES = ['sync', 'team', 'coach']; // the build's FEATURES (BenchPilot-Extension/lib/config.js)
+  var SITE_PREFIX = 'https://justasknick.github.io/benchpilot-site/';
+  var SEVERITIES = ['info', 'warning', 'critical'];
+  var MAX_ANNOUNCEMENTS = 5;
+  var MAX_ANN_TEXT = 280;
+  var VERSION_RE = /^\d{1,3}\.\d{1,3}\.\d{1,3}$/;
+  function remoteConfigBody() { return { action: 'get_remote_config' }; }
+  function setRemoteBody(key, value, reason) { return { action: 'set_remote_config', key: key, value: value, reason: normaliseReason(reason) }; }
+  /** rows from get_remote_config -> { features, announcements, min_version, meta: { key: { updated_at, updated_by_email } } } */
+  function remoteState(rows) {
+    var out = { features: {}, announcements: [], min_version: {}, meta: {} };
+    (Array.isArray(rows) ? rows : []).forEach(function (r) {
+      if (!r || ['features', 'announcements', 'min_version'].indexOf(r.key) < 0) return;
+      out[r.key] = r.value;
+      out.meta[r.key] = { updated_at: r.updated_at || null, updated_by_email: r.updated_by_email || null };
+    });
+    if (!out.features || typeof out.features !== 'object' || Array.isArray(out.features)) out.features = {};
+    if (!Array.isArray(out.announcements)) out.announcements = [];
+    if (!out.min_version || typeof out.min_version !== 'object') out.min_version = {};
+    return out;
+  }
+  /** Checked boxes ("switch off") -> { name: false }. Only OFF switches exist. */
+  function featuresValue(offNames) {
+    var v = {};
+    (offNames || []).forEach(function (n) { if (REMOTE_FEATURES.indexOf(n) >= 0) v[n] = false; });
+    return v;
+  }
+  function newAnnouncementId(nowMs) { return 'a-' + Math.floor(Number(nowMs) || 0).toString(36); }
+  /** Form fields -> { ok, value | error }. Plain text only, links only to the website. */
+  function validateAnnouncement(f) {
+    var text = typeof f.text === 'string' ? f.text.trim() : '';
+    if (!text) return { ok: false, error: 'Write the announcement text.' };
+    if (text.length > MAX_ANN_TEXT) return { ok: false, error: 'Keep the text to ' + MAX_ANN_TEXT + ' characters.' };
+    if (CONTROL_RE.test(text) || /[<>]/.test(text)) return { ok: false, error: 'Plain text only (no line breaks, < or >).' };
+    var link = typeof f.link === 'string' ? f.link.trim() : '';
+    if (link && (link.indexOf(SITE_PREFIX) !== 0 || /[\s"'<>\\`]/.test(link) || link.length > 300)) return { ok: false, error: 'The link must be a page on ' + SITE_PREFIX };
+    if (SEVERITIES.indexOf(f.severity) < 0) return { ok: false, error: 'Choose a severity.' };
+    if (!validYmd(f.starts_on) || !validYmd(f.ends_on)) return { ok: false, error: 'Choose a start and an end date.' };
+    if (f.ends_on < f.starts_on) return { ok: false, error: 'The end date is before the start date.' };
+    if (!/^[a-z0-9][a-z0-9-]{0,39}$/.test(String(f.id || ''))) return { ok: false, error: 'Invalid id.' };
+    var v = { id: f.id, text: text, severity: f.severity, starts_on: f.starts_on, ends_on: f.ends_on, dismissible: f.dismissible !== false };
+    if (link) v.link = link;
+    return { ok: true, value: v };
+  }
+  function validateMinVersion(v) {
+    var s = typeof v === 'string' ? v.trim() : '';
+    if (!s) return { ok: true, value: {} };
+    return VERSION_RE.test(s) ? { ok: true, value: { version: s } } : { ok: false, error: 'Write a version like 1.19.0.' };
+  }
+  function announcementStatus(a, today) {
+    if (a.ends_on < today) return 'Ended';
+    if (a.starts_on > today) return 'Scheduled';
+    return 'Live';
+  }
+
   return {
+    SCORECARD_COLUMNS: SCORECARD_COLUMNS, scorecardBody: scorecardBody, sortScorecard: sortScorecard, nextSort: nextSort, scorecardTotals: scorecardTotals,
+    REMOTE_FEATURES: REMOTE_FEATURES, SITE_PREFIX: SITE_PREFIX, SEVERITIES: SEVERITIES, MAX_ANNOUNCEMENTS: MAX_ANNOUNCEMENTS, MAX_ANN_TEXT: MAX_ANN_TEXT,
+    normaliseReason: normaliseReason, remoteConfigBody: remoteConfigBody, setRemoteBody: setRemoteBody, remoteState: remoteState, featuresValue: featuresValue,
+    newAnnouncementId: newAnnouncementId, validateAnnouncement: validateAnnouncement, validateMinVersion: validateMinVersion, announcementStatus: announcementStatus,
+    rateLimitRows: rateLimitRows,
     GOAL_USERS: GOAL_USERS, GOAL_DATE: GOAL_DATE, GROWTH_DAYS: GROWTH_DAYS, growthBody: growthBody, daysBetween: daysBetween,
     parseInstalls: parseInstalls, growthPace: growthPace, weekCompare: weekCompare,
     MAX_BULK: MAX_BULK, PAGE_SIZE: PAGE_SIZE, EXPORT_PAGE: EXPORT_PAGE, EXPORT_MAX_ROWS: EXPORT_MAX_ROWS, RANGES: RANGES, USER_SORTS: USER_SORTS,
@@ -586,7 +734,7 @@
     feedbackFilter: feedbackFilter, feedbackBody: feedbackBody, feedbackUpdateBody: feedbackUpdateBody, feedbackScreenshotBody: feedbackScreenshotBody,
     purgeFeedbackBody: purgeFeedbackBody, safeScreenshotUrl: safeScreenshotUrl, feedbackContextSummary: feedbackContextSummary,
     feedbackToText: feedbackToText, feedbackBatchText: feedbackBatchText,
-    issueReasonLabel: issueReasonLabel, issueCountText: issueCountText, paymentIssuesBody: paymentIssuesBody, resolveIssueBody: resolveIssueBody,
+    issueReasonLabel: issueReasonLabel, referralStatus: referralStatus, issueCountText: issueCountText, paymentIssuesBody: paymentIssuesBody, resolveIssueBody: resolveIssueBody,
     decodeJwtClaims: decodeJwtClaims, tokenAal: tokenAal, normaliseSession: normaliseSession,
     needsRefresh: needsRefresh, pickFactors: pickFactors,
     authErrorMessage: authErrorMessage, adminErrorMessage: adminErrorMessage
