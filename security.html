@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<!-- DRAFT for Nick (backlog X2). Not linked from the navigation, not in sitemap.xml. On approval: remove the robots meta, add nav + footer links and a sitemap entry (and add the page to test/seo.test.js publicPages). Every claim has a source in the PR body. -->
+<meta name="robots" content="noindex">
+<title>Security – BenchPilot</title>
+<meta name="description" content="How BenchPilot protects your data: Free stays on your computer, Solo sync is end-to-end encrypted, the team book is private to each team, and how to report a security issue.">
+<meta name="theme-color" content="#f8f7f2" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#17141f" media="(prefers-color-scheme: dark)">
+<meta name="color-scheme" content="light dark">
+<link rel="icon" type="image/svg+xml" href="assets/logo-target.svg">
+<link rel="canonical" href="https://justasknick.github.io/benchpilot-site/security.html">
+<link rel="stylesheet" href="site.css">
+</head>
+<body class="page">
+<a class="skip" href="#main">Skip to content</a>
+<header class="nav" id="nav">
+  <div class="nav-in">
+    <a class="mark" href="index.html" aria-label="BenchPilot home"><img src="assets/logo-target.svg" alt="" width="28" height="28"><span>BenchPilot</span></a>
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="nav-menu" aria-label="Open menu"><span></span></button>
+    <div class="nav-menu" id="nav-menu">
+      <nav class="nav-links" aria-label="Main">
+        <a href="index.html#how">Product</a>
+        <a href="pricing.html">Pricing</a>
+        <a href="index.html#teams">Teams</a>
+        <a href="security.html">Security</a>
+        <a href="help/index.html">Help</a>
+      </nav>
+      <div class="nav-end">
+        <a class="nav-signin" href="https://justasknick.github.io/benchpilot-app/">Sign in</a>
+        <a class="btn btn-y btn-sm" href="https://chromewebstore.google.com/detail/benchpilot-recruiter-lead/apmkfnppjohjoiacehfjehcegldkkami">Add to Chrome</a>
+      </div>
+    </div>
+  </div>
+  <script src="assets/nav.js" defer></script>
+</header>
+<main id="main" class="legal"><div class="wrap narrow">
+
+<h1>Security</h1>
+<p class="meta">How your data is protected, plan by plan. This page describes what is built today, including what it does not protect against.</p>
+
+<h2>The short version</h2>
+<ul>
+<li><strong>Free:</strong> your book stays on your computer.</li>
+<li><strong>Solo:</strong> your book can sync to every computer you sign in on. It is encrypted on your computer first, so we hold a locked copy we cannot open.</li>
+<li><strong>Team:</strong> the team's book lives in our database, encrypted at rest, and each team can only ever see its own data.</li>
+<li>BenchPilot reads only what the browser already shows. It never clicks, scrolls or messages on LinkedIn, and it uses no AI. It is not affiliated with LinkedIn.</li>
+</ul>
+
+<h2>Free: on your computer</h2>
+<p>Your recruiters, vendors, consultants, resumes, notes and settings are stored in your own browser. They are not uploaded, unless you turn on the optional account backup (off until you turn it on): one copy, encrypted in your browser the same way as Solo sync, so only you can read it. If you create an account, we keep only your sign-in, plan and payment records. Error reports are off unless you turn them on, and they never contain your leads, names, emails or phones.</p>
+
+<h2>Solo: end-to-end encrypted sync</h2>
+<p>On Solo, sync is <strong>on by default</strong>: when you sign in, BenchPilot sets it up and starts syncing. You can turn it off at any time.</p>
+<ul>
+<li><strong>Your key is made on your computer.</strong> Your data is encrypted with AES-GCM using a random 256-bit data key before it leaves your computer. Everything uses the browser's built-in WebCrypto.</li>
+<li><strong>Recovery code.</strong> At set-up you get a 24-character recovery code to save, print or write down. It always unlocks your data.</li>
+<li><strong>A passphrase is optional.</strong> Add one to unlock with something you remember (at least 12 characters; weak ones are refused). It goes through PBKDF2-SHA-256 with 600,000 rounds and a random salt.</li>
+<li><strong>We store ciphertext only.</strong> The server holds the encrypted data, your data key in locked (wrapped) form, the salt and a check value. It never receives your passphrase, your recovery code or your unlocked data key, so it cannot read your book, and neither can our admin console.</li>
+<li><strong>Remembered on your computer.</strong> A computer you set up or unlock keeps your key, sealed with a browser key that web pages and other extensions cannot read. It is never in your backup files and never sent to us. It is not protected against someone who can read your computer's files (for example malware, or a stolen computer without disk encryption).</li>
+<li><strong>Key generations.</strong> "Replace my keys" makes a new data key and a new recovery code. Every key has its own id, so a computer still holding an old key cannot overwrite data saved with the new one. Resume files are encrypted the same way, each with its own key.</li>
+<li><strong>Turn it off at any time.</strong> Turning sync off deletes the server copy. The copy on your computer stays.</li>
+</ul>
+
+<h3>Known limits</h3>
+<ul>
+<li><strong>A lost recovery code and passphrase cannot be recovered</strong> once no computer still has your key. We cannot read your data, so support cannot reset it. The copy on each of your computers is not affected.</li>
+<li><strong>Changing your passphrase does not change the data key</strong> or the recovery code. Use "Replace my keys" for that.</li>
+<li><strong>After "Replace my keys", old resume files</strong> on the server can still be read by someone who holds your old key and an old copy of the file list, unless you also tick "Also re-encrypt resume files".</li>
+<li><strong>Changing the passphrase is protected by your sign-in,</strong> not by the old passphrase. Someone who has your signed-in session could change it; they still could not read your data.</li>
+<li><strong>The server cannot forge or alter your records,</strong> and your computer refuses an older copy than one it has already seen. A server could still hold back a data set or show different computers different genuine versions.</li>
+</ul>
+
+<h2>Solo: personal inbox</h2>
+<p>You can forward requirement emails to your own BenchPilot address. Each email is encrypted as it arrives, with a key only your computer can open (ECDH P-256 and AES-GCM), before it is stored. Our server holds the text in memory only for the moment it takes to encrypt it, and never logs it. Inbound mail is received by Cloudflare Email Routing and passed to our server; BenchPilot never replies to or forwards an email. Turning sync off deletes the inbox key and every message.</p>
+
+<h2>Team: the company's book</h2>
+<p>The team book is not end-to-end encrypted: the team works on it together in the web app, so it is stored on standard encrypted storage in our database. It is protected like this:</p>
+<ul>
+<li><strong>Row-level security per team.</strong> Every team table checks, on every request, that you are an active member of that team. Another team's data is never readable. A removed member loses access at once, and what they added stays with the company.</li>
+<li><strong>Roles.</strong> Owner, manager and recruiter, each with its own rights. Only the owner can change the workspace settings or delete the workspace, and the owner decides who may export the whole book.</li>
+<li><strong>Audit log.</strong> The team's activity log records who changed what. It holds ids and actions only, never emails, phones or names.</li>
+<li><strong>Resumes</strong> are kept in a private storage bucket per team (PDF or Word, up to 5 MB) and opened with short-lived links.</li>
+<li><strong>Your data, your exit.</strong> The owner can export everything or delete the workspace at any time. A closed workspace is deleted for good 30 days after it closes, with a warning email to the owner at least 7 days before.</li>
+<li><strong>Team inbox.</strong> Requirement emails sent to the team address arrive through Cloudflare Email Routing. Attachments are never read, and emails over 2 MB are dropped.</li>
+</ul>
+
+<h2>Hosting and payments</h2>
+<ul>
+<li><strong>Hosting:</strong> our database, sign-in and server functions run on Supabase in Mumbai, India. Data is encrypted in transit and at rest.</li>
+<li><strong>Payments:</strong> handled by Razorpay. We never see or store your card, UPI or bank details.</li>
+<li><strong>Inbound email:</strong> Cloudflare Email Routing.</li>
+</ul>
+
+<h2>Report a security issue</h2>
+<p>If you find a security problem, email <a href="mailto:nicklennox30@gmail.com">nicklennox30@gmail.com</a> with "Security" in the subject and the steps to reproduce it. Please do not test against other people's accounts or data. We reply within 24 hours on working days.</p>
+
+<p>See also our <a href="privacy.html">Privacy Policy</a> and <a href="terms.html">Terms of Service</a>.</p>
+</div></main>
+
+<footer class="foot">
+  <div class="wrap foot-in">
+    <div class="foot-brand">
+      <a class="mark" href="index.html"><img src="assets/logo-target.svg" alt="" width="28" height="28"><span>BenchPilot</span></a>
+      <p>The Chrome extension for bench sales recruiters and US IT staffing teams.</p>
+      <a class="btn btn-y btn-sm" href="https://chromewebstore.google.com/detail/benchpilot-recruiter-lead/apmkfnppjohjoiacehfjehcegldkkami">Add to Chrome, free</a>
+    </div>
+    <nav class="foot-col" aria-label="Product"><b>Product</b><a href="index.html#how">How it works</a><a href="pricing.html">Pricing</a><a href="index.html#teams">Teams</a><a href="https://chromewebstore.google.com/detail/benchpilot-recruiter-lead/apmkfnppjohjoiacehfjehcegldkkami">Chrome Web Store</a></nav>
+    <nav class="foot-col" aria-label="Help"><b>Help</b><a href="guide/index.html">Playbook</a><a href="help/index.html">Help centre</a><a href="contact.html">Contact us</a></nav>
+    <nav class="foot-col" aria-label="Trust"><b>Trust</b><a href="security.html">Security</a><a href="privacy.html">Privacy</a><span>Never clicks or messages on LinkedIn.</span></nav>
+    <nav class="foot-col" aria-label="Legal"><b>Legal</b><a href="terms.html">Terms</a><a href="refund.html">Refund policy</a><a href="shipping.html">Shipping &amp; delivery</a></nav>
+  </div>
+  <div class="wrap foot-base"><span>© 2026 BenchPilot</span><span>Not affiliated with LinkedIn Corporation. LinkedIn is a trademark of its owner.</span></div>
+</footer>
+</body>
+</html>
