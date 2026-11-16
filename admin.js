@@ -13,7 +13,8 @@
 //   POST   /auth/v1/factors/{id}/verify              {challenge_id, code}                   -> new session at aal2
 // Admin function: POST /functions/v1/admin (Bearer access token, aal2 required by the server).
 // Actions: metrics, growth, list_users, get_user, grant, revoke, grant_bulk, suspend, unsuspend, sign_out_everywhere,
-// send_password_reset, delete_user, list_payments, list_audit, list_payment_issues, resolve_payment_issue (contract: docs/archive/ADMIN_V2_PLAN.md).
+// send_password_reset, delete_user, list_payments, list_audit, list_payment_issues, resolve_payment_issue (contract: docs/archive/ADMIN_V2_PLAN.md),
+// team_scorecard, get_remote_config, set_remote_config (migration 0035).
 (function () {
   'use strict';
 
@@ -53,7 +54,7 @@
     return c;
   }
   function badge(tier) {
-    var t = tier === 'pro' || tier === 'basic' ? tier : 'free';
+    var t = tier === 'solo' || tier === 'pro' || tier === 'basic' ? tier : 'free';
     return el('span', { 'class': 'adm-badge adm-badge-' + t, text: L.tierLabel(t) });
   }
   function planCell(plan, until, extra) {
@@ -216,7 +217,7 @@
     }
   }
   // latest-request-wins counters, one per view
-  var tokens = { dash: 0, users: 0, pay: 0, audit: 0, panel: 0, settings: 0, feedback: 0, growth: 0 };
+  var tokens = { dash: 0, users: 0, pay: 0, audit: 0, panel: 0, settings: 0, feedback: 0, growth: 0, teams: 0, remote: 0 };
   function nextToken(k) { tokens[k]++; return tokens[k]; }
 
   // ---------- 1. sign in ----------
@@ -321,7 +322,7 @@
   });
 
   // ---------- 3. console shell + routing ----------
-  var ROUTES = ['dashboard', 'growth', 'users', 'payments', 'feedback', 'audit', 'settings'];
+  var ROUTES = ['dashboard', 'growth', 'users', 'payments', 'teams', 'feedback', 'audit', 'remote', 'settings'];
   var currentUser = null; // {id, email} of the user shown in the panel
 
   function enterConsole() {
@@ -350,6 +351,8 @@
     else if (r === 'payments') { loadIssues(); loadPayments(); }
     else if (r === 'feedback') loadFeedback();
     else if (r === 'audit') loadAudit();
+    else if (r === 'teams') loadTeams();
+    else if (r === 'remote') loadRemote();
     else loadSettings();
   }
   window.addEventListener('hashchange', showRoute);
@@ -409,17 +412,17 @@
     var t = m.totals || {}, rev = m.revenue || {}, fnd = m.founding || {};
     var kp = $('kpis');
     clear(kp);
-    var granted = (t.granted_basic | 0) + (t.granted_pro | 0);
+    var granted = (t.granted_basic | 0) + (t.granted_pro | 0) + (t.granted_solo | 0);
     [
       kpi('Users', L.formatCount(t.users), L.formatCount(t.confirmed) + ' confirmed'),
       kpi('Active, 7 days', L.formatCount(t.active7), 'signed in'),
       kpi('Active, 30 days', L.formatCount(t.active30), 'signed in'),
-      kpi('Paid Basic', L.formatCount(t.paid_basic)),
-      kpi('Paid Pro', L.formatCount(t.paid_pro)),
-      kpi('Granted plans', L.formatCount(granted), L.formatCount(t.granted_basic) + ' Basic, ' + L.formatCount(t.granted_pro) + ' Pro'),
+      kpi('Paid Solo', L.formatCount(t.paid_solo)),
+      kpi('Paid Basic / Pro', L.formatCount((t.paid_basic | 0) + (t.paid_pro | 0)), L.formatCount(t.paid_basic) + ' Basic, ' + L.formatCount(t.paid_pro) + ' Pro (retired)'),
+      kpi('Granted plans', L.formatCount(granted), L.formatCount(t.granted_solo) + ' Solo, ' + L.formatCount(t.granted_pro) + ' Pro, ' + L.formatCount(t.granted_basic) + ' Basic'),
       kpi('Revenue this month', L.formatRupees(rev.this_month_paise), 'Last month ' + L.formatRupees(rev.last_month_paise)),
       kpi('Revenue all time', L.formatRupees(rev.all_time_paise), L.formatCount(rev.payments_captured) + ' payments'),
-      kpi('Founding slots', L.formatCount(fnd.used) + ' of ' + L.formatCount(fnd.limit == null ? 50 : fnd.limit), 'used'),
+      kpi('Founding slots', L.formatCount(fnd.used) + ' of ' + L.formatCount(fnd.limit == null ? 100 : fnd.limit), 'used'),
       kpi('Refunds', L.formatRupees(rev.refunded_paise), L.formatCount(rev.payments_refunded) + ' refunded'),
       kpi('Suspended', L.formatCount(t.suspended))
     ].forEach(function (k) { kp.appendChild(k); });
@@ -609,7 +612,15 @@
       el('div', { 'class': 'adm-kpi-k', text: 'Sign-in method' }),
       el('div', { 'class': 'adm-kpi-v', text: L.formatCount(prov.email) + ' email, ' + L.formatCount(prov.google) + ' Google' })
     ]);
-    var wrap = el('div', { 'class': 'adm-health' }, [wh, pv]);
+    // Global caps (checkout links on the shared Razorpay account, feedback): live count of the hour, cap and refusals.
+    var caps = L.rateLimitRows(m.rate_limits).map(function (r) {
+      return el('div', { 'class': 'adm-health-item' }, [
+        el('div', { 'class': 'adm-kpi-k', text: r.label }),
+        el('div', { 'class': 'adm-kpi-v', text: r.value }),
+        el('div', { 'class': 'adm-kpi-s adm-flag' + (r.warn ? ' adm-flag-warn' : ''), text: r.sub })
+      ]);
+    });
+    var wrap = el('div', { 'class': 'adm-health' }, [wh, pv].concat(caps));
     host.appendChild(wrap);
   }
 
@@ -866,6 +877,20 @@
       ]));
     });
 
+    // team referrals (0021): null = the server could not read them (e.g. before the migration)
+    var rb = $('tbl-referrals').tBodies[0];
+    clear(rb);
+    var refs = d.referrals || [];
+    $('referrals-empty').hidden = refs.length > 0;
+    $('referrals-empty').textContent = d.referrals === null ? 'Team referrals could not be loaded.' : 'No team links.';
+    $('tbl-referrals').hidden = refs.length === 0;
+    refs.forEach(function (r) {
+      rb.appendChild(el('tr', null, [
+        td(L.formatDate(r.created_at)), td(r.code, 'adm-mono'), td(L.referralStatus(r)), td(r.team_name || ''),
+        td(r.rewarded_at ? L.formatDate(r.rewarded_at) : ''), td(r.razorpay_payment_id || '', 'adm-mono')
+      ]));
+    });
+
     // payments (amount is in paise)
     var pb = $('tbl-payments').tBodies[0];
     clear(pb);
@@ -923,7 +948,7 @@
       dlgOpts = o;
       $('dlg-title').textContent = o.title;
       $('dlg-grant').hidden = !o.grant;
-      $('dg-tier').value = 'pro'; $('dg-days').value = '30';
+      $('dg-tier').value = 'solo'; $('dg-days').value = '30';
       $('dlg-reason-wrap').hidden = !o.reason;
       $('dlg-reason').value = '';
       $('dlg-type-wrap').hidden = !o.typeEmail;
@@ -1364,6 +1389,143 @@
       tb.appendChild(detail);
     });
   }
+
+  // ---------- teams: scorecard (S6) ----------
+  var tState = { rows: [], sort: { key: 'weekly_active', dir: 'desc' } };
+  $('t-refresh').addEventListener('click', function () { loadTeams(); });
+
+  function paintTeams() {
+    var head = $('t-head');
+    clear(head);
+    L.SCORECARD_COLUMNS.forEach(function (c) {
+      var on = tState.sort.key === c.key;
+      var th = el('th', { scope: 'col', 'class': c.type === 'num' ? 'adm-num' : '', 'aria-sort': on ? (tState.sort.dir === 'asc' ? 'ascending' : 'descending') : 'none' });
+      var b = el('button', { type: 'button', 'class': 'adm-link adm-sort', text: c.label + (on ? (tState.sort.dir === 'asc' ? ' ↑' : ' ↓') : '') });
+      b.addEventListener('click', function () { tState.sort = L.nextSort(tState.sort, c.key); paintTeams(); });
+      th.appendChild(b);
+      head.appendChild(th);
+    });
+    var tb = $('tbl-teams').tBodies[0];
+    clear(tb);
+    var rows = L.sortScorecard(tState.rows, tState.sort.key, tState.sort.dir);
+    if (!rows.length) tb.appendChild(el('tr', null, [el('td', { colspan: L.SCORECARD_COLUMNS.length, 'class': 'adm-muted', text: 'No teams yet.' })]));
+    rows.forEach(function (t) {
+      var name = el('span', null, [el('strong', { text: t.name || '-' }), el('br'), el('span', { 'class': 'adm-muted', text: t.owner_email || '' })]);
+      var inbox = L.formatCount(t.inbox_received_week) + ' (' + L.formatCount(t.inbox_handled_week) + ')' + (t.inbox_addresses ? '' : ' - no address');
+      var tr = el('tr', null, [
+        td(name), td(t.tier || '-'), td(t.state || '-'), td(t.days_left == null ? '-' : t.days_left, 'adm-num'),
+        td(L.formatCount(t.members), 'adm-num'), td(L.formatCount(t.weekly_active), 'adm-num'),
+        td(L.formatCount(t.requirements_week), 'adm-num'), td(L.formatCount(t.submissions_week), 'adm-num'),
+        td(L.formatCount(t.guard_warned_week), 'adm-num'), td(L.formatCount(t.guard_overrides_week), 'adm-num'),
+        td(inbox, 'adm-num'), td(t.last_report_on ? L.formatDate(t.last_report_on) : 'Never')
+      ]);
+      tb.appendChild(tr);
+    });
+  }
+
+  async function loadTeams() {
+    var mine = nextToken('teams');
+    setErr('t-error', '');
+    $('t-summary').textContent = 'Loading...';
+    var r = await callAdmin(L.scorecardBody());
+    if (mine !== tokens.teams) return;
+    if (adminFailed(r, 't-error')) { $('t-summary').textContent = ''; return; }
+    tState.rows = Array.isArray(r.body.teams) ? r.body.teams : [];
+    var tot = L.scorecardTotals(tState.rows);
+    $('t-summary').textContent = L.formatCount(tot.teams) + ' teams, ' + L.formatCount(tot.active_teams) + ' active this week, '
+      + L.formatCount(tot.pilots) + ' on a pilot. ' + L.formatCount(tot.submissions_week) + ' submissions and '
+      + L.formatCount(tot.guard_warned_week) + ' guard warnings in 7 days.';
+    paintTeams();
+  }
+
+  // ---------- remote config (S7) ----------
+  var rState = null;
+  function metaText(m) {
+    return m && m.updated_at ? 'Last changed ' + L.formatDateTime(m.updated_at) + (m.updated_by_email ? ' by ' + m.updated_by_email : '') : 'Never set.';
+  }
+  function paintRemote() {
+    var box = $('r-features');
+    clear(box);
+    L.REMOTE_FEATURES.forEach(function (n) {
+      var cb = el('input', { type: 'checkbox', id: 'r-f-' + n, value: n });
+      cb.checked = rState.features[n] === false;
+      box.appendChild(el('label', { 'class': 'adm-inline', 'for': 'r-f-' + n }, [cb, ' Switch off "' + n + '"']));
+    });
+    $('r-features-meta').textContent = metaText(rState.meta.features);
+    $('r-ann-meta').textContent = metaText(rState.meta.announcements);
+    var list = $('r-ann-list');
+    clear(list);
+    var today = L.istToday(Date.now());
+    if (!rState.announcements.length) list.appendChild(el('li', { 'class': 'adm-muted', text: 'No announcements.' }));
+    rState.announcements.forEach(function (a) {
+      var rm = el('button', { type: 'button', 'class': 'adm-btn adm-btn-ghost adm-btn-sm', text: 'Remove' });
+      rm.addEventListener('click', function () {
+        var reason = L.normaliseReason($('r-ann-reason').value);
+        if (!reason) { setErr('r-error', 'Write a reason in the announcement form first.'); $('r-ann-reason').focus(); return; }
+        saveRemote('announcements', rState.announcements.filter(function (x) { return x.id !== a.id; }), reason, [rm]);
+      });
+      list.appendChild(el('li', null, [
+        el('strong', { text: L.announcementStatus(a, today) + ' (' + a.severity + '), ' + a.starts_on + ' to ' + a.ends_on + ': ' }),
+        a.text, a.link ? ' [' + a.link + ']' : '', a.dismissible ? '' : ' (cannot be dismissed) ', ' ', rm
+      ]));
+    });
+    $('r-ann-add').disabled = rState.announcements.length >= L.MAX_ANNOUNCEMENTS;
+    $('r-min-version').value = (rState.min_version && rState.min_version.version) || '';
+    $('r-min-meta').textContent = metaText(rState.meta.min_version);
+  }
+  async function loadRemote() {
+    var mine = nextToken('remote');
+    setErr('r-error', '');
+    var r = await callAdmin(L.remoteConfigBody());
+    if (mine !== tokens.remote) return;
+    if (adminFailed(r, 'r-error')) return;
+    rState = L.remoteState(r.body.rows);
+    if (!$('r-ann-start').value) $('r-ann-start').value = L.istToday(Date.now());
+    if (!$('r-ann-end').value) $('r-ann-end').value = L.addDays(L.istToday(Date.now()), 7);
+    paintRemote();
+  }
+  function saveRemote(key, value, reason, buttons) {
+    return guarded('remote-' + key, buttons, async function () {
+      setErr('r-error', '');
+      var r = await callAdmin(L.setRemoteBody(key, value, reason));
+      if (adminFailed(r, 'r-error')) return false;
+      setStatus('Saved. The extension picks it up on its next account check.', 'ok');
+      await loadRemote();
+      return true;
+    });
+  }
+  $('form-r-features').addEventListener('submit', function (ev) {
+    ev.preventDefault();
+    if (!rState) return;
+    var reason = L.normaliseReason($('r-features-reason').value);
+    if (!reason) { setErr('r-error', 'Write a reason.'); return; }
+    var off = L.REMOTE_FEATURES.filter(function (n) { return $('r-f-' + n).checked; });
+    saveRemote('features', L.featuresValue(off), reason, [$('r-features-save')]).then(function (ok) { if (ok) $('r-features-reason').value = ''; });
+  });
+  $('form-r-ann').addEventListener('submit', function (ev) {
+    ev.preventDefault();
+    if (!rState) return;
+    var reason = L.normaliseReason($('r-ann-reason').value);
+    if (!reason) { setErr('r-error', 'Write a reason.'); return; }
+    if (rState.announcements.length >= L.MAX_ANNOUNCEMENTS) { setErr('r-error', 'At most ' + L.MAX_ANNOUNCEMENTS + ' announcements. Remove one first.'); return; }
+    var v = L.validateAnnouncement({
+      id: L.newAnnouncementId(Date.now()), text: $('r-ann-text').value, link: $('r-ann-link').value, severity: $('r-ann-sev').value,
+      starts_on: $('r-ann-start').value, ends_on: $('r-ann-end').value, dismissible: $('r-ann-dismiss').checked
+    });
+    if (!v.ok) { setErr('r-error', v.error); return; }
+    saveRemote('announcements', rState.announcements.concat([v.value]), reason, [$('r-ann-add')]).then(function (ok) {
+      if (ok) { $('r-ann-text').value = ''; $('r-ann-link').value = ''; $('r-ann-reason').value = ''; }
+    });
+  });
+  $('form-r-min').addEventListener('submit', function (ev) {
+    ev.preventDefault();
+    if (!rState) return;
+    var reason = L.normaliseReason($('r-min-reason').value);
+    if (!reason) { setErr('r-error', 'Write a reason.'); return; }
+    var v = L.validateMinVersion($('r-min-version').value);
+    if (!v.ok) { setErr('r-error', v.error); return; }
+    saveRemote('min_version', v.value, reason, [$('r-min-save')]).then(function (ok) { if (ok) $('r-min-reason').value = ''; });
+  });
 
   // ---------- settings ----------
   async function loadSettings() {
