@@ -553,6 +553,153 @@
     var n = Number(v);
     return n <= MAX_INSTALLS ? n : null;
   }
+  // ---------- funnel card (plan 4.2) ----------
+  // The server sends counts per ISO week (accounts, returned, checkouts, payments, heard channels). Installs and weekly users come from the
+  // Chrome Web Store CSV the admin picks in this browser: it is parsed here, kept in memory only, and never sent anywhere.
+  var FUNNEL_WEEKS = 8, MAX_CSV_CHARS = 2000000;
+  function funnelBody(weeks) {
+    var w = Math.floor(Number(weeks));
+    return { action: 'funnel', weeks: w >= 1 && w <= 26 ? w : FUNNEL_WEEKS };
+  }
+  /** Monday (YYYY-MM-DD) of the ISO week holding ymd; null if ymd is not a date. */
+  function weekStartYmd(ymd) {
+    if (!validYmd(ymd)) return null;
+    var p = ymd.split('-').map(Number);
+    var dow = (new Date(Date.UTC(p[0], p[1] - 1, p[2])).getUTCDay() + 6) % 7;
+    return addDays(ymd, -dow);
+  }
+  var MON_NAMES = { jan: 1, feb: 2, mar: 3, apr: 4, may: 5, jun: 6, jul: 7, aug: 8, sep: 9, oct: 10, nov: 11, dec: 12 };
+  function ymdOf(y, m, d) {
+    if (y < 100) y += 2000;
+    var s = y + '-' + (m < 10 ? '0' : '') + m + '-' + (d < 10 ? '0' : '') + d;
+    return validYmd(s) ? s : null;
+  }
+  /** One cell -> YYYY-MM-DD or null. Reads 2026-11-09, 2026/11/09, 9 Nov 2026, Nov 9, 2026 and 9/11/2026 or 11/9/2026 (dayFirst picks which). */
+  function parseDateCell(cell, dayFirst) {
+    var s = String(cell == null ? '' : cell).trim().replace(/^"|"$/g, '');
+    var m = /^(\d{4})[-\/.](\d{1,2})[-\/.](\d{1,2})(?:[ T].*)?$/.exec(s);
+    if (m) return ymdOf(+m[1], +m[2], +m[3]);
+    m = /^(\d{1,2})[-\/.](\d{1,2})[-\/.](\d{2}|\d{4})(?:[ T].*)?$/.exec(s);
+    if (m) return dayFirst ? ymdOf(+m[3], +m[2], +m[1]) : ymdOf(+m[3], +m[1], +m[2]);
+    m = /^(\d{1,2})[ -]([A-Za-z]{3})[a-z]*\.?,?[ -](\d{4})$/.exec(s);
+    if (m && MON_NAMES[m[2].toLowerCase()]) return ymdOf(+m[3], MON_NAMES[m[2].toLowerCase()], +m[1]);
+    m = /^([A-Za-z]{3})[a-z]*\.? (\d{1,2}),? (\d{4})$/.exec(s);
+    if (m && MON_NAMES[m[1].toLowerCase()]) return ymdOf(+m[3], MON_NAMES[m[1].toLowerCase()], +m[2]);
+    return null;
+  }
+  function splitCsv(text) {
+    var first = text.split(/\r?\n/, 1)[0];
+    var delim = ',', best = (first.match(/,/g) || []).length;
+    [';', '\t'].forEach(function (d) { var c = first.split(d).length - 1; if (c > best) { best = c; delim = d; } });
+    var rows = [], row = [], cell = '', q = false;
+    for (var i = 0; i < text.length; i++) {
+      var ch = text.charAt(i);
+      if (q) {
+        if (ch === '"') { if (text.charAt(i + 1) === '"') { cell += '"'; i++; } else q = false; } else cell += ch;
+      } else if (ch === '"') q = true;
+      else if (ch === delim) { row.push(cell); cell = ''; }
+      else if (ch === '\n' || ch === '\r') {
+        if (ch === '\r' && text.charAt(i + 1) === '\n') i++;
+        row.push(cell); cell = '';
+        if (row.some(function (c) { return c.trim() !== ''; })) rows.push(row);
+        row = [];
+      } else cell += ch;
+    }
+    row.push(cell);
+    if (row.some(function (c) { return c.trim() !== ''; })) rows.push(row);
+    return rows;
+  }
+  function numCell(c) {
+    var s = String(c == null ? '' : c).trim().replace(/[,\s]/g, '');
+    if (!/^[0-9]{1,9}$/.test(s)) return null;
+    return Number(s);
+  }
+  var CSV_HELP = 'Could not read this file. Download the CSV from the Chrome Web Store dashboard (Analytics) and choose it again. It needs a date column and number columns such as Installs and Weekly users.';
+  /**
+   * Tolerant store-CSV reader. Needs a date column and numeric columns. Daily or weekly rows both work: installs are summed per ISO week
+   * (Monday start), weekly users is the latest value in the week. Header names are matched loosely ("Installs", "Weekly users", "Users");
+   * with no usable header the first number column is read as installs and the second as weekly users (guessed: true).
+   * Returns { ok: true, weeks: { 'YYYY-MM-DD': { installs, users } }, rows, guessed, first, last } or { ok: false, error }.
+   */
+  function parseStoreCsv(text) {
+    if (typeof text !== 'string' || !text.trim()) return { ok: false, error: 'The file is empty.' };
+    if (text.length > MAX_CSV_CHARS) return { ok: false, error: 'This file is too large to be a store export.' };
+    text = text.replace(/^﻿/, '');
+    var rows = splitCsv(text);
+    if (rows.length < 2) return { ok: false, error: CSV_HELP };
+    var ncol = rows.reduce(function (m, r) { return Math.max(m, r.length); }, 0);
+    // Day-first only when some slashed date proves it (first part above 12); otherwise month-first, as the store's own export.
+    var dayFirst = rows.some(function (r) { return r.some(function (c) { var m = /^(\d{1,2})[-\/.](\d{1,2})[-\/.]\d{2,4}$/.exec(String(c).trim()); return m && +m[1] > 12; }); });
+    var isDateRow = function (r) { return r.some(function (c) { return parseDateCell(c, dayFirst) != null; }); };
+    var hasHeader = !isDateRow(rows[0]);
+    var header = hasHeader ? rows[0].map(function (h) { return String(h).trim().toLowerCase(); }) : [];
+    var body = hasHeader ? rows.slice(1) : rows;
+    var dateCol = -1, bestHits = 0, c, hits;
+    for (c = 0; c < ncol; c++) {
+      hits = body.filter(function (r) { return parseDateCell(r[c], dayFirst) != null; }).length;
+      var named = hasHeader && /date|day|week|period/.test(header[c] || '');
+      if (hits > bestHits || (named && hits > 0 && hits >= bestHits)) { bestHits = hits; dateCol = c; }
+    }
+    if (dateCol < 0 || bestHits < 1) return { ok: false, error: 'No date column found. ' + CSV_HELP };
+    var instCol = -1, userCol = -1;
+    header.forEach(function (h, i) {
+      if (i === dateCol) return;
+      if (instCol < 0 && /install/.test(h) && !/uninstall/.test(h)) instCol = i;
+      if (/user/.test(h) && (userCol < 0 || /weekly/.test(h))) userCol = i;
+    });
+    var guessed = false;
+    if (instCol < 0 && userCol < 0) {
+      var numeric = [];
+      for (c = 0; c < ncol; c++) {
+        if (c === dateCol) continue;
+        if (body.some(function (r) { return numCell(r[c]) != null; })) numeric.push(c);
+      }
+      if (!numeric.length) return { ok: false, error: 'Found dates but no number columns. ' + CSV_HELP };
+      instCol = numeric[0]; userCol = numeric.length > 1 ? numeric[1] : -1; guessed = true;
+    }
+    var weeks = {}, lastDay = {}, first = null, last = null, count = 0;
+    body.forEach(function (r) {
+      var day = parseDateCell(r[dateCol], dayFirst);
+      if (!day) return; // totals and blank lines
+      var wk = weekStartYmd(day);
+      var w = weeks[wk] || (weeks[wk] = { installs: null, users: null });
+      var inst = instCol >= 0 ? numCell(r[instCol]) : null;
+      if (inst != null) w.installs = (w.installs || 0) + inst;
+      var usr = userCol >= 0 ? numCell(r[userCol]) : null;
+      if (usr != null && (lastDay[wk] == null || day >= lastDay[wk])) { w.users = usr; lastDay[wk] = day; }
+      count++;
+      if (!first || day < first) first = day;
+      if (!last || day > last) last = day;
+    });
+    if (!count) return { ok: false, error: CSV_HELP };
+    return { ok: true, weeks: weeks, rows: count, guessed: guessed, first: first, last: last, hasInstalls: instCol >= 0, hasUsers: userCol >= 0 };
+  }
+  var HEARD_FALLBACK = [];
+  function cnt(v) { return Number.isFinite(v) ? formatCount(v) : '-'; }
+  /** Table rows (display strings, counts only) for the funnel: server rows merged with the store numbers by week. Only known fields are read. */
+  function funnelTableRows(rows, store) {
+    var sw = store && store.ok ? store.weeks : null;
+    return (Array.isArray(rows) ? rows : []).map(function (r) {
+      var s = sw && sw[r.week];
+      return [
+        formatDate(r.week),
+        s && s.installs != null ? cnt(s.installs) : '-',
+        s && s.users != null ? cnt(s.users) : '-',
+        cnt(r.accounts), cnt(r.returned), cnt(r.checkouts), cnt(r.payments)
+      ];
+    });
+  }
+  var FUNNEL_HEAD = ['Week of (Mon)', 'Installs', 'Weekly users', 'Accounts created', 'Signed in after week 1', 'Checkouts started', 'Payments'];
+  function heardTable(rows, channels) {
+    var ch = Array.isArray(channels) && channels.length ? channels : HEARD_FALLBACK;
+    var head = ['Week of (Mon)'].concat(ch.map(function (c) { return String(c.label); }), ['Total']);
+    var body = (Array.isArray(rows) ? rows : []).map(function (r) {
+      var total = 0;
+      var cells = ch.map(function (c) { var n = r.heard && Number(r.heard[c.id]); n = Number.isFinite(n) ? n : 0; total += n; return cnt(n); });
+      return [formatDate(r.week)].concat(cells, [cnt(total)]);
+    });
+    return { head: head, rows: body };
+  }
   /** Goal progress. current = whichever is higher: registered users or manual store installs. */
   function growthPace(users, installs, nowMs, goal, deadline) {
     goal = goal || GOAL_USERS; deadline = deadline || GOAL_DATE;
@@ -712,6 +859,8 @@
     newAnnouncementId: newAnnouncementId, validateAnnouncement: validateAnnouncement, validateMinVersion: validateMinVersion, announcementStatus: announcementStatus,
     rateLimitRows: rateLimitRows,
     GOAL_USERS: GOAL_USERS, GOAL_DATE: GOAL_DATE, GROWTH_DAYS: GROWTH_DAYS, growthBody: growthBody, daysBetween: daysBetween,
+    FUNNEL_WEEKS: FUNNEL_WEEKS, FUNNEL_HEAD: FUNNEL_HEAD, funnelBody: funnelBody, weekStartYmd: weekStartYmd, parseDateCell: parseDateCell,
+    parseStoreCsv: parseStoreCsv, funnelTableRows: funnelTableRows, heardTable: heardTable, MAX_CSV_CHARS: MAX_CSV_CHARS,
     parseInstalls: parseInstalls, growthPace: growthPace, weekCompare: weekCompare,
     MAX_BULK: MAX_BULK, PAGE_SIZE: PAGE_SIZE, EXPORT_PAGE: EXPORT_PAGE, EXPORT_MAX_ROWS: EXPORT_MAX_ROWS, RANGES: RANGES, USER_SORTS: USER_SORTS,
     formatCount: formatCount, formatRupees: formatRupees, formatRupeesShort: formatRupeesShort, pct: pct, pctNum: pctNum,

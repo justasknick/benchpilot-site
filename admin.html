@@ -127,6 +127,30 @@
           <div id="chart-gsignups"></div>
           <div id="tbl-wrap-gsignups" class="adm-scroll adm-tbl-short" hidden></div>
         </section>
+
+        <!-- Funnel (plan 4.2): counts per ISO week. Installs and weekly users come from the store CSV, read in this browser only. -->
+        <section class="adm-card" aria-labelledby="h-funnel">
+          <div class="adm-toolbar">
+            <h2 id="h-funnel">Funnel by week</h2>
+            <button type="button" id="f-refresh" class="adm-btn adm-btn-ghost adm-btn-sm">Refresh</button>
+          </div>
+          <p class="adm-muted">Last 8 weeks, newest first. Weeks start on Monday, IST. Counts only: no names or emails. "Signed in after week 1" = the latest sign-in is more than 7 days after the account was created, so the newest week reads low until it ages. Payments are successful ones, net of refunds.</p>
+          <p id="f-error" class="adm-err" role="alert" hidden></p>
+          <div class="adm-row">
+            <label>Store CSV (Chrome Web Store dashboard, Analytics)
+              <input id="f-file" type="file" accept=".csv,text/csv,text/plain">
+            </label>
+          </div>
+          <label>Or paste the CSV here
+            <textarea id="f-paste" rows="3" autocomplete="off" spellcheck="false"></textarea>
+          </label>
+          <div><button type="button" id="f-use" class="adm-btn adm-btn-ghost adm-btn-sm">Use pasted CSV</button> <button type="button" id="f-clear" class="adm-btn adm-btn-ghost adm-btn-sm">Clear store numbers</button></div>
+          <p class="adm-muted">The CSV is read in this browser only. It is never uploaded or stored, and is gone when you leave the page.</p>
+          <p id="f-store-note" class="adm-muted" aria-live="polite"></p>
+          <div class="adm-scroll"><div id="f-table"></div></div>
+          <h3 id="h-heard">How did you hear? (by channel)</h3>
+          <div class="adm-scroll"><div id="f-heard" aria-labelledby="h-heard"></div></div>
+        </section>
       </section>
 
       <!-- Users -->

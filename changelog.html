@@ -38,7 +38,286 @@
 <main id="main" class="legal"><div class="wrap narrow">
 <p class="eyebrow">Changelog</p>
 <h1>What’s new in BenchPilot</h1>
-<p class="lead">Every release of the Chrome extension, newest first. 20 releases since 30 September 2026.</p>
+<p class="lead">Every release of the Chrome extension, newest first. 22 releases since 30 September 2026.</p>
+<section class="log-ver" id="v1-20-1">
+<h2>Version 1.20.1 <time datetime="2026-11-18">18 November 2026</time></h2>
+<h3>The drawer shows your account and waiting synced data (17 Nov)</h3>
+<ul>
+<li>The <strong>⋯ menu</strong> in the LinkedIn drawer starts with the account BenchPilot is signed in to (&quot;Signed in as you@example.com&quot;, &quot;with Google&quot;), or &quot;Not signed in&quot;, and an <strong>Account and sign out</strong> (or <strong>Sign in</strong>) item. The plan chip's tooltip points to it (your email is never in the tooltip).</li>
+<li>When your encrypted sync needs you on this computer (locked, set up on a new computer, approve a computer, paused, a problem), a banner over every tab says so, with <strong>Open</strong> (Settings, Sync). Before, only the toolbar popup said it, so a new computer just looked empty.</li>
+<li>Signing in or out on another BenchPilot page updates the drawer's plan chip and account row at once, not at the next reload of the LinkedIn tab.</li>
+</ul>
+</section>
+<section class="log-ver" id="v1-20-0">
+<h2>Version 1.20.0 <time datetime="2026-11-17">17 November 2026</time></h2>
+<h3>Consultant portal for teams, and a page for independent consultants (17 Nov; spec docs/specs/CONSULTANT_PORTAL_SPEC.md)</h3>
+<ul>
+<li>The <strong>consultant link</strong> becomes the consultant's own page, paid for by the firm and free for the consultant. Besides availability, rate, location and consent, the consultant can update their work authorisation end date (the saved date is never shown). They see only the submissions the firm <strong>shares</strong> (role, end client, a plain status and the date; never vendors, rates or the recruiter), and can give or decline the RTR for each.</li>
+<li><strong>Duplicate protection from the consultant's side:</strong> the consultant can flag &quot;another firm already submitted me here&quot; on a shared submission, and list end clients other firms submitted them to in the last 90 days. The submission form then warns when you submit to one of them (the warning never blocks). Entries are deleted after 90 days, and erasing the consultant deletes them.</li>
+<li>Web app: &quot;Share with the consultant&quot; on the new-submission form and in &quot;RTR and rate&quot;; a chip on flagged submissions (Clear); &quot;What &lt;name&gt; told you&quot; on the consultant's link card; a &quot;Duplicate?&quot; card at the top of the recruiter's Today's plan for each flagged submission.</li>
+<li>Website: a new page for independent consultants (&quot;Market yourself like a bench desk&quot;, Solo as it is). The privacy policy and terms are updated: firms must never charge consultants a fee, fabricate résumés, use proxy interviews, or act as an OPT employer of record.</li>
+</ul>
+<h3>Today's plan: your shift, planned and driven, with no AI (16 Nov; built as &quot;Day Pilot&quot;, spec docs/specs/DAY_PILOT_SPEC.md)</h3>
+<ul>
+<li>&quot;Today's homework&quot; becomes <strong>Today's plan</strong>: one plan for the shift, in seven blocks that follow the US day (Start, Replies, Requirements, Submit, Wave 2 and hotlist, Follow-ups, Close) from your shift start.</li>
+<li><strong>One card at a time</strong> on the dashboard Today page and in the LinkedIn drawer: what it is, why it is next, and one-click answers (&quot;Sent?&quot;, &quot;Any reply? Replied / Interview / Rejected&quot;, &quot;Still available?&quot;, &quot;Sent the hotlist&quot;), with Skip (with a reason), Later and Next. A Focus / List switch; N and S keys on the dashboard. The popup shows the next card.</li>
+<li>New cards from data you already have: bench check, consent missing, reply check, RTR missing or ending, almost a match, hotlist due, target pace (Solo), vendor agreements, timesheets and invoices. Urgent cards (an interview within 90 minutes, a fresh 80 %+ match) come first.</li>
+<li>A start-of-shift briefing (yesterday's numbers on Solo) and <strong>Close my day</strong>: what is left, what carries over, and the <strong>end-of-day report</strong> written from your day (Solo): copy it, download the CSV, or open it as an email to your manager. BenchPilot never sends it.</li>
+<li>Today's plan learns from skips: a vendor you mark &quot;doesn't reply&quot; ranks lower for 14 days; a skipped match teaches the match ranking. Settings &gt; Today's plan shows what it learned (Reset), your daily target and your manager's email.</li>
+<li>Nothing new leaves your browser and the saved-data shape does not change (new optional settings only). The Today cards for vendor agreements and timesheets / invoices are now Today's plan cards.</li>
+</ul>
+<h3>Web app: sign-in page fix (16 Nov)</h3>
+<ul>
+<li>The sign-in page no longer shows the word &quot;null&quot; under &quot;Continue with Google&quot; while the Microsoft button is switched off. A test now stops the same mistake anywhere in the web app.</li>
+</ul>
+<h3>One look everywhere (owner, 16 Nov; reverses the white headers of 27 Oct)</h3>
+<ul>
+<li>The LinkedIn drawer, every extension page, the web app and the pictures on the website share one look: the purple header band with the logo, the plan chip and white icons, and the numbers as yellow figures on darker purple tiles.</li>
+<li>Every page opens with the purple header band: popup, dashboard (the logo cell and the top bar), Today, Settings, Plans, Account, Welcome and Help. Logo tile, &quot;BenchPilot&quot; in white, the plan chip, and the numbers as tiles (yellow figures on the darker plate).</li>
+<li>The same plan chip everywhere, with the drawer's words: &quot;FREE · 2/3&quot;, &quot;SOLO&quot;, yellow &quot;FREE · 3/3 · UPGRADE&quot; at the limit. The dashboard shows it in the top bar; the Plans page shows the plan word.</li>
+<li>Fixes: a consultant's name no longer disappears behind its chips on Bench cards; Settings fields are white like every other field; no dark strip around Settings in the dark theme; the Plans page &quot;Bring BenchPilot to your team&quot; card has no blank strip under its button.</li>
+<li>Text fields, lists and the search box show one purple focus ring when you click them; the dark ring is only for moving with the keyboard.</li>
+</ul>
+<h3>Encrypted sync across computers is on (Solo; Pro holders keep it)</h3>
+<ul>
+<li>Settings → <strong>Sync across computers</strong>: your data, and your résumé files, are encrypted in your browser; the server holds a copy it can't read. It turns itself on when you buy Solo (save the recovery code it shows); add a passphrase if you like; approve a new computer from one you already use. Free users can keep one encrypted backup in their account.</li>
+</ul>
+<h3>Run your staffing desk in BenchPilot (14 Nov; extension and web app)</h3>
+<ul>
+<li><strong>Consultants:</strong> work authorisation as a type (H1B, GC, USC, OPT/CPT…) with its end date and reminders at 120/90/60/30/7 days; minimum rate; available-from date and bench status. Only the type and date are kept, never document copies.</li>
+<li><strong>Submissions:</strong> RTR with the date, end date and agreed rate (instead of a tick box); bill rate, pay rate and margin; the vendor → prime → client chain; <strong>Request RTR</strong> opens an email for you to send; soft warnings when a rate differs from the RTR or the RTR has ended. In a team, pay rates are visible to owners and managers unless the owner allows recruiters.</li>
+<li><strong>Interviews and placements:</strong> rounds with time zones and a calendar file (.ics); placements with start and end dates, rates, margin per hour and an estimate per month; a Placements view and a QuickBooks-friendly CSV.</li>
+<li><strong>Vendor agreements:</strong> MSA and NDA status and dates, net payment terms, reminders before they end, and a gentle &quot;no MSA on file&quot; note when you submit.</li>
+<li><strong>Consent and data requests:</strong> record a consultant's consent, a data-notice email draft, export or erase one consultant everywhere, and a typed call / WhatsApp / notes log.</li>
+<li><strong>Targets:</strong> personal targets and your funnel on Insights (Solo), also by skill family; team targets, a leaderboard and funnel reports in the web app.</li>
+<li><strong>Profile summary and consultant links:</strong> a one-page masked profile (no contact details) for hotlists and pitches; Google / Outlook calendar links next to the .ics; in a team, a private link where a consultant confirms availability and rate and gives RTR consent.</li>
+</ul>
+<h3>Simpler everywhere (UX decisions, 14 Nov)</h3>
+<ul>
+<li>The popup is a launcher: today's three numbers, one status line (with Pause), Open dashboard and Open drawer. The lead list, Copy/Export/Save bar, Times and Scan this page are gone (capture is automatic).</li>
+<li>One Settings page, grouped: You · Matching · Look · Data · Account &amp; plan.</li>
+<li>Dashboard: one main button per page; Export in the ⋯ menu; &quot;Copy N emails (for BCC)&quot; when you select requirements; the time converter on Today; vendor Heat is now relative (the busiest vendors), so not every vendor shows Hot.</li>
+<li>Sync turns itself on for paid plans (see the sync section above).</li>
+</ul>
+<h3>Timesheets, invoices and commission estimates (staffing &quot;Later&quot; F1, F2, G4; migrations 0055 and 0057, storage schema 21; plan and copy wait for Nick)</h3>
+<ul>
+<li>Timesheets: weekly regular and overtime hours per placement, who approved them (typed), Draft / Submitted / Approved. No files, no client logins. Weeks missing on a placement that uses timesheets show on Today (and as a count in the team's morning report).</li>
+<li>Invoices (a tracker, not accounting): made from the approved weeks x the hourly bill rate, overtime at its own rate, due on the vendor's net terms (default Net 30). Draft / Sent / Paid with the payment day; Overdue = sent and past the due date (Today and the morning report, counts only). Print or save as PDF from the browser and &quot;Email draft&quot; in your own mail app: BenchPilot never sends an invoice. CSV for QuickBooks (MM/DD/YYYY), Zoho Books (YYYY-MM-DD) or Tally (DD-MM-YYYY). The firm's details print on the invoice.</li>
+<li>Commission: a default rule and one per recruiter (% of the month's margin estimate or a fixed amount per placement, with an optional lead share), the estimate per person per month and a CSV. Labelled as estimates, not payroll. Owners and managers who may see pay.</li>
+<li>&quot;Export everything&quot; (0057) includes the timesheets for every exporter, and the invoices and commission rules for owners and managers only. The extension's backup carries them on each submission, plus your invoice details and commission rule.</li>
+<li>Team workspace (Team · 15 and 40, and the pilot): Timesheets for everyone; Invoices and Commission for owners and managers. Extension: recording weeks is free; invoices, print / PDF, the invoice CSV, your invoice details and your commission estimate are Solo.</li>
+</ul>
+<h3>Extension: capture is automatic (UX decisions P1; waiting for Nick's OK)</h3>
+<ul>
+<li>New installs save every recruiter you scroll past (on this computer only); the welcome tour says so once. The first-run &quot;how should recruiters be saved?&quot; question and its Today checklist step are gone (4 steps now).</li>
+<li>Users who had autosave off are never switched over: the drawer offers it once (&quot;Turn on&quot; / &quot;Keep picking&quot;). The drawer's Settings sheet has the switch.</li>
+<li>&quot;Scanner&quot; is now &quot;Pause BenchPilot on LinkedIn&quot; in the drawer ⋯ menu; while paused, a banner with Resume shows on every tab.</li>
+<li>The drawer drops Save all, Copy emails, Export CSV and the per-recruiter Copy buttons (Draft email fills in the address). The toolbar badge and the dock show only new strong matches and follow-ups due, never the page's lead count.</li>
+<li>Drawer polish: Requirements filters behind one &quot;Filters&quot; button with removable chips; &quot;Good fits&quot; is &quot;Matches&quot; everywhere; no bar at the bottom: Dashboard is an icon in the header, Quick notes and Keyboard shortcuts are in the More menu, and &quot;?&quot; opens the shortcut list; the focus ring follows the selected tab; the dock hides while the drawer is open; recruiter titles wrap instead of being cut; the recruiter type moved into the open card; Bench shows one count line and no disabled &quot;Draft email&quot; at 0 matches; the plan-sheet price uses the body font.</li>
+</ul>
+<h3>A new look (one BenchPilot, one plan ladder)</h3>
+<ul>
+<li>The popup is rebuilt as a launcher (see &quot;Simpler everywhere&quot;): plan chip, today's numbers, one status line, Open dashboard and Open drawer. No more overlapping plan line.</li>
+<li>One plan sheet everywhere: a locked feature opens the same sheet (what Solo adds, the price, <strong>Upgrade to Solo</strong>, Not now). &quot;Not now&quot; quiets that prompt for 7 days.</li>
+<li>The drawer header shows your plan (FREE · 2/3 consultants, SOLO); the dashboard sidebar has a plan card and <strong>Invite a teammate</strong>; Today has a &quot;Get set up&quot; checklist.</li>
+<li>The Plans page shows the one ladder: Free, Solo and Team (5, 15 or 40 people, starting a 14-day team pilot in the web app).</li>
+<li>Empty states, denser tables with sticky headers, and polish across the dashboard, Settings, Account and Welcome, in light and dark.</li>
+</ul>
+<h3>Buying and plan screens (A-to-Z audit, 14 Nov)</h3>
+<ul>
+<li><strong>Solo can be bought from the extension.</strong> Choose Solo, Renew and Upgrade used to fail with &quot;Please choose a valid plan&quot; (the checkout only knew the retired Basic/Pro ids); a sign-up in the middle of a purchase now keeps the plan.</li>
+<li>Lock badges and upsells say <strong>SOLO</strong> (no more &quot;BASIC+&quot; or &quot;PRO&quot;), and every paywall shows the price: &quot;Solo ₹499/month or ₹3,999/year&quot; ($12 / $99 outside India).</li>
+<li>One rule for &quot;your plan is ending&quot;: the popup, the drawer and the dashboard all warn in the last 14 days. After a paid plan ends, the drawer and the popup say &quot;expired · Renew as Solo&quot; for 7 days (also when you are signed in).</li>
+<li>Moving from Basic or Pro to Solo says how your leftover days convert by price (&quot;N days of Pro become M days of Solo&quot;), instead of &quot;kept&quot;.</li>
+<li>The founding button turns off with &quot;All 100 founding places are taken&quot; when they are gone; founding members keep &quot;Your founding price&quot; for their 12 months. The &quot;Most chosen&quot; ribbon is gone.</li>
+<li>The comparison and the Solo list now show everything Solo includes: the personal inbox address, My book on the web, the morning summary and vendor check-ins.</li>
+<li>The account page has the 6-digit code box for verifying your email, shows the last payment again (₹ or $), formats the end date, links to the web app (<strong>Open my book</strong>), and links a team owner who tries to delete their account to the workspace settings.</li>
+<li>Privacy policy and Terms links where you type your email (welcome and sign-up). Every line that said your data or résumé &quot;never leaves this computer&quot; now says what happens with Solo sync on.</li>
+<li>Exports: a <strong>Heat</strong> column and a &quot;Hottest vendors first&quot; order. The Today day-start setting says it follows India time.</li>
+<li>Bring BenchPilot to your team: the reward reads &quot;90 days of Solo&quot;.</li>
+<li>Your work terms (tax terms) now sync with your other settings.</li>
+</ul>
+<h3>Team: the Starter bench holds up to 25 consultants (final plan §8)</h3>
+<ul>
+<li>Import adds consultants up to the cap and reports the rest as &quot;not added: the bench is full&quot;.</li>
+</ul>
+<h3>Copy: resume files and Solo sync (draft text for Nick's approval)</h3>
+<ul>
+<li>Since sync phase 2 (PR #311) Solo sync also syncs resume files, encrypted in the browser. The site FAQ, privacy policy (site and extension copy), Terms 7a and the store listing draft no longer say resume files are never synced: on Free they stay on the computer; on Solo with sync on they are encrypted and synced, the server cannot read them, and turning sync off deletes them from the server.</li>
+</ul>
+<h3>Delete my account (backlog E11; server deploy and the privacy-policy line wait for Nick)</h3>
+<ul>
+<li><strong>Extension account page</strong> and <strong>web app (<code>#account</code>, linked from the top bar):</strong> &quot;Delete my account&quot; deletes your BenchPilot account yourself (until now only by writing to us). You confirm it is you (password or Google again in the extension; a 6-digit email code in the web app), type your email, then delete.</li>
+<li><strong>What goes:</strong> your sign-in, plan and plan grants, encrypted synced copy and resume files, personal inbox. <strong>What stays:</strong> payments (for tax records, no longer linked to you), a referral reward that was paid (anonymous), anonymous feedback. In a team you leave it and what you added stays with the team. A team <strong>owner</strong> is asked to transfer or delete the workspace first.</li>
+<li><strong>This computer:</strong> your data stays and keeps working without an account, unless you tick &quot;Also clear BenchPilot data on this computer&quot; (off by default; it offers a backup first and then starts like a new install).</li>
+</ul>
+<h3>Web app: My book v2 (backlog W9)</h3>
+<ul>
+<li><strong>Add and delete</strong> recruiters, vendors, consultants, submissions, notes and jobs in My book. New records use the extension's own rules (duplicate checks, limits, the duplicate-submission guard); a deletion syncs to every computer like one made in the extension.</li>
+<li><strong>More edits:</strong> vendors (name, label, notes), submissions (status, follow-up, rate asked, RTR note), notes and email templates.</li>
+<li><strong>Morning summary</strong> is the first page of My book: yesterday's requirements saved, submissions sent, vendor replies and interviews, counted in your browser from your encrypted book, the same way as Today in the extension.</li>
+<li><strong>Resume files:</strong> see the resume files synced from the extension and download one; it is decrypted in your browser tab.</li>
+<li><strong>Changed on two computers:</strong> if you and another computer change the same field within a minute, pick which version to keep. <strong>Change passphrase</strong> from the web app (Replace my keys stays in the extension).</li>
+</ul>
+<h3>Inboxes: where a requirement came from, and per-job Ignore that sticks (#308 follow-ups)</h3>
+<ul>
+<li><strong>Requirements show where they came from:</strong> a requirement added from a team-inbox email is <strong>Team inbox</strong>; one added from a job-board alert shows the board by name (<strong>Dice</strong>, <strong>Indeed</strong>, <strong>LinkedIn Job Alerts</strong>, <strong>ZipRecruiter</strong>, <strong>Monster</strong>, <strong>CareerBuilder</strong>). New <strong>Source</strong> options and a <strong>Job board</strong> filter on Requirements. Requirements saved before keep &quot;Pasted&quot; and their text.</li>
+<li><strong>Ignore on one job is kept:</strong> in a job-board alert, Add and Ignore are stored per job (team inbox and My book), so an ignored job stays ignored after a reload and on your teammates' screens. Ignored jobs fold under &quot;Show N ignored jobs&quot; with <strong>Move back</strong>. Each alert shows &quot;N added, M ignored, K left&quot;. Two teammates can no longer add the same job twice. My book stores only the job's number and status; the email stays encrypted.</li>
+<li><strong>Morning email:</strong> &quot;M added as requirements&quot; now counts every requirement made from the inbox (an alert with 5 jobs counts 5), not the emails.</li>
+</ul>
+<h3>Admin: team scorecard and remote config (backlog S6, S7)</h3>
+<ul>
+<li><strong>Admin → Teams (scorecard):</strong> one row per team with plan and pilot state, days left, members, members active in the last 7 days (signed in or did something in the team), requirements and submissions this week, <strong>guard warnings</strong> (the duplicate-submission guard showed a match) and overrides, team inbox use, and the last morning report sent. Sortable by any column. Counts and dates only, never anything from a team's book. The guard did not record its warnings before; it now adds one to a per-team daily counter (no consultant, client or user stored).</li>
+</ul>
+<h3>Team web app: desks / offices for Agency (backlog W10)</h3>
+<ul>
+<li><strong>Desks</strong> (Team → Desks, Agency and the pilot; Starter and Team see an upgrade note): owners and managers add desks with an optional office or location, seat each recruiter on one desk, and can put a consultant on a desk of their own (otherwise a consultant counts on their recruiter's desk). At most 50 per team.</li>
+<li><strong>Filter by desk</strong> on Bench, Requirements, Submissions, Matches and the activity log, plus &quot;No desk&quot;. Bench shows each consultant's desk.</li>
+<li><strong>Morning report per desk:</strong> once a team has desks, the &quot;By desk&quot; lines (yesterday and the weekly summary) are one per desk, &quot;Desk name (Office)&quot;, plus &quot;No desk&quot;; without desks they stay one per recruiter.</li>
+</ul>
+<h3>Vendor book: job changes in the drawer and a timeline per vendor (backlog E5, Vendor Book slice 4)</h3>
+<ul>
+<li><strong>Job-change banner in the drawer:</strong> when a recruiter on a drawer card (or the LinkedIn profile you opened) has a pending job-change suggestion, the card shows it with <strong>Update contact</strong> / <strong>Merge, keep the new email</strong> / <strong>Not the same person</strong> and Undo. Same words and same rules as the dashboard's Vendor book card; Update and Merge are Solo (the worker refuses them on Free), &quot;Not the same person&quot; is free. Opening a saved recruiter's profile that names a new company shows the banner at once.</li>
+<li><strong>Timeline per vendor</strong> (Vendors → open a vendor): posts from the post log, recruiters added, updated (from a post, by you), moved here or moved away, submissions and replies, newest first, with All / Posts / Contacts / Submissions filters. Computed, nothing stored.</li>
+<li><strong>One merge path for job changes:</strong> the dashboard and the drawer both merge through the new <code>MERGE_MOVE</code> message, which takes the pair from the stored suggestion (not from the message).</li>
+</ul>
+<h3>Inboxes: job-board alerts split into their jobs (backlog E16)</h3>
+<ul>
+<li><strong>&quot;N jobs from Dice&quot;:</strong> a job alert forwarded to the team inbox or to My book's personal inbox from <strong>Dice, Indeed, LinkedIn Job Alerts, ZipRecruiter, Monster or CareerBuilder</strong> now lists its jobs (title, company, location, rate, posted day, the job's link) instead of being read as one requirement. Each job has <strong>Add</strong>, <strong>Ignore</strong> (hides it on the screen) and <strong>Open the job</strong>; <strong>Add all</strong> takes up to 100 jobs. Recognised by the sender, a hand-forwarded &quot;From:&quot; line, the subject or the board's job links; works on both the text and the HTML form of the email.</li>
+<li><strong>Team inbox:</strong> each job becomes its own requirement with the job's link and the board named in its text, through the same claim as &quot;Add to requirements&quot; (a teammate who added the email first stops the add before anything is saved). A job already in Requirements (same link) is skipped. The email is marked added once at least one job went in.</li>
+<li><strong>My book (Solo):</strong> a job that names a recruiter's email goes in as that recruiter, with the board and the job link; a job with no recruiter email says so (the book keeps recruiters, so it cannot hold a job without one). Still read in your browser only: the personal inbox stays end-to-end encrypted.</li>
+<li><strong>No-reply senders are never a contact:</strong> the boards' alert and no-reply mailboxes (<code>jobalerts-noreply@…</code>, <code>alert@indeed.com</code>, any address on a board's domain) are no longer taken as the vendor contact, on the generic path too.</li>
+</ul>
+<h3>Overnight follow-ups (14 Nov): résumé files of a deleted consultant, interview hold in the morning email, location read from a post</h3>
+<ul>
+<li><strong>Fix (team server): résumé files stayed stored after their consultant was deleted.</strong> Every removed résumé version (a deleted consultant, a deleted version, the last-5 prune, the workspace purge) now queues its file, and the <code>report</code> function's 15-minute tick deletes it through the Storage API, retrying until it goes.</li>
+<li><strong>Fix (morning email): &quot;No submission this week&quot; still listed consultants In interview</strong>, while the web app's Today screen holds them out. The email and the per-desk rows now leave them out the same way and add one line: &quot;In interview (held out of this list): N&quot;.</li>
+</ul>
+<h3>&quot;Bring BenchPilot to your team&quot; from the popup and the dashboard (backlog E14, entry part)</h3>
+<ul>
+<li><strong>Popup:</strong> a small &quot;Bring BenchPilot to your team&quot; line under More. It opens the new Settings card in the dashboard. The × hides it for 30 days, and so does copying the message or the link. It shows only when you are signed in and not in a team, and never while the open tab is LinkedIn.</li>
+<li><strong>Dashboard → Settings → Bring your team:</strong> the same card as on the plans page (Get my team link, Copy message, Copy link, Make a new link). Only for signed-in users who are not in a team. Deep link: <code>#settings?section=team</code>.</li>
+<li><strong>One flow:</strong> the plans page and the dashboard both run <code>upgrade/bring-team.js</code>. BenchPilot still never sends the note: you copy it and send it yourself. The reward rules and the server are unchanged.</li>
+<li>The &quot;hidden for 30 days&quot; time is a local flag (<code>bp_bring_team_hidden_at</code>). It is not in backups and not synced.</li>
+</ul>
+<h3>Encrypted sync phase 2: resume files, a sync chip in the popup, a sync slide in the tour (backlog E2, E3)</h3>
+<ul>
+<li><strong>Resume files sync, encrypted</strong> (with sync on): the resumes attached to consultants and your own resume are encrypted on your computer, each with its own random key, and uploaded to a private storage bucket. The server holds the locked file, an id and its size; the file name, the consultant and the key travel only inside your encrypted data. Another computer brings missing files down a few at a time in the background; deletions and renames follow. Limits: 5 MB a file, 200 MB and 1,000 files an account (separate from the 50 MB for the rest of your data); over them a file stays on its computer and Settings says so.</li>
+<li><strong>&quot;Replace my keys&quot;</strong> re-wraps the file keys with the new key and does not re-upload files, unless you tick <strong>&quot;Also re-encrypt resume files&quot;</strong> (you see the file count and size first): then every file gets a new key and is uploaded again, and the old copies are deleted. File keys are stored on your computer only encrypted with your sync key.</li>
+<li><strong>Turning sync off</strong> (typed DELETE) also deletes every synced file from the server; the files stay on your computer. Files of accounts removed after 60 days without a plan, or deleted, are removed by the daily server tick.</li>
+<li><strong>Sync chip in the popup:</strong> Synced / Syncing… / Sync locked / Sync paused / Sync problem; click to open Settings, Sync. Hidden while sync is off.</li>
+<li><strong>First-run tour:</strong> a fifth slide, &quot;Yours, on every computer. Only you can read it.&quot;, shown only when sync is switched on in this build and the plan includes it.</li>
+<li>Backups are unchanged (the files were already in them; the new sync bookkeeping is not).</li>
+</ul>
+<h3>Drawer polish, and the &quot;LinkedIn may have changed&quot; warning works again (backlog E4, E6)</h3>
+<ul>
+<li><strong>One meaning for &quot;Matches&quot;:</strong> it is the tab's name only. The header number is now <strong>Good fits</strong> and the Requirements chip <strong>Good fit (14 days)</strong>.</li>
+<li><strong>Late follow-ups are red</strong> (dot and the words &quot;N days late&quot;); due-today ones keep the quiet dot.</li>
+<li><strong>One Clear:</strong> with a header number acting as a filter, the Matches tab showed both &quot;Clear&quot; and &quot;Show everything&quot; for the same thing. Only the Showing bar's Clear is left.</li>
+<li><strong>Contrast:</strong> the small note under the duplicate-submission check is drawn at full strength (it was 4.1:1, under the 4.5:1 minimum).</li>
+<li><strong>Calmer motion:</strong> the green &quot;live&quot; dot pulses three times and stops (it pulsed forever); the drawer width, tab underline, sheets and toast ease out instead of overshooting. Reduce motion (system or Settings) still turns all of it off.</li>
+<li><strong>Fix: the capture warning could never fire.</strong> The &quot;BenchPilot can see requirement posts here but could not read the recruiter emails&quot; warning counted only posts the parser had already accepted, so &quot;seen but nothing read&quot; was impossible. It now counts visible emails in requirement-like posts before the parser's own checks. Found by the new tests below.</li>
+<li><strong>Tests on saved feed pages:</strong> the real content script now runs in the tests on five sanitized LinkedIn feed pages (fictional people, example.com emails): normal feed with a comment email, a re-share, mailto and &quot;[at] [dot]&quot; addresses, a redesigned layout, and a page whose selectors broke (the warning must fire). A small test-only DOM (<code>tests/helpers/mini-dom.js</code>) means no <code>npm install</code> is needed in CI. Nothing new is packaged.</li>
+</ul>
+<h3>Team web app: email templates with the company signature, and &quot;Draft email&quot; (backlog W7)</h3>
+<ul>
+<li><strong>Email templates</strong> (Team → Email templates, <code>#templates</code>): pitch, follow-up, hotlist intro and check-in templates for the whole team. Owners and managers add, edit and delete them; everyone uses them. A team starts with the extension's own pitch, submit and hotlist templates plus a follow-up and a check-in, saved for the team the first time an owner or manager opens the screen. At most 40 per team.</li>
+<li><strong>Same placeholders and the same filling as the extension</strong> (<code>{firstName}</code>, <code>{requirement}</code>, <code>{consultantName}</code> ...): the web app runs the extension's <code>fillTemplate</code> / <code>fillSubmitEmail</code> and <code>buildComposeUrl</code>, not a copy.</li>
+<li><strong>Company signature:</strong> company name and website (owners and managers), plus each member's own name, job title and phone (only that member sees them). Plain text under every draft, no images.</li>
+<li><strong>Draft email</strong> on Requirements, Matches, Submissions (&quot;Draft follow-up&quot;) and Today's follow-ups: pick a template and a consultant, check the text, then <strong>Open in Gmail</strong> or <strong>Open in Outlook</strong>. The draft opens in your own account; nothing is sent from BenchPilot. A vendor contact or company marked <strong>Do not contact</strong> in the team book blocks the draft with a message.</li>
+</ul>
+<h3>Team vendor book: smart lists and the email check (backlog W5, W6)</h3>
+<ul>
+<li><strong>Smart lists in the team vendor book</strong> (web app, Team, Agency and the pilot; Starter sees an upgrade note): the extension's four built-in lists (Hot now, Cold 60+ days, Replied in 30 days, Missing phone) as buttons with counts above the table, plus lists the team saves (&quot;+ Save a list&quot;: heat, role hired, replied in 30 / 90 days, no requirement for 30 / 60 / 90+ days, phone). A list is a rule, not a set of names, so it stays current. Counted and filtered by the extension's own <code>BP.VendorBook.evaluateList</code> over the team book. <strong>Saved lists belong to the team:</strong> everyone sees them, owners and managers save and delete them, up to 25 per team.</li>
+</ul>
+<h3>Team web app: same role from several vendors, full requirement tags, interview hold (backlog W2, W3, W4)</h3>
+<ul>
+<li><strong>Same role from N vendors:</strong> the same requirement posted by several vendors (same job ID, or the same title and end client within 14 days, the extension's own v1.18 rule) is one row in Requirements, one card in Matches and one follow-up on Today, marked &quot;Same role from N vendors&quot; with the other vendors listed. &quot;Show the same role once&quot; can be turned off. Worked out in the browser</li>
+<li><strong>Full requirement tags:</strong> visas the post takes and rules out, tax terms (C2C, W2, 1099), work mode, rate from-to per hour/day/week/month/year and duration in months, set in the paste form (read with the extension's parser), a new &quot;Add a requirement&quot; form and a new &quot;Edit&quot;. New filters: visa it takes, USC / GC only, tax terms, work mode, pays at least per hour, at least N months</li>
+<li><strong>Interview hold:</strong> a consultant &quot;In interview&quot; is held out of Matches and of Today's &quot;no submission this week&quot; lists; &quot;Show held&quot; brings them back, marked</li>
+</ul>
+<h3>Team web app and server: activity log for owners and managers, and the automatic purge of closed workspaces (backlog W8, S3)</h3>
+<ul>
+<li><strong>Activity log</strong> (Team settings → Open the activity log, <code>#audit</code>): who added, changed or deleted what, as plain lines (&quot;Asha changed submission Ravi Kumar at Cobalt Energy (stage: submitted to interview)&quot;). Filter by person, type and date range; 50 per page with Older / Newer; <strong>Export this list</strong> as CSV when the workspace's export setting allows the role. Owners and managers only. The log keeps ids only; names come from the team's own book, and no email or phone is ever shown or exported.</li>
+<li><strong>Closed workspaces are deleted for good 30 days after they close.</strong> 23 days after a workspace closes (by its owner, or after 30 days read-only unpaid) the owner gets one warning email with the date; at least 7 days later every team record (bench and résumés, vendor book, contacts, requirements, submissions, activity log, team inbox, members, invites) and its stored files are deleted. Workspaces with paid time left, an extended pilot or one re-opened by support are never deleted. A tombstone keeps only the team id, dates and row counts; payments stay for the accounts.</li>
+</ul>
+<h3>Paste a requirement, and &quot;Draft email&quot; opens the email (backlog E1, E8 / K4)</h3>
+<ul>
+<li><strong>Paste a requirement</strong> (every plan): on the dashboard's Requirements page (and from Today), paste a requirement from an email, WhatsApp or a job board, press *Read the fields*, check and edit them (role, end client, job ID, rate, tax terms, location, work mode, visa, duration, skills, recruiter email, name, phone, vendor), and save. It is saved with its recruiter through the same save path as a LinkedIn save (marked &quot;Pasted requirement&quot;), then matched to the bench like any other requirement. An email on the Don't email list can be saved, but no draft opens to it. Nothing leaves the computer.</li>
+<li><strong>&quot;Draft email for &lt;consultant&gt;&quot; in the Requirements table opens the email draft</strong> (through the single draft gate, so the Don't email list applies). It used to open the requirement's panel and only highlight the consultant (K4).</li>
+</ul>
+<h3>Team web app and server: resume upload for team consultants (backlog W1)</h3>
+<ul>
+<li><strong>Resumes on the Consultant page.</strong> Anyone in the team can upload a PDF or Word (.docx) resume, up to 5 MB, checked in the browser with the extension's own file check before anything is sent. The last 5 versions are kept (newest = current); <strong>Open</strong> (PDF) and <strong>Download</strong> (.docx) use links that work for one minute. Owners and managers can delete a version. Read-only workspaces can still open files but not add or delete them.</li>
+<li><strong>Private storage per team:</strong> one private bucket, a folder per team and consultant; only active members of that team can read or upload (a removed member loses access at once), no file is ever overwritten. The activity log records ids only. The demo workspace keeps file names only, never files.</li>
+</ul>
+<h3>Team web app and server: vendor heat, whole-bench matches, follow-ups, weekly and per-desk reports (spec <code>docs/specs/TEAM_P2_SPEC.md</code>)</h3>
+<ul>
+<li><strong>Vendor book heat and response stats</strong> (Team, Agency, pilot): each vendor company is Hot, Active or Cold by the same rules as the extension's Vendor Book, from the team's requirements and submissions, with submissions sent and reply, interview and placement rates over 30 and 90 days. Filter by heat or sort hottest first. Starter sees an upgrade note.</li>
+<li><strong>Matches</strong> (every plan): every open requirement against the whole bench, and every consultant against the open requirements, with the extension's match score (60 % and up). A pair someone on the team already submitted in the last 90 days is marked &quot;Already submitted by &lt;name&gt;&quot; and listed last; &quot;New submission&quot; opens the form filled in, and the guard still runs.</li>
+<li><strong>Follow-ups on Today</strong> (every plan): submissions with no update after 24 hours (vendor) or 48 hours (client), and requirements with no submission after 24 hours. Recruiters see their own; owners and managers see everyone's. Nothing is emailed.</li>
+<li><strong>Weekly summary in the morning report</strong> (Team, Agency, pilot) on the day the owner picks in Team settings (default Monday): the last 7 days' submissions (and the week before), stage moves, new requirements and vendors, guard overrides. <strong>Per-desk lines</strong> (Agency, pilot): each recruiter's submissions, interviews and bench, daily and for the week. Counts and the firm's own recruiter names only; no vendor names, emails or phones.</li>
+</ul>
+<h3>Today's homework: your daily plan (spec <code>docs/specs/TODAY_HOMEWORK_SPEC.md</code>)</h3>
+<ul>
+<li><strong>A to-do list for the day, written from what BenchPilot already knows.</strong> New strong matches saved this shift, follow-ups due (and drafts not yet marked as sent), consultants on the bench 30+ days with no submission this week, things to check in the Vendor Book, and a backup once 50+ recruiters are saved. At most 12 open items, money first.</li>
+<li><strong>Where:</strong> a <strong>Today</strong> card at the top of the drawer's Matches tab (&quot;6 things for today · 2 done&quot;, with a progress bar) that opens the list in a sheet, and the first block of the dashboard's Today page.</li>
+<li><strong>One click each:</strong> a row opens the match card, the follow-up, the consultant's best match (or Find recruiters), the Vendor Book or Backup. Opening a match ticks it; the rest tick themselves when the thing happens and stay on the list, ticked, until the next day. Tick by hand, or <strong>Tomorrow</strong> to snooze.</li>
+<li><strong>The day starts at 6:00 pm IST</strong> (dashboard Today → &quot;My day starts at&quot;), so a shift past midnight is one day. &quot;Nothing left for today&quot; names the next start; a quiet &quot;N days in a row&quot; counts emptied lists. No desktop notifications; the toolbar badge is unchanged.</li>
+<li><strong>Solo:</strong> check-in drafts for *Trusted* vendors that have not answered a submission for 14+ days (opens in your mail app, never sent by BenchPilot; &quot;Skip this week&quot;), and <strong>yesterday's numbers</strong> at the top (requirements saved, submissions sent, vendor replies, interviews, homework done), computed on your computer. Free sees how many quiet vendors there are.</li>
+</ul>
+<h3>Vendor Book, part 2: job changes, saved smart lists, &quot;Merge safe ones&quot; (spec <code>docs/specs/VENDOR_BOOK_SPEC.md</code>, slices 2 and 3)</h3>
+<ul>
+<li><strong>Job changes.</strong> When a saved recruiter posts from a new company's email with the same LinkedIn profile or phone and the same name, or you open their LinkedIn profile and it names a new company, the Vendor book card shows a suggestion with both emails and the evidence. <strong>Update contact</strong> moves the email, company and title (notes, status, follow-up date and activity stay; the old email is kept as an earlier email; a title or phone you typed stays yours) with <strong>Undo</strong>; <strong>Merge</strong> when both emails are saved; <strong>Not the same person</strong> hides it for good. Nothing changes by itself, a name alone or a Gmail / Yahoo address never counts, and nothing is clicked or opened on LinkedIn. Update and Merge are Solo; seeing and dismissing are free. No reveal, no new contact.</li>
+<li><strong>Saved smart lists (Solo).</strong> &quot;+ Save this view&quot; on Vendors and Recruiters keeps the filters as a list (up to 25), with a live count. Rules only, never names; a list that refers to a removed role group shows 0 and a note and is never deleted. New &quot;Hires&quot; filter on Vendors. Free keeps the four built-in lists, and lists saved on Solo keep working after a plan ends. In backups and encrypted sync.</li>
+<li><strong>Export this list</strong>: the list's recruiters as a CSV (Solo, like every export); people on your Don't email list are left out.</li>
+<li><strong>Merge safe ones</strong>: duplicates with the same LinkedIn profile or the same name at the same company (never a phone alone) merge in one go, up to 25 groups, after a preview, with one Undo for the whole batch (until the next batch or browser restart). Solo.</li>
+<li><strong>Popup</strong>: &quot;Vendor book: N to check&quot; when something needs a decision.</li>
+</ul>
+<h3>Vendor Book: your vendor book keeps itself up to date (spec <code>docs/specs/VENDOR_BOOK_SPEC.md</code>, slice 1 plus the built-in lists)</h3>
+<ul>
+<li><strong>Saved recruiters update themselves from the posts you scroll past.</strong> &quot;Last seen in a post&quot;, a missing title, phone or LinkedIn profile fills in at once, and a *different* title or phone is changed only after two different posts show it (a fallback like &quot;Recruiter&quot; never replaces a real title; a switchboard number shared by 40+ recruiters is ignored). No reveal, no new contact, nothing clicked or opened on LinkedIn.</li>
+<li><strong>Every change can be undone.</strong> The recruiter's panel has a <strong>Vendor book</strong> section: when they were last seen, the roles they hire for, and each change BenchPilot made with a <strong>Restore</strong> button. A title, phone or profile you type by hand is yours: BenchPilot never changes it (with a &quot;Let BenchPilot update it&quot; link).</li>
+<li><strong>Heat per vendor</strong> on Vendors and in the drawer: <strong>Hot</strong> (3+ posts in 30 days, or 2 in 14, or a reply / interview in 30 days with a post), <strong>Active</strong> (a post in 60 days), <strong>Cold</strong> (quiet 60+ days). Filter and sort by Heat. &quot;Hires: Java / J2EE (7), Data engineer (3)&quot; under each vendor (last 90 days). Your Trusted / Avoid labels are never changed.</li>
+<li><strong>Vendor book health card</strong> at the top of Vendors: possible duplicates, gone cold, no phone, no vendor, looks like a bench seller, name doesn't match email, marked bounced, and &quot;N contacts updated from posts this week&quot; with Restore. Counts are free; the fixes are the existing Fix my data actions (Solo). The drawer's Vendors tab shows &quot;N things to check in your vendor book&quot;.</li>
+<li><strong>Built-in lists</strong> on Vendors: Hot now, Cold 60+ days, Replied in 30 days, Missing phone. Always current; nothing stored.</li>
+</ul>
+<h3>Hotlist builder (spec <code>docs/specs/HOTLIST_BUILDER_SPEC.md</code>)</h3>
+<ul>
+<li><strong>Hotlist</strong> on the Bench page replaces the old &quot;Copy hotlist&quot; menu. Tick the consultants (the active ones are ticked), choose the columns and their order (role, experience, top skills, visa, location, terms, rate, availability) and how names show (first name + last initial by default, initials or full name). BenchPilot remembers your choice.</li>
+<li>Outputs: <strong>Copy text</strong> (an email with a subject line), <strong>Copy table</strong> (a table you paste into Gmail or Outlook; plain text where the browser cannot copy a table), <strong>Excel</strong>, <strong>CSV</strong>, and <strong>Open draft</strong> (subject and text, no recipients: you pick them in your mail app; the Don't email list applies). A consultant's phone, email, notes and resume never go in. BenchPilot never sends email.</li>
+<li>Part of <strong>Solo</strong>. Free shows a preview of 3 consultants with &quot;Upgrade to Solo&quot;; the per-consultant hotlist line in Copy pitch stays free.</li>
+<li>Team web app: a <strong>Hotlist</strong> button on Bench builds the same text, table and CSV from the firm's bench (Marketing consultants ticked; the CSV follows the workspace export setting).</li>
+</ul>
+<h3>Find recruiters for a consultant, mail-merge export, do-not-email list (spec <code>docs/specs/RECRUITERS_FOR_CONSULTANT_SPEC.md</code>)</h3>
+<ul>
+<li><strong>Find recruiters</strong> on each consultant (Bench page, Match workspace, and the consultant's card in the LinkedIn drawer). It opens Export by role prefilled from the profile: role family from the title (or skills), their top 3 skills, the last 90 days, one row per recruiter. The preview says &quot;12 recruiters at 7 vendors posted roles like Ravi's in the last 90 days&quot;. Opening it and the preview are free; downloads need Solo, like every export.</li>
+<li><strong>Export for mail merge</strong>: a CSV for Gmail mail-merge tools (Email, First name, Full name, Company, Contact type, Role group, Last role they posted, Last seen, Phone), one row per address, newest first. A note above the button: send from your own account, add an opt-out line, stop when asked. BenchPilot never sends email.</li>
+<li><strong>Don't email list</strong> (free): on Vendors → Recruiters (and the lead panel's More menu), mark a person &quot;Don't email&quot; with a reason (asked to stop, bounced, not relevant), with Undo. BenchPilot then opens no draft to them anywhere (Submit sheet, Draft email, follow-ups, plain Email, the Match workspace), leaves them out of mail-merge files and &quot;Copy emails&quot;, and adds a &quot;Do not email&quot; column to the Recruiters exports. A chip shows on the recruiter row and in the drawer's contact line.</li>
+<li>Contact types (Tech recruiter / Company HR / Bench sales) are the ones from v1.12, so the finder's type ticks and the &quot;Contact type&quot; column use the same rules and your own changes.</li>
+</ul>
+<h3>BenchPilot Solo: one paid plan, and Free saves unlimited contacts (decision F6; spec <code>docs/specs/SOLO_PLAN_SPEC.md</code>)</h3>
+<ul>
+<li><strong>Free saves unlimited recruiter contacts</strong> (before: 25 a month) and keeps up to 3 consultants (before: 2). The monthly contact meter, its &quot;contacts left&quot; lines and the autosave pause no longer appear, because no plan has a monthly limit.</li>
+<li><strong>Solo replaces Basic and Pro:</strong> ₹499 a month or ₹3,999 a year ($12 / $99 shown outside India; checkout in rupees). Founding price ₹399 a month for the first 100 buyers, for 12 months. Solo has everything Pro had plus <strong>encrypted sync across computers</strong>.</li>
+<li><strong>Basic and Pro holders keep their plan until it ends</strong>, and renew as Solo (&quot;Renew as Solo&quot;); leftover days convert by price.</li>
+<li>The upgrade page shows Free and Solo, the compare table has two columns, and every &quot;Upgrade&quot; button says &quot;Upgrade to Solo&quot;.</li>
+</ul>
+<h3>Web app: My book for Solo (spec <code>docs/specs/SOLO_WEB_WORKSPACE_SPEC.md</code>)</h3>
+<ul>
+<li><strong>Open your own book in the web app.</strong> Sign in with the same account as in the extension, enter your sync passphrase (or recovery code), and see your recruiters, vendors, consultants, submissions, notes and jobs, with search and filters. It is decrypted in your browser tab only; the server still only holds encrypted data.</li>
+<li><strong>Small changes from any computer:</strong> a recruiter's status, notes and follow-up date; a consultant's title, skills, visa, rate, location, availability, notes and active switch. They are encrypted in the tab and reach the extension on its next sync; changes made in the extension at the same time are kept.</li>
+<li>The book locks itself on sign-out, when the tab closes and after 30 minutes without activity. Without Solo the page shows &quot;Upgrade to Solo&quot; (buying stays in the extension).</li>
+</ul>
+<h3>Solo: your own inbox address, encrypted on arrival (spec <code>docs/specs/SOLO_INBOX_SPEC.md</code>)</h3>
+<ul>
+<li><strong>Forward requirement emails to your own BenchPilot address</strong> (<code>p-…@&lt;our mail domain&gt;</code>), made in the web app under My book &gt; Inbox; turn it off or replace it there. The extension shows it in Settings &gt; Sync with a Copy button.</li>
+<li><strong>Only you can read them:</strong> each email is encrypted the moment it arrives, with a key only your browser can open (your sync passphrase). The server keeps only the encrypted email, when it arrived, its size and whether you added or ignored it.</li>
+<li><strong>Add to my book</strong> turns an email into a recruiter in your encrypted book (read with the same requirement reader as &quot;Paste a requirement&quot;); Ignore and Open the email as in the team inbox; the Gmail forwarding code is shown at the top.</li>
+<li>Limits: 500 emails a day, 50 MB; emails are deleted after 90 days (30 days after Ignore). Turning sync off deletes the inbox.</li>
+<li>&quot;Replace my keys&quot; moves the inbox key to the new keys in the same step.</li>
+</ul>
+</section>
 <section class="log-ver" id="v1-19-0">
 <h2>Version 1.19.0 <time datetime="2026-11-12">12 November 2026</time></h2>
 <h3>Vendor memory and follow-through (v1.19)</h3>
