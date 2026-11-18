@@ -14,7 +14,7 @@
 // Admin function: POST /functions/v1/admin (Bearer access token, aal2 required by the server).
 // Actions: metrics, growth, list_users, get_user, grant, revoke, grant_bulk, suspend, unsuspend, sign_out_everywhere,
 // send_password_reset, delete_user, list_payments, list_audit, list_payment_issues, resolve_payment_issue (contract: docs/archive/ADMIN_V2_PLAN.md),
-// team_scorecard, get_remote_config, set_remote_config (migration 0035).
+// team_scorecard, get_remote_config, set_remote_config (migration 0035), funnel (migration 0060).
 (function () {
   'use strict';
 
@@ -217,7 +217,7 @@
     }
   }
   // latest-request-wins counters, one per view
-  var tokens = { dash: 0, users: 0, pay: 0, audit: 0, panel: 0, settings: 0, feedback: 0, growth: 0, teams: 0, remote: 0 };
+  var tokens = { dash: 0, users: 0, pay: 0, audit: 0, panel: 0, settings: 0, feedback: 0, growth: 0, funnel: 0, teams: 0, remote: 0 };
   function nextToken(k) { tokens[k]++; return tokens[k]; }
 
   // ---------- 1. sign in ----------
@@ -472,6 +472,54 @@
     if (adminFailed(r)) { $('growth-note').textContent = ''; return; }
     $('growth-note').textContent = 'Last ' + L.GROWTH_DAYS + ' days, IST. Counts only; no names or emails. "Signed in" is the latest sign-in per user, so older days can undercount.';
     renderGrowth(r.body.growth || r.body);
+    loadFunnel();
+  }
+
+  // ---------- funnel card (plan 4.2) ----------
+  // Server numbers: counts per week (action funnel). Store numbers: the CSV is parsed here, held in memory only and never sent anywhere.
+  var fState = { data: null, store: null };
+  function paintFunnel() {
+    var d = fState.data;
+    var host = $('f-table'), hh = $('f-heard');
+    clear(host); clear(hh);
+    if (!d) return;
+    host.appendChild(simpleTable(L.FUNNEL_HEAD, L.funnelTableRows(d.rows, fState.store)));
+    var h = L.heardTable(d.rows, d.channels);
+    hh.appendChild(simpleTable(h.head, h.rows));
+  }
+  function setStore(text) {
+    var r = L.parseStoreCsv(text);
+    var note = $('f-store-note');
+    if (!r.ok) { fState.store = null; note.textContent = r.error; paintFunnel(); return; }
+    fState.store = r;
+    note.textContent = 'Store numbers read: ' + L.formatCount(r.rows) + ' rows, ' + L.formatDate(r.first) + ' to ' + L.formatDate(r.last) + '.'
+      + (r.guessed ? ' Column names were not recognised, so the first number column is shown as Installs and the second as Weekly users.' : '')
+      + (r.hasInstalls ? '' : ' No Installs column found.') + (r.hasUsers ? '' : ' No Weekly users column found.')
+      + ' Installs are summed per week; weekly users is the latest value in the week.';
+    paintFunnel();
+  }
+  $('f-file').addEventListener('change', function () {
+    var f = $('f-file').files && $('f-file').files[0];
+    if (!f) return;
+    if (f.size > L.MAX_CSV_CHARS) { fState.store = null; $('f-store-note').textContent = 'This file is too large to be a store export.'; paintFunnel(); return; }
+    var fr = new FileReader();
+    fr.onload = function () { setStore(String(fr.result || '')); };
+    fr.onerror = function () { fState.store = null; $('f-store-note').textContent = 'Could not read that file.'; paintFunnel(); };
+    fr.readAsText(f);
+  });
+  $('f-use').addEventListener('click', function () { setStore($('f-paste').value); });
+  $('f-clear').addEventListener('click', function () {
+    fState.store = null; $('f-paste').value = ''; $('f-file').value = ''; $('f-store-note').textContent = ''; paintFunnel();
+  });
+  $('f-refresh').addEventListener('click', function () { loadFunnel(); });
+  async function loadFunnel() {
+    var mine = nextToken('funnel');
+    setErr('f-error', '');
+    var r = await callAdmin(L.funnelBody(L.FUNNEL_WEEKS));
+    if (mine !== tokens.funnel) return;
+    if (adminFailed(r, 'f-error')) return;
+    fState.data = r.body;
+    paintFunnel();
   }
 
   function renderGoal() {
