@@ -62,6 +62,7 @@
       <a href="#revenue" data-route="revenue">Revenue</a>
       <a href="#teams" data-route="teams">Teams</a>
       <a href="#feedback" data-route="feedback">Feedback</a>
+      <a href="#data" data-route="data">Data requests</a>
       <a href="#audit" data-route="audit">Audit log</a>
       <a href="#remote" data-route="remote">Remote config</a>
       <a href="#settings" data-route="settings">Settings</a>
@@ -79,6 +80,27 @@
           </div>
         </div>
         <p id="dash-note" class="adm-muted"></p>
+        <section class="adm-card" aria-labelledby="h-release">
+          <div class="adm-toolbar">
+            <h2 id="h-release">Release</h2>
+            <button type="button" id="rel-edit" class="adm-btn adm-btn-ghost adm-btn-sm" aria-expanded="false" aria-controls="rel-form">Edit</button>
+          </div>
+          <p id="rel-live" class="adm-goal-line"></p>
+          <p id="rel-review"></p>
+          <p id="rel-next" class="adm-muted"></p>
+          <p id="rel-retest" hidden><a id="rel-retest-link" href="#" target="_blank" rel="noopener noreferrer">Retest checklist</a></p>
+          <form id="rel-form" class="adm-row" hidden novalidate>
+            <label>Live version<input id="rel-live-in" type="text" autocomplete="off" maxlength="20" placeholder="1.21.0"></label>
+            <label>Live since<input id="rel-since-in" type="date"></label>
+            <label>In review (blank if none)<input id="rel-review-in" type="text" autocomplete="off" maxlength="20" placeholder="1.21.1"></label>
+            <label>Submitted on<input id="rel-sub-in" type="date"></label>
+            <label class="adm-grow">Next (up to 80 characters)<input id="rel-next-in" type="text" autocomplete="off" maxlength="80"></label>
+            <label class="adm-grow">Retest checklist link (github.com/justasknick/...)<input id="rel-url-in" type="url" autocomplete="off" maxlength="200" placeholder="https://github.com/justasknick/benchpilot-extension/blob/main/docs/releases/..."></label>
+            <button type="submit" id="rel-save" class="adm-btn adm-btn-primary">Save release</button>
+            <button type="button" id="rel-cancel" class="adm-btn adm-btn-ghost">Cancel</button>
+          </form>
+          <p id="rel-error" class="adm-err" role="alert" hidden></p>
+        </section>
         <div id="kpis" class="adm-kpis"></div>
         <div class="adm-grid2">
           <section class="adm-card adm-chart" aria-labelledby="h-c-signups">
@@ -186,6 +208,14 @@
       <!-- Users -->
       <section id="page-users" hidden aria-labelledby="h-users">
         <div class="adm-pagehead"><h1 id="h-users">Users</h1></div>
+        <section id="pending-card" class="adm-card adm-flush" aria-labelledby="h-pending" hidden>
+          <h2 id="h-pending">Pending deletions</h2>
+          <p class="adm-muted">Accounts scheduled for deletion. Each can be cancelled until its 24-hour undo window ends.</p>
+          <div class="adm-scroll"><table class="adm-table" id="tbl-pending">
+            <thead><tr><th scope="col">Account</th><th scope="col">Scheduled</th><th scope="col">Due</th><th scope="col">State</th><th scope="col">Reason</th><th scope="col"><span class="adm-sr">Actions</span></th></tr></thead>
+            <tbody></tbody>
+          </table></div>
+        </section>
         <form id="form-users" class="adm-card adm-filters" novalidate>
           <label class="adm-grow">Search email<input id="u-q" type="search" autocomplete="off" maxlength="100" placeholder="name@example.com"></label>
           <label>Plan<select id="u-plan"><option value="">Any</option><option value="free">Free</option><option value="solo">Solo</option><option value="pro">Pro</option><option value="basic">Basic</option></select></label>
@@ -322,6 +352,31 @@
         <div class="adm-pager"><button type="button" class="adm-btn adm-btn-ghost adm-btn-sm" id="f-prev">Previous</button><span id="f-range" class="adm-muted"></span><button type="button" class="adm-btn adm-btn-ghost adm-btn-sm" id="f-next">Next</button></div>
       </section>
 
+      <!-- Data requests (India's DPDP Act: answer within 30 days) -->
+      <section id="page-data" hidden aria-labelledby="h-data">
+        <div class="adm-pagehead"><h1 id="h-data">Data requests</h1></div>
+        <p class="adm-muted">A user asked for their data, a correction or the deletion of their account. Answer within 30 days. Log each request here, then do it and mark it done.</p>
+        <form id="form-dr-add" class="adm-card adm-filters" novalidate aria-labelledby="h-dr-add">
+          <h2 id="h-dr-add" class="adm-sr">Add a request</h2>
+          <label class="adm-grow">Requester email<input id="dr-email" type="email" autocomplete="off" maxlength="320" placeholder="name@example.com"></label>
+          <label>Kind<select id="dr-kind"><option value="export">Send my data</option><option value="delete">Delete my account</option><option value="correct">Correct my data</option></select></label>
+          <label>Received on<input id="dr-received" type="date"></label>
+          <label>How<select id="dr-channel"><option value="email">Email</option><option value="in_app">In the app</option><option value="other">Other</option></select></label>
+          <label class="adm-grow">Note (optional)<input id="dr-note" type="text" autocomplete="off" maxlength="1000"></label>
+          <button type="submit" id="dr-add" class="adm-btn adm-btn-primary">Add request</button>
+        </form>
+        <p id="dr-error" class="adm-err" role="alert" hidden></p>
+        <form id="form-dr-filter" class="adm-card adm-filters" novalidate>
+          <label>Show<select id="dr-status"><option value="">All</option><option value="open" selected>Open</option><option value="done">Done</option><option value="rejected">Rejected</option></select></label>
+          <button type="button" id="dr-refresh" class="adm-btn adm-btn-ghost">Refresh</button>
+        </form>
+        <div class="adm-toolbar"><p id="dr-count" class="adm-muted" aria-live="polite"></p></div>
+        <div class="adm-card adm-flush"><div class="adm-scroll"><table class="adm-table" id="tbl-dr">
+          <thead><tr><th scope="col">Received</th><th scope="col">Answer by</th><th scope="col">Requester</th><th scope="col">Kind</th><th scope="col">How</th><th scope="col">Status</th><th scope="col">Note</th><th scope="col"><span class="adm-sr">Actions</span></th></tr></thead>
+          <tbody></tbody>
+        </table></div></div>
+      </section>
+
       <!-- Audit log -->
       <section id="page-audit" hidden aria-labelledby="h-audit">
         <div class="adm-pagehead"><h1 id="h-audit">Audit log</h1></div>
@@ -410,6 +465,25 @@
           <h2 id="h-set-acct">Your account</h2>
           <dl id="set-account" class="adm-dl"></dl>
         </section>
+        <section class="adm-card" aria-labelledby="h-set-sessions">
+          <h2 id="h-set-sessions">Admin sign-ins</h2>
+          <p class="adm-muted">When the admin console was opened (after the authenticator code), from which browser. Kept for 400 days. Only admins are listed.</p>
+          <p id="sessions-error" class="adm-err" role="alert" hidden></p>
+          <div class="adm-scroll" id="sessions-table"></div>
+        </section>
+        <section class="adm-card" aria-labelledby="h-set-policy">
+          <h2 id="h-set-policy">Privacy policy versions</h2>
+          <p class="adm-muted">The version is the "Last updated" date on the privacy page. An account's version is derived from its sign-up date; per-click consent comes with the next extension release.</p>
+          <p id="policy-error" class="adm-err" role="alert" hidden></p>
+          <div class="adm-scroll" id="policy-table"></div>
+          <form id="policy-form" class="adm-row" novalidate>
+            <label>Version (date)<input id="pv-version" type="date"></label>
+            <label>Effective from<input id="pv-from" type="date"></label>
+            <label class="adm-grow">Link (optional)<input id="pv-url" type="url" autocomplete="off" maxlength="300" placeholder="https://justasknick.github.io/benchpilot-site/privacy.html"></label>
+            <label class="adm-grow">What changed (optional)<input id="pv-summary" type="text" autocomplete="off" maxlength="300"></label>
+            <button type="submit" id="pv-add" class="adm-btn adm-btn-primary">Add version</button>
+          </form>
+        </section>
         <section class="adm-card" aria-labelledby="h-set-links">
           <h2 id="h-set-links">Dashboards</h2>
           <ul class="adm-links">
@@ -431,6 +505,10 @@
   </div>
   <div class="adm-panel-body">
     <p id="panel-status" class="adm-status" role="status" hidden></p>
+    <div id="pending-banner" class="adm-banner-bad" role="alert" hidden>
+      <p id="pending-text"></p>
+      <div id="pending-actions" class="adm-actions"></div>
+    </div>
     <dl id="detail-summary" class="adm-dl"></dl>
     <div id="detail-actions" class="adm-actions"></div>
 
