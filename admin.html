@@ -101,10 +101,24 @@
             <div id="funnel"></div>
           </section>
         </div>
-        <section class="adm-card" aria-labelledby="h-health">
-          <h2 id="h-health">Health</h2>
-          <div id="health"></div>
+        <section class="adm-card adm-chart" aria-labelledby="h-c-active">
+          <div class="adm-chart-head"><h2 id="h-c-active">Active users per day</h2><button type="button" class="adm-btn adm-btn-ghost adm-btn-sm" id="tg-active" aria-expanded="false" aria-controls="tbl-wrap-active">View as table</button></div>
+          <div id="chart-active"></div>
+          <div id="tbl-wrap-active" class="adm-scroll adm-tbl-short" hidden></div>
+          <p class="adm-muted">Counts signed-in users only, from the day this was switched on. Installs without an account come later.</p>
         </section>
+        <div class="adm-grid2">
+          <section class="adm-card" aria-labelledby="h-health">
+            <h2 id="h-health">Health</h2>
+            <div id="health"></div>
+          </section>
+          <section class="adm-card adm-chart" aria-labelledby="h-li">
+            <h2 id="h-li">LinkedIn health</h2>
+            <p id="li-status" class="adm-flag" aria-live="polite"></p>
+            <div id="chart-li"></div>
+            <p class="adm-muted">Counts of capture failures reported by the extension (opt-in error reports), last 14 days. No post text or contacts.</p>
+          </section>
+        </div>
       </section>
 
       <!-- Growth -->
@@ -112,14 +126,29 @@
         <div class="adm-pagehead"><h1 id="h-growth">Growth</h1></div>
         <p id="growth-note" class="adm-muted"></p>
         <section class="adm-card" aria-labelledby="h-goal">
-          <h2 id="h-goal">Goal: 1,000 users by 8 Nov 2026</h2>
+          <div class="adm-toolbar">
+            <h2 id="h-goal">Goal</h2>
+            <button type="button" id="goal-edit" class="adm-btn adm-btn-ghost adm-btn-sm" aria-expanded="false" aria-controls="goal-form">Edit</button>
+          </div>
           <p id="goal-line" class="adm-goal-line"></p>
-          <div id="goal-track" class="adm-ftrack adm-goal-track" role="progressbar" aria-labelledby="h-goal" aria-valuemin="0" aria-valuemax="1000" aria-valuenow="0"><div id="goal-fill" class="adm-ffill"></div></div>
-          <p id="goal-pace" class="adm-goal-pace"></p>
-          <label class="adm-goal-installs">Store installs (from the Chrome Web Store dashboard)
-            <input id="g-installs" type="text" inputmode="numeric" autocomplete="off" maxlength="10" placeholder="e.g. 250">
-          </label>
-          <p class="adm-muted">Entered by hand and kept only in this browser. We have no install data on the server. The goal bar uses whichever is higher: registered users or this number.</p>
+          <div class="adm-goal-bar">
+            <p id="goal-weekly-text" class="adm-goal-pace"></p>
+            <div id="goal-weekly-track" class="adm-ftrack adm-goal-track" role="progressbar" aria-labelledby="goal-weekly-text" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div id="goal-weekly-fill" class="adm-ffill"></div></div>
+          </div>
+          <div class="adm-goal-bar">
+            <p id="goal-paying-text" class="adm-goal-pace"></p>
+            <div id="goal-paying-track" class="adm-ftrack adm-goal-track" role="progressbar" aria-labelledby="goal-paying-text" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div id="goal-paying-fill" class="adm-ffill"></div></div>
+          </div>
+          <p class="adm-muted">Weekly active users are signed-in users seen in the last 7 days (counted from the day tracking was switched on). Paying users have a paid plan from a payment now; granted plans are not counted.</p>
+          <form id="goal-form" class="adm-row" hidden novalidate>
+            <label>Deadline<input id="goal-deadline" type="date"></label>
+            <label>Weekly users goal<input id="goal-weekly" type="text" inputmode="numeric" autocomplete="off" maxlength="6"></label>
+            <label>Paying users goal<input id="goal-paying" type="text" inputmode="numeric" autocomplete="off" maxlength="6"></label>
+            <label class="adm-grow">Label (optional)<input id="goal-label" type="text" autocomplete="off" maxlength="80" placeholder="e.g. 17 Dec checkpoint"></label>
+            <button type="submit" id="goal-save" class="adm-btn adm-btn-primary">Save goals</button>
+            <button type="button" id="goal-cancel" class="adm-btn adm-btn-ghost">Cancel</button>
+          </form>
+          <p id="goal-error" class="adm-err" role="alert" hidden></p>
         </section>
         <div id="growth-kpis" class="adm-kpis"></div>
         <section class="adm-card adm-chart" aria-labelledby="h-c-gsignups">
@@ -163,6 +192,7 @@
           <label>Status<select id="u-status"><option value="">Any</option><option value="active">Active</option><option value="suspended">Suspended</option><option value="unconfirmed">Unconfirmed</option></select></label>
           <label>Signed up from<input id="u-after" type="date"></label>
           <label>Signed up to<input id="u-before" type="date"></label>
+          <label>Activity<select id="u-active"><option value="">Any</option><option value="1">Active today</option><option value="7">Active in 7 days</option><option value="30">Active in 30 days</option></select></label>
           <label>Sort<select id="u-sort"></select></label>
           <button type="button" id="u-reset" class="adm-btn adm-btn-ghost">Reset</button>
         </form>
@@ -176,7 +206,7 @@
         </div>
         <div class="adm-card adm-flush"><div class="adm-scroll"><table class="adm-table adm-click" id="tbl-users">
           <caption class="adm-sr">Users</caption>
-          <thead><tr><th scope="col" class="adm-chk"><input type="checkbox" id="u-all" aria-label="Select all users on this page"></th><th scope="col">Email</th><th scope="col">Signed up</th><th scope="col">Last sign-in</th><th scope="col">Plan</th><th scope="col">Status</th><th scope="col"><span class="adm-sr">Open</span></th></tr></thead>
+          <thead><tr><th scope="col" class="adm-chk"><input type="checkbox" id="u-all" aria-label="Select all users on this page"></th><th scope="col">Email</th><th scope="col">Signed up</th><th scope="col">Last sign-in</th><th scope="col">Last active</th><th scope="col">Plan</th><th scope="col">Status</th><th scope="col"><span class="adm-sr">Open</span></th></tr></thead>
           <tbody></tbody>
         </table></div></div>
         <div class="adm-pager"><button type="button" class="adm-btn adm-btn-ghost adm-btn-sm" id="u-prev">Previous</button><span id="u-range" class="adm-muted"></span><button type="button" class="adm-btn adm-btn-ghost adm-btn-sm" id="u-next">Next</button></div>
@@ -227,6 +257,7 @@
           <label>Type<select id="f-kind"><option value="">Any</option><option value="bug">Bug</option><option value="idea">Idea</option><option value="error">Error</option></select></label>
           <label>Status<select id="f-status"><option value="">Any</option><option value="new">New</option><option value="seen">Seen</option><option value="fixed">Fixed</option><option value="wont_fix">Won't fix</option></select></label>
           <label>Version<select id="f-version"><option value="">Any</option></select></label>
+          <label class="adm-inline" id="f-group-wrap" hidden><input type="checkbox" id="f-group"> Group errors</label>
           <button type="button" id="f-reset" class="adm-btn adm-btn-ghost">Reset</button>
         </form>
         <p id="f-error" class="adm-err" role="alert" hidden></p>
@@ -238,6 +269,10 @@
             <button type="button" id="f-purge" class="adm-btn adm-btn-ghost adm-btn-sm">Delete older than 12 months</button>
           </div>
         </div>
+        <section id="f-groups" class="adm-card adm-flush" aria-labelledby="h-fb" hidden>
+          <p id="f-groups-note" class="adm-muted"></p>
+          <div class="adm-scroll" id="f-groups-table"></div>
+        </section>
         <div id="f-list" class="adm-fb-list" aria-live="polite"></div>
         <div class="adm-pager"><button type="button" class="adm-btn adm-btn-ghost adm-btn-sm" id="f-prev">Previous</button><span id="f-range" class="adm-muted"></span><button type="button" class="adm-btn adm-btn-ghost adm-btn-sm" id="f-next">Next</button></div>
       </section>

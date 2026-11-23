@@ -202,7 +202,7 @@
     currentUser = null;
     uState.offset = 0; uState.selected = {}; pState.offset = 0; aState.offset = 0;
     ['tbl-users', 'tbl-pay', 'tbl-audit'].forEach(function (id) { clear($(id).tBodies[0]); });
-    ['kpis', 'chart-signups', 'chart-revenue', 'chart-plan', 'funnel', 'health', 'tbl-wrap-signups', 'tbl-wrap-revenue', 'set-account'].forEach(function (id) { clear($(id)); });
+    ['kpis', 'chart-signups', 'chart-revenue', 'chart-plan', 'funnel', 'health', 'tbl-wrap-signups', 'tbl-wrap-revenue', 'chart-active', 'tbl-wrap-active', 'chart-li', 'set-account'].forEach(function (id) { clear($(id)); });
   }
 
   // ---------- busy / double-submit guard ----------
@@ -386,6 +386,7 @@
   }
   setupToggle('tg-signups', 'tbl-wrap-signups');
   setupToggle('tg-revenue', 'tbl-wrap-revenue');
+  setupToggle('tg-active', 'tbl-wrap-active');
 
   async function loadDashboard() {
     var mine = nextToken('dash');
@@ -398,6 +399,45 @@
     if (adminFailed(r)) { $('dash-note').textContent = ''; return; }
     $('dash-note').textContent = 'Last ' + dState.days + ' days, IST. Charts use server data only (no usage tracking).';
     renderDashboard(r.body.metrics || r.body);
+    loadDashExtras(mine);
+  }
+
+  // Signed-in activity and LinkedIn health (admin console v3). Separate calls so the dashboard never waits on them or breaks without them.
+  async function loadDashExtras(mine) {
+    var a = await callAdmin(L.activityBody(dState.days));
+    if (mine !== tokens.dash) return;
+    renderActivity(a.status === 200 && a.body ? a.body : null);
+    var h = await callAdmin(L.linkedinHealthBody());
+    if (mine !== tokens.dash) return;
+    renderLinkedin(h.status === 200 && h.body ? h.body : null);
+  }
+  function renderActivity(a) {
+    $('kpis').appendChild(kpi('Weekly active (signed-in)', a ? L.formatCount(a.wau) : '-', a ? 'last 7 days, ' + L.formatCount(a.mau) + ' in 30 days' : 'not available yet'));
+    if (!a) { clear($('chart-active')); $('chart-active').appendChild(el('p', { 'class': 'adm-muted', text: 'Not available yet. It needs the database update from batch 1.' })); return; }
+    var days = L.fillActive(a.daily, dState.days);
+    barChart({
+      host: $('chart-active'), tableHost: $('tbl-wrap-active'), cls: 'adm-bar-signups',
+      title: 'Active users per day', unit: 'active users', days: days,
+      values: days.map(function (d) { return d.active; }),
+      fmt: function (v) { return L.formatCount(v); }, tickFmt: function (v) { return L.formatCount(v); },
+      tableHead: ['Date', 'Active users'],
+      tableRow: function (d) { return [L.formatDate(d.day), L.formatCount(d.active)]; }
+    });
+  }
+  function renderLinkedin(h) {
+    var st = $('li-status');
+    if (!h) { st.textContent = 'Not available yet. It needs the database update from batch 1.'; st.className = 'adm-flag adm-muted'; clear($('chart-li')); return; }
+    var v = L.linkedinHealth(h);
+    st.textContent = v.text;
+    st.className = 'adm-flag' + (v.warn ? ' adm-flag-warn' : '');
+    var days = (h.by_day || []).map(function (d) { return { day: d.day, count: d.count | 0 }; });
+    barChart({
+      host: $('chart-li'), tableHost: el('div'), cls: 'adm-bar-revenue',
+      title: 'Capture problems per day', unit: 'capture problems', days: days,
+      values: days.map(function (d) { return d.count; }),
+      fmt: function (n) { return L.formatCount(n); }, tickFmt: function (n) { return L.formatCount(n); },
+      tableHead: ['Date', 'Problems'], tableRow: function (d) { return [L.formatDate(d.day), L.formatCount(d.count)]; }
+    });
   }
 
   function kpi(label, value, sub) {
@@ -450,19 +490,9 @@
   }
 
   // ---------- growth ----------
-  var INSTALLS_KEY = 'bp_admin_store_installs'; // manual, this browser only
-  var gState = { users: 0, loaded: false };
-  function readInstalls() { try { return window.localStorage.getItem(INSTALLS_KEY) || ''; } catch (e) { return ''; } }
-  function saveInstalls(v) { try { if (v) window.localStorage.setItem(INSTALLS_KEY, v); else window.localStorage.removeItem(INSTALLS_KEY); } catch (e) { /* storage blocked: the field still works for this visit */ } }
+  // The goals live on the server (admin_settings, key 'goals'); the bars use the 7-day active count and the paying-users total.
+  var gState = { goals: null, wau: null, paying: 0, loaded: false };
   setupToggle('tg-gsignups', 'tbl-wrap-gsignups');
-  $('g-installs').value = readInstalls();
-  $('g-installs').addEventListener('input', function () {
-    var raw = $('g-installs').value.trim();
-    var n = L.parseInstalls(raw);
-    $('g-installs').setAttribute('aria-invalid', raw && n == null ? 'true' : 'false');
-    if (!raw || n != null) saveInstalls(n == null ? '' : String(n));
-    if (gState.loaded) renderGoal();
-  });
 
   async function loadGrowth() {
     var mine = nextToken('growth');
@@ -473,7 +503,46 @@
     $('growth-note').textContent = 'Last ' + L.GROWTH_DAYS + ' days, IST. Counts only; no names or emails. "Signed in" is the latest sign-in per user, so older days can undercount.';
     renderGrowth(r.body.growth || r.body);
     loadFunnel();
+    loadGoals(mine);
   }
+  async function loadGoals(mine) {
+    var g = await callAdmin(L.settingsBody());
+    if (mine !== tokens.growth) return;
+    if (g.status === 200 && g.body && g.body.goals) gState.goals = g.body.goals;
+    var a = await callAdmin(L.activityBody(7));
+    if (mine !== tokens.growth) return;
+    gState.wau = a.status === 200 && a.body ? (a.body.wau | 0) : null;
+    renderGoal();
+  }
+  function setGoalFormOpen(open) {
+    $('goal-form').hidden = !open;
+    $('goal-edit').setAttribute('aria-expanded', open ? 'true' : 'false');
+    setErr('goal-error', '');
+    if (open) {
+      var g = gState.goals || L.GOAL_DEFAULTS;
+      $('goal-deadline').value = g.deadline || '';
+      $('goal-weekly').value = String(g.weekly_users || '');
+      $('goal-paying').value = String(g.paying || '');
+      $('goal-label').value = g.label || '';
+      $('goal-weekly').focus();
+    }
+  }
+  $('goal-edit').addEventListener('click', function () { setGoalFormOpen($('goal-form').hidden); });
+  $('goal-cancel').addEventListener('click', function () { setGoalFormOpen(false); $('goal-edit').focus(); });
+  $('goal-form').addEventListener('submit', function (ev) {
+    ev.preventDefault();
+    var v = L.validateGoalsForm({ deadline: $('goal-deadline').value, weekly_users: $('goal-weekly').value, paying: $('goal-paying').value, label: $('goal-label').value });
+    if (!v.ok) { setErr('goal-error', Object.keys(v.errors).map(function (k) { return v.errors[k]; }).join(' ')); return; }
+    setErr('goal-error', '');
+    guarded('goal-save', [$('goal-save')], async function () {
+      var r = await callAdmin(L.setGoalsBody(v.value));
+      if (adminFailed(r, 'goal-error')) return;
+      gState.goals = r.body.value || v.value;
+      setGoalFormOpen(false);
+      renderGoal();
+      setStatus('Goals saved.', 'ok');
+    });
+  });
 
   // ---------- funnel card (plan 4.2) ----------
   // Server numbers: counts per week (action funnel). Store numbers: the CSV is parsed here, held in memory only and never sent anywhere.
@@ -523,23 +592,24 @@
   }
 
   function renderGoal() {
-    var p = L.growthPace(gState.users, readInstalls(), Date.now());
-    var src = p.source === 'installs' ? ' (store installs, entered by hand)' : ' (registered users)';
-    $('goal-line').textContent = L.formatCount(p.current) + ' of ' + L.formatCount(p.goal) + ' users, ' +
-      (p.overdue ? 'deadline passed ' + L.formatCount(-p.daysLeft) + ' days ago' : L.formatCount(p.daysLeft) + ' days to 8 Nov');
-    $('goal-fill').style.width = p.pctNum + '%';
-    $('goal-track').setAttribute('aria-valuenow', String(p.current));
-    $('goal-track').setAttribute('aria-valuetext', p.pctNum + '% of the goal');
-    $('goal-pace').textContent = p.reached
-      ? 'Goal reached. Counting' + src + '.'
-      : 'Needed: ' + L.formatCount(p.perDay) + ' new users a day (' + L.formatCount(p.remaining) + ' to go)' + (p.overdue ? ', and the date has passed' : '') + '. Counting' + src + '.';
+    var c = L.goalCard(gState.goals || L.GOAL_DEFAULTS, gState.wau == null ? 0 : gState.wau, gState.paying, Date.now());
+    $('h-goal').textContent = c.title;
+    $('goal-line').textContent = c.daysText + (c.reached ? '. Both goals reached.' : '');
+    c.bars.forEach(function (b) {
+      var have = b.key === 'weekly' && gState.wau == null ? null : b.p.current;
+      var txt = b.label + ': ' + (have == null ? 'not available yet' : L.formatCount(have) + ' of ' + L.formatCount(b.p.target)) + (have != null && b.p.reached ? ' (reached)' : '');
+      $('goal-' + b.key + '-text').textContent = txt;
+      $('goal-' + b.key + '-fill').style.width = (have == null ? 0 : b.p.pctNum) + '%';
+      $('goal-' + b.key + '-track').setAttribute('aria-valuenow', String(have == null ? 0 : Math.round(b.p.pctNum)));
+      $('goal-' + b.key + '-track').setAttribute('aria-valuetext', txt);
+    });
   }
 
   function renderGrowth(g) {
     var t = g.totals || {}, per = g.period || {};
     var days = g.days | 0 || L.GROWTH_DAYS;
     var daily = L.fillDaily(g.daily, days);
-    gState.users = t.users | 0;
+    gState.paying = t.paying_users | 0;
     gState.loaded = true;
     renderGoal();
     var wk = L.weekCompare(daily);
@@ -703,7 +773,7 @@
 
   // ---------- users ----------
   var uState = { offset: 0, selected: {}, rows: [], total: 0 };
-  var USER_FIELDS = { q: 'u-q', plan: 'u-plan', source: 'u-source', status: 'u-status', signed_up_after: 'u-after', signed_up_before: 'u-before', sort: 'u-sort' };
+  var USER_FIELDS = { q: 'u-q', plan: 'u-plan', source: 'u-source', status: 'u-status', signed_up_after: 'u-after', signed_up_before: 'u-before', active_within_days: 'u-active', sort: 'u-sort' };
 
   (function initUserSort() {
     Object.keys(L.USER_SORTS).forEach(function (k) { $('u-sort').appendChild(el('option', { value: k, text: L.USER_SORTS[k] })); });
@@ -719,7 +789,7 @@
 
   function filtersChanged(load) { return function () { uState.offset = 0; if (load === 'users') loadUsers(); }; }
   $('u-q').addEventListener('input', debounce(function () { uState.offset = 0; loadUsers(); }, 300));
-  ['u-plan', 'u-source', 'u-status', 'u-after', 'u-before', 'u-sort'].forEach(function (id) {
+  ['u-plan', 'u-source', 'u-status', 'u-after', 'u-before', 'u-active', 'u-sort'].forEach(function (id) {
     $(id).addEventListener('change', filtersChanged('users'));
   });
   $('form-users').addEventListener('submit', function (ev) { ev.preventDefault(); uState.offset = 0; loadUsers(); });
@@ -773,7 +843,7 @@
     $('u-prev').disabled = !pi.hasPrev;
     $('u-next').disabled = !pi.hasNext;
     if (!uState.rows.length) {
-      tb.appendChild(el('tr', null, [el('td', { colspan: 7, 'class': 'adm-muted', text: 'No users match these filters.' })]));
+      tb.appendChild(el('tr', null, [el('td', { colspan: 8, 'class': 'adm-muted', text: 'No users match these filters.' })]));
     }
     uState.rows.forEach(function (u) {
       var eff = u.effective || { plan: 'free' };
@@ -792,7 +862,7 @@
       open.addEventListener('click', function (ev) { ev.stopPropagation(); openUser(u.id, open); });
       tr.addEventListener('click', function (ev) { if (ev.target.closest('button,input,a')) return; openUser(u.id, open); });
       tb.appendChild(tr);
-      [td(cb, 'adm-chk'), td(open), td(L.formatDate(u.created_at)), td(L.formatDateTime(u.last_sign_in_at)),
+      [td(cb, 'adm-chk'), td(open), td(L.formatDate(u.created_at)), td(L.formatDateTime(u.last_sign_in_at)), td(L.lastActiveText(u.last_active)),
         td(planCellWithPaid(u, eff)), td(statusBadge(u)),
         td(el('button', { type: 'button', 'class': 'adm-btn adm-btn-ghost adm-btn-sm', text: 'Open', 'aria-label': 'Open ' + u.email, onclick: function (ev) { ev.stopPropagation(); openUser(u.id, ev.currentTarget); } }))
       ].forEach(function (c) { tr.appendChild(c); });
@@ -1222,7 +1292,33 @@
   var FB_FIELDS = { kind: 'f-kind', status: 'f-status', version: 'f-version' };
   function feedbackFilterNow() { return L.feedbackFilter(readFilter(FB_FIELDS)); }
   ['f-kind', 'f-status', 'f-version'].forEach(function (id) { $(id).addEventListener('change', function () { fState.offset = 0; fState.selected = {}; loadFeedback(); }); });
-  $('f-reset').addEventListener('click', function () { resetFields(FB_FIELDS); fState.offset = 0; fState.selected = {}; loadFeedback(); });
+  $('f-reset').addEventListener('click', function () { resetFields(FB_FIELDS); $('f-group').checked = false; fState.offset = 0; fState.selected = {}; loadFeedback(); });
+  $('f-group').addEventListener('change', function () { loadFeedback(); });
+  // "Group errors": the same error (numbers and ids stripped) counted once, newest first. Shown for Type = Any or Error.
+  function syncGroupToggle() {
+    var k = $('f-kind').value;
+    var can = k === '' || k === 'error';
+    $('f-group-wrap').hidden = !can;
+    if (!can) $('f-group').checked = false;
+    var on = can && $('f-group').checked;
+    $('f-groups').hidden = !on;
+    $('f-list').hidden = on;
+    $('f-prev').parentNode.hidden = on;
+    return on;
+  }
+  async function loadErrorGroups(mine) {
+    $('f-count').textContent = 'Loading...';
+    var r = await callAdmin(L.errorGroupsBody(30));
+    if (mine !== tokens.feedback) return;
+    if (adminFailed(r, 'f-error')) { $('f-count').textContent = ''; return; }
+    var groups = r.body.groups || [];
+    $('f-count').textContent = L.formatCount(groups.length) + (groups.length === 1 ? ' kind of error' : ' kinds of error') + ', ' + L.formatCount(r.body.total_errors | 0) + ' reports in the last ' + (r.body.days | 0) + ' days';
+    $('f-groups-note').textContent = 'Reports with the same message are counted once; numbers, ids and quoted text are ignored. Stack traces are not shown here: untick "Group errors" to read them.';
+    var host = $('f-groups-table');
+    clear(host);
+    if (!groups.length) { host.appendChild(el('p', { 'class': 'adm-muted', text: 'No error reports in this period.' })); return; }
+    host.appendChild(simpleTable(L.ERROR_GROUP_HEAD, L.errorGroupRows(groups)));
+  }
   $('f-prev').addEventListener('click', function () { fState.offset = Math.max(0, fState.offset - L.PAGE_SIZE); fState.selected = {}; loadFeedback(); });
   $('f-next').addEventListener('click', function () { fState.offset += L.PAGE_SIZE; fState.selected = {}; loadFeedback(); });
   $('f-all').addEventListener('change', function () {
@@ -1285,6 +1381,7 @@
   async function loadFeedback() {
     var mine = nextToken('feedback');
     setErr('f-error', '');
+    if (syncGroupToggle()) { loadErrorGroups(mine); return; }
     $('f-count').textContent = 'Loading...';
     var r = await callAdmin(L.feedbackBody(feedbackFilterNow(), L.PAGE_SIZE, fState.offset));
     if (mine !== tokens.feedback) return;
