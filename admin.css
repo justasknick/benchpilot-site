@@ -186,8 +186,9 @@
 .adm-goal-line{font:700 1.3rem/1.3 var(--display);color:var(--ink);margin:6px 0 10px;font-variant-numeric:tabular-nums}
 .adm-goal-track{height:26px}
 .adm-goal-pace{margin:10px 0 14px;color:var(--text-2)}
-.adm-goal-installs{display:block;max-width:420px;font-weight:600;margin-top:6px}
-.adm-goal-installs input{display:block;margin-top:4px;max-width:200px}
+.adm-goal-bar{margin:6px 0 14px}
+.adm-goal-bar .adm-goal-pace{margin:6px 0}
+#goal-form{margin-top:12px}
 .adm-delta-up{color:var(--c-up)}.adm-delta-down{color:var(--c-warn)}
 /* Teams scorecard: sortable column headers (S6) */
 .adm-sort{font:inherit;color:inherit;text-transform:inherit;letter-spacing:inherit;white-space:nowrap}

@@ -387,7 +387,8 @@
   }
   var USER_FILTERS = {
     q: 'text', plan: ['free'].concat(GRANT_TIERS), source: ['paid', 'grant'], status: ['active', 'suspended', 'unconfirmed'],
-    signed_up_after: 'date', signed_up_before: 'date', sort: ['created_desc', 'created_asc', 'last_sign_in_desc', 'email_asc']
+    signed_up_after: 'date', signed_up_before: 'date', sort: ['created_desc', 'created_asc', 'last_sign_in_desc', 'email_asc'],
+    active_within_days: ['1', '7', '30']
   };
   var PAYMENT_FILTERS = { status: ['captured', 'refunded', 'failed'], plan: PLAN_IDS, from: 'date', to: 'date', q: 'text' };
   var AUDIT_FILTERS = { action: 'text', from: 'date', to: 'date', target_user: 'text' };
@@ -533,7 +534,7 @@
   }
 
   // ---------- growth view ----------
-  var GOAL_USERS = 1000, GOAL_DATE = '2026-11-08', GROWTH_DAYS = 30, MAX_INSTALLS = 10000000;
+  var GROWTH_DAYS = 30;
   function growthBody(days) {
     var d = Math.floor(Number(days));
     return { action: 'growth', days: d >= 1 && d <= 90 ? d : GROWTH_DAYS };
@@ -543,15 +544,6 @@
     if (!validYmd(a) || !validYmd(b)) return NaN;
     var pa = a.split('-').map(Number), pb = b.split('-').map(Number);
     return Math.round((Date.UTC(pb[0], pb[1] - 1, pb[2]) - Date.UTC(pa[0], pa[1] - 1, pa[2])) / 86400000);
-  }
-  /** Manual Chrome Web Store installs: digits only, 0..10,000,000. Anything else is null (treated as not set). */
-  function parseInstalls(v) {
-    if (typeof v === 'number') v = String(v);
-    if (typeof v !== 'string') return null;
-    v = v.trim().replace(/,/g, '');
-    if (!/^[0-9]{1,8}$/.test(v)) return null;
-    var n = Number(v);
-    return n <= MAX_INSTALLS ? n : null;
   }
   // ---------- funnel card (plan 4.2) ----------
   // The server sends counts per ISO week (accounts, returned, checkouts, payments, heard channels). Installs and weekly users come from the
@@ -700,20 +692,108 @@
     });
     return { head: head, rows: body };
   }
-  /** Goal progress. current = whichever is higher: registered users or manual store installs. */
-  function growthPace(users, installs, nowMs, goal, deadline) {
-    goal = goal || GOAL_USERS; deadline = deadline || GOAL_DATE;
-    var u = Math.max(0, Math.floor(Number(users)) || 0);
-    var i = parseInstalls(installs);
-    var current = Math.max(u, i == null ? 0 : i);
-    var left = daysBetween(istToday(nowMs), deadline);
-    var remaining = Math.max(0, goal - current);
-    var reached = current >= goal;
-    var perDay = reached ? 0 : Math.ceil((remaining / Math.max(left, 1)) * 10) / 10;
+  // ---------- admin console v3, batch 1 (migration 0062) ----------
+  // 1.1 goals stored on the server (key 'goals'); the card compares them with the live numbers.
+  var GOAL_DEFAULTS = { deadline: '2026-12-17', weekly_users: 50, paying: 5, label: '17 Dec checkpoint' };
+  var GOAL_MAX = 100000, GOAL_LABEL_MAX = 80;
+  function settingsBody() { return { action: 'get_settings' }; }
+  function setGoalsBody(goals) { return { action: 'set_setting', key: 'goals', value: goals }; }
+  /** Form strings -> { ok, value, errors }. Same rules as the server (validateGoals): date, whole numbers 1..100000, label up to 80. */
+  function validateGoalsForm(raw) {
+    raw = raw || {};
+    var errors = {}, value = {};
+    var deadline = String(raw.deadline == null ? '' : raw.deadline).trim();
+    if (!validYmd(deadline)) errors.deadline = 'Pick a real date.'; else value.deadline = deadline;
+    [['weekly_users', 'Weekly users'], ['paying', 'Paying users']].forEach(function (f) {
+      var t = String(raw[f[0]] == null ? '' : raw[f[0]]).trim().replace(/,/g, '');
+      var n = /^[0-9]{1,6}$/.test(t) ? Number(t) : NaN;
+      if (!(n >= 1 && n <= GOAL_MAX)) errors[f[0]] = f[1] + ' must be a whole number from 1 to ' + formatCount(GOAL_MAX) + '.'; else value[f[0]] = n;
+    });
+    var label = String(raw.label == null ? '' : raw.label).trim();
+    if (label.length > GOAL_LABEL_MAX) errors.label = 'The label can be at most ' + GOAL_LABEL_MAX + ' characters.';
+    else if (CONTROL_RE.test(label)) errors.label = 'The label has invalid characters.';
+    else if (label) value.label = label;
+    return { ok: Object.keys(errors).length === 0, value: value, errors: errors };
+  }
+  /** One bar: current of target, percent capped at 100 (one decimal), reached flag. */
+  function goalProgress(current, target) {
+    var c = Math.max(0, Math.floor(Number(current)) || 0), t = Math.max(1, Math.floor(Number(target)) || 1);
+    return { current: c, target: t, pctNum: Math.min(100, Math.round((c / t) * 1000) / 10), reached: c >= t };
+  }
+  /** The goal card: two bars (weekly active users, paying users) and the days to the deadline. */
+  function goalCard(goals, weeklyActive, paying, nowMs) {
+    var g = goals && typeof goals === 'object' ? goals : GOAL_DEFAULTS;
+    var left = daysBetween(istToday(nowMs), g.deadline);
+    var bars = [
+      { key: 'weekly', label: 'Weekly active users', p: goalProgress(weeklyActive, g.weekly_users) },
+      { key: 'paying', label: 'Paying users', p: goalProgress(paying, g.paying) }
+    ];
+    var reached = bars[0].p.reached && bars[1].p.reached;
+    var daysText = isNaN(left) ? '' : left > 0 ? formatCount(left) + (left === 1 ? ' day left' : ' days left')
+      : left === 0 ? 'Deadline is today' : 'Deadline passed ' + formatCount(-left) + (left === -1 ? ' day ago' : ' days ago');
     return {
-      current: current, goal: goal, source: i != null && i > u ? 'installs' : 'users', remaining: remaining, reached: reached,
-      daysLeft: left, overdue: left < 0 && !reached, perDay: perDay, pctNum: Math.min(100, Math.round((current / goal) * 1000) / 10)
+      title: 'Goal: ' + (g.label || ('by ' + formatDate(g.deadline))), deadline: g.deadline, daysLeft: left, daysText: daysText,
+      overdue: left < 0 && !reached, reached: reached, bars: bars
     };
+  }
+
+  // 1.2 last active day (signed-in users only)
+  var ACTIVE_WITHIN = { '1': 'Active today', '7': 'Active in 7 days', '30': 'Active in 30 days' };
+  function activityBody(days) { var d = Math.floor(Number(days)); return { action: 'activity', days: d >= 1 && d <= 90 ? d : 30 }; }
+  /** One entry per IST day for the last `days` days (oldest first); missing days are zeros. */
+  function fillActive(daily, days, nowMs) {
+    var by = {};
+    (Array.isArray(daily) ? daily : []).forEach(function (d) { if (d && typeof d.day === 'string') by[d.day.slice(0, 10)] = d; });
+    var today = istToday(nowMs), out = [];
+    for (var i = days - 1; i >= 0; i--) { var day = addDays(today, -i); out.push({ day: day, active: (by[day] && by[day].active) | 0 }); }
+    return out;
+  }
+  function lastActiveText(v) { return typeof v === 'string' && /^\d{4}-\d{2}-\d{2}/.test(v) ? formatDate(v) : '-'; }
+
+  // 1.7 error grouping: the same rule as bp_error_key (SQL) and normaliseErrorMessage (_shared/adminv3.js)
+  function normaliseErrorMessage(msg) {
+    return String(msg == null ? '' : msg)
+      .replace(/"[^"]*"|'[^']*'|`[^`]*`/g, '?')
+      .replace(/\b[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\b/gi, '?')
+      .replace(/\b0x[0-9a-f]+\b/gi, '?')
+      .replace(/\b(?=[0-9a-f]*[0-9])[0-9a-f]{8,}\b/gi, '?')
+      .replace(/[0-9]+/g, '?')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .slice(0, 200);
+  }
+  function errorGroupsBody(days) { var d = Math.floor(Number(days)); return { action: 'error_groups', days: d >= 1 && d <= 90 ? d : 30 }; }
+  var ERROR_GROUP_HEAD = ['Error', 'Reports', 'First seen', 'Last seen', 'Versions', 'Status'];
+  /** Rows of strings for the grouped table; status shows only the counts that are not zero. */
+  function errorGroupRows(groups) {
+    return (Array.isArray(groups) ? groups : []).map(function (g) {
+      var sc = g.status_counts || {};
+      var st = [['new', 'new'], ['seen', 'seen'], ['fixed', 'fixed'], ['wont_fix', "won't fix"]].filter(function (x) { return (sc[x[0]] | 0) > 0; })
+        .map(function (x) { return formatCount(sc[x[0]] | 0) + ' ' + x[1]; }).join(', ');
+      return [String(g.sample_message || g.key || ''), formatCount(g.count | 0), formatDateTime(g.first_seen), formatDateTime(g.last_seen),
+        (Array.isArray(g.versions) ? g.versions : []).join(', ') || '-', st || '-'];
+    });
+  }
+
+  // 1.8 LinkedIn health (capture canary failures)
+  function linkedinHealthBody() { return { action: 'linkedin_health' }; }
+  /**
+   * The status line for the card. Warn when 3 or more failures came in the last 24 hours, or when there were at least 2 and that is more
+   * than double the daily average of the 6 days before today (by_day: 14 IST days, oldest first, the last entry is today).
+   */
+  function linkedinHealth(h) {
+    h = h || {};
+    var n = h.last_24h | 0;
+    var days = Array.isArray(h.by_day) ? h.by_day : [];
+    var prev = days.slice(Math.max(0, days.length - 7), Math.max(0, days.length - 1));
+    var avg = prev.length ? prev.reduce(function (a, d) { return a + ((d && d.count) | 0); }, 0) / prev.length : 0;
+    var warn = n >= 3 || (n >= 2 && n > 2 * avg);
+    if (n === 0) return { level: 'good', warn: false, text: 'No capture problems in the last 24 hours', avg: avg };
+    var vers = (Array.isArray(h.by_version) ? h.by_version : []).filter(function (v) { return (v.last_24h | 0) > 0; }).slice(0, 4)
+      .map(function (v) { return v.version; });
+    var text = formatCount(n) + (n === 1 ? ' capture problem' : ' capture problems') + ' in the last 24 hours' +
+      (vers.length ? ' (' + (vers.length === 1 ? 'version ' : 'versions ') + vers.join(', ') + ')' : '');
+    return { level: warn ? 'warn' : 'note', warn: warn, text: text + (warn ? '. LinkedIn may have changed its page.' : '.'), avg: avg };
   }
   /** Sign-ups in the last 7 days vs the 7 before. hasPrev is false when fewer than 14 days are available. */
   function weekCompare(daily) {
@@ -858,10 +938,15 @@
     normaliseReason: normaliseReason, remoteConfigBody: remoteConfigBody, setRemoteBody: setRemoteBody, remoteState: remoteState, featuresValue: featuresValue,
     newAnnouncementId: newAnnouncementId, validateAnnouncement: validateAnnouncement, validateMinVersion: validateMinVersion, announcementStatus: announcementStatus,
     rateLimitRows: rateLimitRows,
-    GOAL_USERS: GOAL_USERS, GOAL_DATE: GOAL_DATE, GROWTH_DAYS: GROWTH_DAYS, growthBody: growthBody, daysBetween: daysBetween,
+    GROWTH_DAYS: GROWTH_DAYS, growthBody: growthBody, daysBetween: daysBetween,
     FUNNEL_WEEKS: FUNNEL_WEEKS, FUNNEL_HEAD: FUNNEL_HEAD, funnelBody: funnelBody, weekStartYmd: weekStartYmd, parseDateCell: parseDateCell,
     parseStoreCsv: parseStoreCsv, funnelTableRows: funnelTableRows, heardTable: heardTable, MAX_CSV_CHARS: MAX_CSV_CHARS,
-    parseInstalls: parseInstalls, growthPace: growthPace, weekCompare: weekCompare,
+    weekCompare: weekCompare,
+    GOAL_DEFAULTS: GOAL_DEFAULTS, GOAL_MAX: GOAL_MAX, settingsBody: settingsBody, setGoalsBody: setGoalsBody, validateGoalsForm: validateGoalsForm,
+    goalProgress: goalProgress, goalCard: goalCard,
+    activityBody: activityBody, fillActive: fillActive, lastActiveText: lastActiveText, ACTIVE_WITHIN: ACTIVE_WITHIN,
+    normaliseErrorMessage: normaliseErrorMessage, errorGroupsBody: errorGroupsBody, ERROR_GROUP_HEAD: ERROR_GROUP_HEAD, errorGroupRows: errorGroupRows,
+    linkedinHealthBody: linkedinHealthBody, linkedinHealth: linkedinHealth,
     MAX_BULK: MAX_BULK, PAGE_SIZE: PAGE_SIZE, EXPORT_PAGE: EXPORT_PAGE, EXPORT_MAX_ROWS: EXPORT_MAX_ROWS, RANGES: RANGES, USER_SORTS: USER_SORTS,
     formatCount: formatCount, formatRupees: formatRupees, formatRupeesShort: formatRupeesShort, pct: pct, pctNum: pctNum,
     csvCell: csvCell, buildCsv: buildCsv, USER_CSV_HEADERS: USER_CSV_HEADERS, userCsvRow: userCsvRow, userStatus: userStatus,
