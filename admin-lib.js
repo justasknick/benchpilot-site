@@ -279,11 +279,16 @@
 
   /** Readable message for a failed admin function call. 403 is deliberately uninformative (server gives no detail). */
   function adminErrorMessage(status, body) {
+    var e = body && body.error;
+    var m = e && typeof e.message === 'string' && e.message && e.message.length <= 300 ? e.message : '';
+    if (status === 403 && e && e.code === 'owner_only') return 'Only the owner can do that.';
+    if (status === 503 && m && (e.code === 'replies_off' || e.code === 'mail_not_configured')) return m;
+    if (status === 429 && m && e.code === 'reply_limit') return m;
+    if (status === 502 && m && e.code === 'mail_failed') return m;
     if (status === 403) return 'Not authorised. You must be an admin and signed in with your authenticator code.';
     if (status === 0) return 'Network problem. Check your connection and try again.';
     if (status === 429) return 'Too many requests. Wait a moment and try again.';
     if (status === 502) return 'The sign-in service did not respond. Try again.';
-    var e = body && body.error;
     if ((status === 400 || status === 404 || status === 409) && e && typeof e.message === 'string' && e.message && e.message.length <= 200) return e.message;
     return 'Something went wrong (' + status + '). Try again.';
   }
@@ -1240,6 +1245,149 @@
     });
   }
 
+  // ======================= Admin v3, batch 4 (migration 0065) =======================
+  // 2.3 roles: the console HIDES owner-only pages and buttons for a support admin. This is convenience only: the server answers 403 owner_only anyway.
+  var OWNER_ROUTES = ['payments', 'revenue', 'teams', 'audit', 'remote'];
+  function meRoleBody() { return { action: 'me_role' }; }
+  function isOwnerRole(role) { return role === 'owner'; }
+  /** May this role open this page? Support cannot open the pages in OWNER_ROUTES; an unknown role is treated as the safest one (support). */
+  function routeAllowed(role, route) { return role === 'owner' || OWNER_ROUTES.indexOf(route) < 0; }
+  function listAdminsBody() { return { action: 'list_admins' }; }
+  function setRoleBody(userId, role) { return { action: 'set_role', user_id: userId, role: role === 'support' ? 'support' : 'owner' }; }
+  var ROLE_LABEL = { owner: 'Owner', support: 'Support' };
+  var ROLE_HEAD = ['Admin', 'Role'];
+  function roleLabel(r) { return ROLE_LABEL[r] || 'Owner'; }
+  /** Rows of the "Admin roles" table: [email, role]. */
+  function adminRoleRows(rows) {
+    return (Array.isArray(rows) ? rows : []).map(function (x) { return [x && x.email ? String(x.email) : '-', roleLabel(x && x.role)]; });
+  }
+  /** "Make support" / "Make owner": what the button next to an admin does. */
+  function roleToggle(role) {
+    return role === 'support' ? { label: 'Make owner', next: 'owner' } : { label: 'Make support', next: 'support' };
+  }
+  function roleConfirmText(email, next) {
+    return next === 'support'
+      ? 'Make ' + email + ' a support admin? They can read users and feedback, add notes and reply, but cannot grant plans, delete accounts or see revenue.'
+      : 'Make ' + email + ' an owner? They will be able to do everything you can, including changing roles.';
+  }
+
+  // 2.1 digest preview (Settings): the same numbers and text the daily email carries. Nothing is sent from the preview.
+  function digestPreviewBody() { return { action: 'digest_preview' }; }
+  function digestPreviewView(r) {
+    var b = r && typeof r === 'object' ? r : {};
+    var n = Number.isSafeInteger(b.recipients) ? b.recipients : null;
+    return {
+      subject: typeof b.subject === 'string' ? b.subject : '',
+      text: typeof b.text === 'string' ? b.text : '',
+      note: 'This is today\'s digest as it would be emailed' + (n === null ? '' : ' to ' + n + (n === 1 ? ' owner' : ' owners')) + '. Nothing was sent. The daily email stays off until it is scheduled (see the deploy guide).'
+    };
+  }
+
+  // 2.2 reply to feedback by email. The textarea shows the filled template; the admin may edit it before sending.
+  var REPLY_SIGNATURE = 'Nick, BenchPilot';
+  var REPLY_MIN = 10;
+  var REPLY_MAX = 2000;
+  var FIXED_IN_RE = /^\d+\.\d+\.\d+$/;
+  var REPLY_TEMPLATES = [['thanks', 'Thanks'], ['fixed', 'Fixed'], ['more_info', 'Ask for more detail'], ['custom', 'Write my own']];
+  var REPLY_SHORT = { thanks: 'thanks', fixed: 'fixed', more_info: 'more info', custom: 'custom' };
+  /** Same texts as replyTemplateText in supabase/functions/_shared/adminv4.js (a test compares them). 'fixed' needs the fixed-in version, else null. */
+  function replyTemplateText(template, fixedIn) {
+    var sig = REPLY_SIGNATURE;
+    if (template === 'thanks') return 'Hi,\n\nThanks for the feedback. I read every report myself and it helps me decide what to fix and build next. If I need more detail, I will write to you here.\n\n' + sig;
+    if (template === 'fixed') {
+      if (typeof fixedIn !== 'string' || !FIXED_IN_RE.test(fixedIn) || fixedIn.length > 20) return null;
+      return 'Hi,\n\nGood news: the problem you reported is fixed in version ' + fixedIn + '. Chrome updates BenchPilot by itself, usually within a day. If you still see it after that, just reply to this email and I will look again.\n\n' + sig;
+    }
+    if (template === 'more_info') return 'Hi,\n\nCould you tell me a bit more about this? What were you doing, what did you expect and what happened instead? Which version of BenchPilot do you have (Settings shows it)? A screenshot helps too. Just reply to this email.\n\n' + sig;
+    if (template === 'custom') return '';
+    return null;
+  }
+  /** Can this report be replied to by email? Only a report with an account (error reports and anonymous reports have none). */
+  function canReply(rep) { return !!(rep && rep.user_id && rep.kind !== 'error'); }
+  function validateReplyForm(f) {
+    var errors = {};
+    var template = f && f.template;
+    if (!REPLY_SHORT[template]) errors.template = 'Pick a template.';
+    var text = f && typeof f.text === 'string' ? f.text.replace(/\r\n?/g, '\n').trim() : '';
+    if (/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/.test(text)) errors.text = 'The message has invalid characters.';
+    else if (text.length < REPLY_MIN) errors.text = 'The message must be at least ' + REPLY_MIN + ' characters.';
+    else if (text.length > REPLY_MAX) errors.text = 'The message must be at most ' + REPLY_MAX + ' characters.';
+    if (template === 'fixed' && !(f && f.fixed_in)) errors.template = 'This report has no fixed-in version yet. Use "Link to to-do" to add one first.';
+    if (Object.keys(errors).length) return { ok: false, errors: errors };
+    return { ok: true, errors: {}, value: { template: template, text: text } };
+  }
+  function replyBody(id, template, text) { return { action: 'reply_feedback', id: id, template: template, text: text }; }
+  function feedbackRepliesBody(ids) { return { action: 'feedback_replies', ids: (ids || []).slice(0, 100) }; }
+  /** { feedback_id: newest SENT reply } from the feedback_replies answer. */
+  function repliesById(list) {
+    var out = {};
+    (Array.isArray(list && list.replies) ? list.replies : []).forEach(function (r) {
+      if (!r || r.ok !== true || !r.sent_at) return;
+      if (!out[r.feedback_id] || out[r.feedback_id].sent_at < r.sent_at) out[r.feedback_id] = r;
+    });
+    return out;
+  }
+  /** 'Replied 23 Nov (fixed)'. */
+  function replyChipText(reply) {
+    if (!reply || !reply.sent_at) return '';
+    return 'Replied ' + formatDate(istToday(Date.parse(reply.sent_at))).replace(/ \d{4}$/, '') + ' (' + (REPLY_SHORT[reply.template] || 'reply') + ')';
+  }
+  var REPLIES_OFF_TEXT = 'Replies are switched off on the server (FEEDBACK_REPLIES_ON). Nick switches them on after checking Brevo.';
+
+  // 2.4 coupons (Revenue page, owner only). BUILT BUT OFF: the banner says so until the server has COUPONS_ON.
+  var COUPONS_OFF_TEXT = 'Coupons are switched off on the server (COUPONS_ON). Nick decides codes and amounts.';
+  var COUPON_CODE_RE = /^[A-Z0-9]{4,20}$/;
+  function listCouponsBody() { return { action: 'list_coupons' }; }
+  function couponBanner(serverOn) { return serverOn ? '' : COUPONS_OFF_TEXT; }
+  function validateCouponForm(f, plansOnSale) {
+    var errors = {};
+    var code = f && typeof f.code === 'string' ? f.code.trim().toUpperCase() : '';
+    if (!COUPON_CODE_RE.test(code)) errors.code = 'The code must be 4 to 20 letters or digits.';
+    var pct = f && typeof f.percent_off === 'string' ? (/^\d{1,2}$/.test(f.percent_off.trim()) ? Number(f.percent_off.trim()) : NaN) : f && f.percent_off;
+    if (!Number.isInteger(pct) || pct < 1 || pct > 90) errors.percent_off = 'The discount must be a whole number from 1 to 90 percent.';
+    var plans = Array.isArray(f && f.plans) ? f.plans.filter(function (p, i, a) { return a.indexOf(p) === i; }) : [];
+    if (!plans.length) errors.plans = 'Pick at least one plan.';
+    else if (plansOnSale && plans.some(function (p) { return plansOnSale.indexOf(p) < 0; })) errors.plans = 'Pick plans from the list.';
+    var uses = f && typeof f.max_uses === 'string' ? (/^\d{1,5}$/.test(f.max_uses.trim()) ? Number(f.max_uses.trim()) : NaN) : f && f.max_uses;
+    if (!Number.isInteger(uses) || uses < 1 || uses > 10000) errors.max_uses = 'Uses must be a whole number from 1 to 10000.';
+    if (!validYmd(f && f.valid_from) || !validYmd(f && f.valid_to)) errors.valid_from = 'Both dates are required.';
+    else if (f.valid_to < f.valid_from) errors.valid_from = 'The end date cannot be before the start date.';
+    var note = f && typeof f.note === 'string' ? f.note.trim() : '';
+    if (note.length > 200) errors.note = 'The note must be at most 200 characters.';
+    else if (CONTROL_RE.test(note)) errors.note = 'The note has invalid characters.';
+    if (Object.keys(errors).length) return { ok: false, errors: errors };
+    return { ok: true, errors: {}, value: { code: code, percent_off: pct, plans: plans.slice().sort(), max_uses: uses, valid_from: f.valid_from, valid_to: f.valid_to, note: note || null } };
+  }
+  /** A new coupon is ALWAYS created inactive by the server; there is no flag to send. */
+  function createCouponBody(v) {
+    var b = { action: 'create_coupon', code: v.code, percent_off: v.percent_off, plans: v.plans, max_uses: v.max_uses, valid_from: v.valid_from, valid_to: v.valid_to };
+    if (v.note) b.note = v.note;
+    return b;
+  }
+  function setCouponActiveBody(code, active) { return { action: 'set_coupon_active', code: code, active: active === true }; }
+  /** 'Off' | 'On' | 'On, not started' | 'Expired' | 'Used up' (today = IST date). */
+  function couponState(c, today) {
+    if (!c) return '';
+    if (c.valid_to && c.valid_to < today) return 'Expired';
+    if (!c.active) return 'Off';
+    if (Number(c.used) >= Number(c.max_uses)) return 'Used up';
+    if (c.valid_from && c.valid_from > today) return 'On, not started';
+    return 'On';
+  }
+  var COUPON_HEAD = ['Code', 'Discount', 'Plans', 'Used', 'Valid', 'State', 'Note'];
+  function couponRows(rows, today) {
+    return (Array.isArray(rows) ? rows : []).map(function (c) {
+      var reserved = Number(c.reserved) > 0 ? ' (+' + c.reserved + ' open)' : '';
+      return [c.code, c.percent_off + '% off', (c.plans || []).join(', '), (Number(c.used) || 0) + ' of ' + (Number(c.max_uses) || 0) + reserved,
+        formatDate(c.valid_from) + ' to ' + formatDate(c.valid_to), couponState(c, today), c.note || ''];
+    });
+  }
+  /** What a coupon does to a price, for the form's hint: ₹499 at 10% = ₹449 (rounded down to whole rupees, never below ₹1). */
+  function couponPrice(paise, percent) {
+    if (!Number.isSafeInteger(paise) || paise < 100 || !Number.isInteger(percent) || percent < 1 || percent > 90) return NaN;
+    return Math.max(100, Math.floor((paise * (100 - percent)) / 10000) * 100);
+  }
+
   return {
     SCORECARD_COLUMNS: SCORECARD_COLUMNS, scorecardBody: scorecardBody, sortScorecard: sortScorecard, nextSort: nextSort, scorecardTotals: scorecardTotals,
     REMOTE_FEATURES: REMOTE_FEATURES, SITE_PREFIX: SITE_PREFIX, SEVERITIES: SEVERITIES, MAX_ANNOUNCEMENTS: MAX_ANNOUNCEMENTS, MAX_ANN_TEXT: MAX_ANN_TEXT,
@@ -1296,6 +1444,14 @@
     issueReasonLabel: issueReasonLabel, referralStatus: referralStatus, issueCountText: issueCountText, paymentIssuesBody: paymentIssuesBody, resolveIssueBody: resolveIssueBody,
     decodeJwtClaims: decodeJwtClaims, tokenAal: tokenAal, normaliseSession: normaliseSession,
     needsRefresh: needsRefresh, pickFactors: pickFactors,
+    OWNER_ROUTES: OWNER_ROUTES, meRoleBody: meRoleBody, isOwnerRole: isOwnerRole, routeAllowed: routeAllowed, listAdminsBody: listAdminsBody, setRoleBody: setRoleBody,
+    ROLE_HEAD: ROLE_HEAD, roleLabel: roleLabel, adminRoleRows: adminRoleRows, roleToggle: roleToggle, roleConfirmText: roleConfirmText,
+    digestPreviewBody: digestPreviewBody, digestPreviewView: digestPreviewView,
+    REPLY_SIGNATURE: REPLY_SIGNATURE, REPLY_MIN: REPLY_MIN, REPLY_MAX: REPLY_MAX, REPLY_TEMPLATES: REPLY_TEMPLATES, replyTemplateText: replyTemplateText, canReply: canReply,
+    validateReplyForm: validateReplyForm, replyBody: replyBody, feedbackRepliesBody: feedbackRepliesBody, repliesById: repliesById, replyChipText: replyChipText,
+    REPLIES_OFF_TEXT: REPLIES_OFF_TEXT, COUPONS_OFF_TEXT: COUPONS_OFF_TEXT, COUPON_CODE_RE: COUPON_CODE_RE, listCouponsBody: listCouponsBody, couponBanner: couponBanner,
+    validateCouponForm: validateCouponForm, createCouponBody: createCouponBody, setCouponActiveBody: setCouponActiveBody, couponState: couponState, COUPON_HEAD: COUPON_HEAD,
+    couponRows: couponRows, couponPrice: couponPrice,
     authErrorMessage: authErrorMessage, adminErrorMessage: adminErrorMessage
   };
 });

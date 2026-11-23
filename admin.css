@@ -216,3 +216,13 @@
 .adm-fb-link-form input{max-width:11rem}
 .adm-overdue td{background:#fbeceb}
 .adm-overdue .adm-od{color:var(--c-warn);font-weight:700}
+/* batch 4: a support admin does not see owner-only pages and buttons (the server refuses them anyway) */
+body[data-role="support"] [data-owner-only]{display:none !important}
+body[data-role="support"] .adm-chk{display:none}
+.adm-fb-reply{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:8px 0 0}
+.adm-fb-reply-form{display:grid;gap:8px;margin:8px 0 0}
+.adm-fb-reply-form label{display:grid;gap:4px;font-weight:600;font-size:.85rem}
+.adm-fb-reply-form textarea{width:100%;min-height:9rem;font:inherit}
+.adm-fb-reply-off{color:var(--text-2);font-size:.85rem}
+.adm-pre{white-space:pre-wrap;word-break:break-word;background:var(--surface-3);border-radius:var(--r-sm);padding:12px 14px;margin:8px 0 0;font-size:.85rem}
+.adm-fieldset{border:1px solid var(--border-strong);border-radius:var(--r-sm);padding:8px 12px;margin:0}
