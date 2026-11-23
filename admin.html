@@ -83,7 +83,7 @@
         <section class="adm-card" aria-labelledby="h-release">
           <div class="adm-toolbar">
             <h2 id="h-release">Release</h2>
-            <button type="button" id="rel-edit" class="adm-btn adm-btn-ghost adm-btn-sm" aria-expanded="false" aria-controls="rel-form">Edit</button>
+            <button type="button" id="rel-edit" data-owner-only class="adm-btn adm-btn-ghost adm-btn-sm" aria-expanded="false" aria-controls="rel-form">Edit</button>
           </div>
           <p id="rel-live" class="adm-goal-line"></p>
           <p id="rel-review"></p>
@@ -108,7 +108,7 @@
             <div id="chart-signups"></div>
             <div id="tbl-wrap-signups" class="adm-scroll adm-tbl-short" hidden></div>
           </section>
-          <section class="adm-card adm-chart" aria-labelledby="h-c-revenue">
+          <section class="adm-card adm-chart" aria-labelledby="h-c-revenue" data-owner-only>
             <div class="adm-chart-head"><h2 id="h-c-revenue">Revenue per day</h2><button type="button" class="adm-btn adm-btn-ghost adm-btn-sm" id="tg-revenue" aria-expanded="false" aria-controls="tbl-wrap-revenue">View as table</button></div>
             <div id="chart-revenue"></div>
             <div id="tbl-wrap-revenue" class="adm-scroll adm-tbl-short" hidden></div>
@@ -151,7 +151,7 @@
         <section class="adm-card" aria-labelledby="h-goal">
           <div class="adm-toolbar">
             <h2 id="h-goal">Goal</h2>
-            <button type="button" id="goal-edit" class="adm-btn adm-btn-ghost adm-btn-sm" aria-expanded="false" aria-controls="goal-form">Edit</button>
+            <button type="button" id="goal-edit" data-owner-only class="adm-btn adm-btn-ghost adm-btn-sm" aria-expanded="false" aria-controls="goal-form">Edit</button>
           </div>
           <p id="goal-line" class="adm-goal-line"></p>
           <div class="adm-goal-bar">
@@ -232,7 +232,7 @@
         <div class="adm-toolbar">
           <p id="u-count" class="adm-muted" aria-live="polite"></p>
           <div class="adm-row adm-tight">
-            <button type="button" id="u-bulk" class="adm-btn adm-btn-primary adm-btn-sm" disabled>Grant to selected (0)</button>
+            <button type="button" id="u-bulk" data-owner-only class="adm-btn adm-btn-primary adm-btn-sm" disabled>Grant to selected (0)</button>
             <button type="button" id="u-export" class="adm-btn adm-btn-ghost adm-btn-sm">Export CSV</button>
           </div>
         </div>
@@ -323,6 +323,27 @@
             </table></div>
           </section>
         </div>
+        <section id="coupons-card" class="adm-card" aria-labelledby="h-coupons">
+          <h2 id="h-coupons">Coupons</h2>
+          <p id="coupons-banner" class="adm-banner-bad" role="status" hidden></p>
+          <p class="adm-muted">A new coupon is always created switched off. Press Activate to let it work. A code gives a percent off the listed price of the plans you pick, once per person, until its end date or its last use. Amounts are rounded down to whole rupees. Buyers type the code on the checkout request; the extension has no coupon field yet.</p>
+          <p id="coupons-error" class="adm-err" role="alert" hidden></p>
+          <div class="adm-scroll" id="coupons-table"></div>
+          <form id="coupon-form" class="adm-form" novalidate>
+            <h3>New coupon</h3>
+            <div class="adm-row">
+              <label>Code<input id="cp-code" type="text" autocomplete="off" spellcheck="false" maxlength="20" placeholder="LAUNCH10"></label>
+              <label>Percent off<input id="cp-percent" type="text" inputmode="numeric" autocomplete="off" maxlength="2" placeholder="10"></label>
+              <label>Uses (at most)<input id="cp-uses" type="text" inputmode="numeric" autocomplete="off" maxlength="5" placeholder="50"></label>
+              <label>Valid from<input id="cp-from" type="date"></label>
+              <label>Valid to<input id="cp-to" type="date"></label>
+            </div>
+            <fieldset class="adm-fieldset"><legend>Plans it applies to</legend><div id="cp-plans" class="adm-row"></div></fieldset>
+            <label class="adm-grow">Note (optional)<input id="cp-note" type="text" autocomplete="off" maxlength="200"></label>
+            <p id="cp-hint" class="adm-muted"></p>
+            <div class="adm-row adm-end"><button type="submit" id="cp-add" class="adm-btn adm-btn-primary">Create coupon (switched off)</button></div>
+          </form>
+        </section>
       </section>
 
       <!-- Feedback: bug reports and ideas sent from the extension -->
@@ -341,7 +362,7 @@
           <div class="adm-row adm-tight">
             <label class="adm-inline"><input type="checkbox" id="f-all"> Select all on this page</label>
             <button type="button" id="f-copy" class="adm-btn adm-btn-primary adm-btn-sm" disabled>Copy for Claude (0)</button>
-            <button type="button" id="f-purge" class="adm-btn adm-btn-ghost adm-btn-sm">Delete older than 12 months</button>
+            <button type="button" id="f-purge" data-owner-only class="adm-btn adm-btn-ghost adm-btn-sm">Delete older than 12 months</button>
           </div>
         </div>
         <section id="f-groups" class="adm-card adm-flush" aria-labelledby="h-fb" hidden>
@@ -465,13 +486,13 @@
           <h2 id="h-set-acct">Your account</h2>
           <dl id="set-account" class="adm-dl"></dl>
         </section>
-        <section class="adm-card" aria-labelledby="h-set-sessions">
+        <section class="adm-card" aria-labelledby="h-set-sessions" data-owner-only>
           <h2 id="h-set-sessions">Admin sign-ins</h2>
           <p class="adm-muted">When the admin console was opened (after the authenticator code), from which browser. Kept for 400 days. Only admins are listed.</p>
           <p id="sessions-error" class="adm-err" role="alert" hidden></p>
           <div class="adm-scroll" id="sessions-table"></div>
         </section>
-        <section class="adm-card" aria-labelledby="h-set-policy">
+        <section class="adm-card" aria-labelledby="h-set-policy" data-owner-only>
           <h2 id="h-set-policy">Privacy policy versions</h2>
           <p class="adm-muted">The version is the "Last updated" date on the privacy page. An account's version is derived from its sign-up date; per-click consent comes with the next extension release.</p>
           <p id="policy-error" class="adm-err" role="alert" hidden></p>
@@ -483,6 +504,20 @@
             <label class="adm-grow">What changed (optional)<input id="pv-summary" type="text" autocomplete="off" maxlength="300"></label>
             <button type="submit" id="pv-add" class="adm-btn adm-btn-primary">Add version</button>
           </form>
+        </section>
+        <section class="adm-card" aria-labelledby="h-set-digest" data-owner-only>
+          <h2 id="h-set-digest">Daily digest</h2>
+          <p class="adm-muted">One short email each morning to every owner admin: yesterday's sign-ups, active users, payments and refunds, open payment issues, new feedback and error groups, LinkedIn health, deletions due, overdue data requests and the release card. Counts only. It is switched off until it is scheduled (see the deploy guide). The preview sends nothing.</p>
+          <button type="button" id="digest-preview" class="adm-btn adm-btn-ghost">Preview today's digest</button>
+          <p id="digest-error" class="adm-err" role="alert" hidden></p>
+          <p id="digest-note" class="adm-muted" hidden></p>
+          <pre id="digest-text" class="adm-pre" hidden></pre>
+        </section>
+        <section class="adm-card" aria-labelledby="h-set-roles" data-owner-only>
+          <h2 id="h-set-roles">Admin roles</h2>
+          <p class="adm-muted">An owner can do everything. A support admin can read users and feedback, add notes and reply to feedback, but cannot grant or revoke plans, suspend or delete accounts, or see revenue and payments. Making someone an admin is a manual step in the database (see the deploy guide); here you only change the role of an existing admin. The last owner cannot be made a support admin.</p>
+          <p id="roles-error" class="adm-err" role="alert" hidden></p>
+          <div class="adm-scroll" id="roles-table"></div>
         </section>
         <section class="adm-card" aria-labelledby="h-set-links">
           <h2 id="h-set-links">Dashboards</h2>
@@ -514,7 +549,7 @@
 
     <h3 id="h-tags">Tags</h3>
     <div id="tags-chips" class="adm-chips" aria-live="polite"></div>
-    <form id="tags-form" class="adm-row" novalidate>
+    <form id="tags-form" class="adm-row" data-owner-only novalidate>
       <label class="adm-grow">Add a tag<input id="tags-in" type="text" autocomplete="off" maxlength="24" placeholder="vip, tester..."></label>
       <button type="submit" id="tags-add" class="adm-btn adm-btn-ghost adm-btn-sm">Add</button>
       <button type="button" id="tags-save" class="adm-btn adm-btn-primary adm-btn-sm" disabled>Save tags</button>
@@ -551,26 +586,26 @@
     </table></div>
     <p id="referrals-empty" class="adm-muted" hidden>No team links.</p>
 
-    <h3>Payments</h3>
-    <div class="adm-scroll"><table class="adm-table" id="tbl-payments">
+    <h3 data-owner-only>Payments</h3>
+    <div class="adm-scroll" data-owner-only><table class="adm-table" id="tbl-payments">
       <thead><tr><th>Date</th><th>Plan</th><th>Amount</th><th>Status</th><th>Razorpay payment</th></tr></thead>
       <tbody></tbody>
     </table></div>
-    <p id="payments-empty" class="adm-muted" hidden>No payments.</p>
+    <p id="payments-empty" class="adm-muted" data-owner-only hidden>No payments.</p>
 
-    <h3>Recent checkouts</h3>
-    <div class="adm-scroll"><table class="adm-table" id="tbl-checkouts">
+    <h3 data-owner-only>Recent checkouts</h3>
+    <div class="adm-scroll" data-owner-only><table class="adm-table" id="tbl-checkouts">
       <thead><tr><th>Date</th><th>Plan</th><th>Reference</th></tr></thead>
       <tbody></tbody>
     </table></div>
-    <p id="checkouts-empty" class="adm-muted" hidden>No checkouts.</p>
+    <p id="checkouts-empty" class="adm-muted" data-owner-only hidden>No checkouts.</p>
 
-    <h3>Admin history for this user</h3>
-    <div class="adm-scroll"><table class="adm-table" id="tbl-uaudit">
+    <h3 data-owner-only>Admin history for this user</h3>
+    <div class="adm-scroll" data-owner-only><table class="adm-table" id="tbl-uaudit">
       <thead><tr><th>When</th><th>Admin</th><th>Action</th><th>Reason</th></tr></thead>
       <tbody></tbody>
     </table></div>
-    <p id="uaudit-empty" class="adm-muted" hidden>No admin actions yet.</p>
+    <p id="uaudit-empty" class="adm-muted" data-owner-only hidden>No admin actions yet.</p>
   </div>
 </aside>
 <div id="panel-scrim" class="adm-scrim" hidden></div>
