@@ -381,6 +381,7 @@
       var rule = allowed[k];
       if (rule === 'date') { if (validYmd(v)) out[k] = v; }
       else if (rule === 'text') { if (v.length <= 100 && !CONTROL_RE.test(v)) out[k] = v; }
+      else if (rule === 'tag') { var tg = cleanTag(v); if (tg !== null) out[k] = tg; }
       else if (Array.isArray(rule)) { if (rule.indexOf(v) >= 0) out[k] = v; }
     });
     return out;
@@ -388,7 +389,7 @@
   var USER_FILTERS = {
     q: 'text', plan: ['free'].concat(GRANT_TIERS), source: ['paid', 'grant'], status: ['active', 'suspended', 'unconfirmed'],
     signed_up_after: 'date', signed_up_before: 'date', sort: ['created_desc', 'created_asc', 'last_sign_in_desc', 'email_asc'],
-    active_within_days: ['1', '7', '30']
+    active_within_days: ['1', '7', '30'], tag: 'tag'
   };
   var PAYMENT_FILTERS = { status: ['captured', 'refunded', 'failed'], plan: PLAN_IDS, from: 'date', to: 'date', q: 'text' };
   var AUDIT_FILTERS = { action: 'text', from: 'date', to: 'date', target_user: 'text' };
@@ -932,6 +933,102 @@
     return 'Live';
   }
 
+  // ======================= Admin v3, batch 2 helpers (migration 0063) =======================
+  // 1.3 user timeline
+  var TIMELINE_STEP = 100, TIMELINE_MAX = 200;
+  var TIMELINE_KINDS = {
+    account_created: ['Account', '+'], last_sign_in: ['Sign-in', '>'], email_confirmed: ['Email', '@'], grant_given: ['Grant', 'G'], grant_revoked: ['Grant', 'x'],
+    checkout: ['Checkout', 'C'], payment: ['Payment', '₹'], payment_refunded: ['Refund', 'R'], payment_issue: ['Issue', '!'], payment_issue_resolved: ['Issue', '='],
+    feedback: ['Feedback', 'F'], admin_action: ['Admin', 'A'], team_joined: ['Team', 'T'], team_left: ['Team', 't'], active_day: ['Active', '.']
+  };
+  function timelineBody(userId, limit) {
+    var n = Math.floor(Number(limit));
+    return { action: 'user_timeline', user_id: userId, limit: n >= 1 && n <= TIMELINE_MAX ? n : TIMELINE_STEP };
+  }
+  /** Label and one-character icon for an event kind (unknown kinds fall back to the raw kind). */
+  function timelineKind(kind) {
+    var k = TIMELINE_KINDS[kind];
+    return { label: k ? k[0] : String(kind || 'Event'), icon: k ? k[1] : '?' };
+  }
+  /** Next page size: 100 more events, never above the server maximum of 200. */
+  function nextTimelineLimit(limit) { return Math.min(TIMELINE_MAX, (Math.floor(Number(limit)) || TIMELINE_STEP) + TIMELINE_STEP); }
+  /** Rows for the panel list; `canMore` = the server said more exist and the limit can still grow. */
+  function timelineView(res, limit) {
+    var events = res && Array.isArray(res.events) ? res.events : [];
+    return {
+      rows: events.map(function (e) { var k = timelineKind(e.kind); return { when: formatDateTime(e.at), label: k.label, icon: k.icon, text: String(e.text || ''), kind: e.kind }; }),
+      canMore: !!(res && res.has_more) && limit < TIMELINE_MAX,
+      atMax: !!(res && res.has_more) && limit >= TIMELINE_MAX
+    };
+  }
+
+  // 1.4 notes and tags
+  var NOTE_MAX = 1000, MAX_TAGS = 10;
+  var TAG_RE = /^[a-z0-9][a-z0-9 -]{0,23}$/;
+  function notesBody(userId) { return { action: 'user_notes', user_id: userId }; }
+  function validateNoteText(v) {
+    var s = typeof v === 'string' ? v.trim() : '';
+    if (!s) return { ok: false, error: 'Write a note first.' };
+    if (s.length > NOTE_MAX) return { ok: false, error: 'A note can be at most ' + NOTE_MAX + ' characters.' };
+    if (/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/.test(s)) return { ok: false, error: 'The note has invalid characters.' };
+    return { ok: true, value: s };
+  }
+  function addNoteBody(userId, note) { return { action: 'add_note', user_id: userId, note: note }; }
+  function deleteNoteBody(noteId) { return { action: 'delete_note', note_id: noteId }; }
+  /** One tag, lower-cased and trimmed; null when it does not match ^[a-z0-9][a-z0-9 -]{0,23}$. */
+  function cleanTag(v) {
+    var t = typeof v === 'string' ? v.trim().toLowerCase() : '';
+    return TAG_RE.test(t) ? t : null;
+  }
+  /** Add one tag to a list: { ok, tags } (sorted, no duplicates) or { ok: false, error }. */
+  function addTag(list, raw) {
+    var t = cleanTag(raw);
+    if (t === null) return { ok: false, error: 'A tag uses a-z, 0-9, spaces and dashes (1 to 24 characters) and starts with a letter or digit.' };
+    var out = (Array.isArray(list) ? list : []).slice();
+    if (out.indexOf(t) < 0) out.push(t);
+    if (out.length > MAX_TAGS) return { ok: false, error: 'At most ' + MAX_TAGS + ' tags per user.' };
+    return { ok: true, tags: out.sort() };
+  }
+  function setTagsBody(userId, tags) { return { action: 'set_tags', user_id: userId, tags: tags }; }
+
+  // 1.5 revenue
+  function revenueBody(days) { var d = Math.floor(Number(days)); return { action: 'revenue', days: d >= 7 && d <= 365 ? d : 90 }; }
+  /** KPI tiles { label, value, sub } from the revenue response (money in paise). MRR is an estimate. */
+  function revenueKpis(r) {
+    r = r || {};
+    var ap = r.active_paid || {}, cv = r.conversion || {}, rf = r.refunds || {};
+    return [
+      { label: 'MRR (estimate)', value: formatRupees(Number(r.mrr_paise) || 0), sub: 'last payment / months of its plan, paid plans only' },
+      { label: 'Active paid', value: formatCount((ap.users | 0) + (ap.teams | 0)), sub: formatCount(ap.users | 0) + ' users, ' + formatCount(ap.teams | 0) + ' teams (grants not counted)' },
+      { label: 'Renewals due, 7 days', value: formatCount(r.renewals_7d_count | 0) },
+      { label: 'Expired, 30 days', value: formatCount(r.expired_30d_count | 0), sub: 'not renewed' },
+      { label: 'Free to paid', value: cv.rate_pct == null ? '-' : String(cv.rate_pct) + '%', sub: formatCount(cv.paid | 0) + ' of ' + formatCount(cv.signups | 0) + ' new accounts' },
+      { label: 'Refunds', value: formatRupees(Number(rf.paise) || 0), sub: formatCount(rf.count | 0) + ' refunded' }
+    ];
+  }
+  /** One renewal / expired row as strings: [who, plan, until]. A team shows its name and owner. */
+  function revenueRow(x) {
+    x = x || {};
+    var who = x.kind === 'team' ? (x.team_name || 'Team') + ' (' + (x.email || 'no owner email') + ')' : (x.email || '-');
+    return [who, tierLabel(x.plan), formatDate(x.until)];
+  }
+
+  // 1.6 payment trace
+  var PAYMENT_REF_RE = /^(pay_[A-Za-z0-9]{1,40}|[0-9]{1,15})$/;
+  function validatePaymentRef(v) {
+    var s = typeof v === 'string' ? v.trim() : '';
+    if (!s) return { ok: false, error: 'Enter a Razorpay payment id like pay_ABC123.' };
+    if (!PAYMENT_REF_RE.test(s)) return { ok: false, error: 'That is not a payment id. Use pay_ followed by letters and digits.' };
+    return { ok: true, value: s };
+  }
+  function paymentTraceBody(ref) { return { action: 'payment_trace', payment_ref: ref }; }
+  /** Mark for a trace step: true = tick, false = cross, anything else = dash. Never colour only. */
+  function traceMark(ok) {
+    if (ok === true) return { symbol: '✓', label: 'OK', cls: 'adm-badge-active' };
+    if (ok === false) return { symbol: '✗', label: 'Problem', cls: 'adm-badge-bad' };
+    return { symbol: '–', label: 'Unknown', cls: 'adm-badge-off' };
+  }
+
   return {
     SCORECARD_COLUMNS: SCORECARD_COLUMNS, scorecardBody: scorecardBody, sortScorecard: sortScorecard, nextSort: nextSort, scorecardTotals: scorecardTotals,
     REMOTE_FEATURES: REMOTE_FEATURES, SITE_PREFIX: SITE_PREFIX, SEVERITIES: SEVERITIES, MAX_ANNOUNCEMENTS: MAX_ANNOUNCEMENTS, MAX_ANN_TEXT: MAX_ANN_TEXT,
@@ -947,6 +1044,11 @@
     activityBody: activityBody, fillActive: fillActive, lastActiveText: lastActiveText, ACTIVE_WITHIN: ACTIVE_WITHIN,
     normaliseErrorMessage: normaliseErrorMessage, errorGroupsBody: errorGroupsBody, ERROR_GROUP_HEAD: ERROR_GROUP_HEAD, errorGroupRows: errorGroupRows,
     linkedinHealthBody: linkedinHealthBody, linkedinHealth: linkedinHealth,
+    TIMELINE_STEP: TIMELINE_STEP, TIMELINE_MAX: TIMELINE_MAX, timelineBody: timelineBody, timelineKind: timelineKind, nextTimelineLimit: nextTimelineLimit, timelineView: timelineView,
+    NOTE_MAX: NOTE_MAX, MAX_TAGS: MAX_TAGS, TAG_RE: TAG_RE, notesBody: notesBody, validateNoteText: validateNoteText, addNoteBody: addNoteBody, deleteNoteBody: deleteNoteBody,
+    cleanTag: cleanTag, addTag: addTag, setTagsBody: setTagsBody,
+    revenueBody: revenueBody, revenueKpis: revenueKpis, revenueRow: revenueRow,
+    PAYMENT_REF_RE: PAYMENT_REF_RE, validatePaymentRef: validatePaymentRef, paymentTraceBody: paymentTraceBody, traceMark: traceMark,
     MAX_BULK: MAX_BULK, PAGE_SIZE: PAGE_SIZE, EXPORT_PAGE: EXPORT_PAGE, EXPORT_MAX_ROWS: EXPORT_MAX_ROWS, RANGES: RANGES, USER_SORTS: USER_SORTS,
     formatCount: formatCount, formatRupees: formatRupees, formatRupeesShort: formatRupeesShort, pct: pct, pctNum: pctNum,
     csvCell: csvCell, buildCsv: buildCsv, USER_CSV_HEADERS: USER_CSV_HEADERS, userCsvRow: userCsvRow, userStatus: userStatus,

@@ -192,3 +192,16 @@
 .adm-delta-up{color:var(--c-up)}.adm-delta-down{color:var(--c-warn)}
 /* Teams scorecard: sortable column headers (S6) */
 .adm-sort{font:inherit;color:inherit;text-transform:inherit;letter-spacing:inherit;white-space:nowrap}
+
+/* admin v3 batch 2: tags, notes, timeline, payment trace (tokens only) */
+.adm-chips{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 8px}
+.adm-chip{background:var(--surface-3);color:var(--text-2);font-weight:600}
+.adm-chip-x{background:none;border:0;padding:0 2px;margin-left:2px;font:inherit;line-height:1;color:var(--text-3);cursor:pointer}
+.adm-chip-x:hover{color:var(--ink)}
+.adm-notes,.adm-timeline{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.adm-note{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm);padding:10px 12px}
+.adm-note-text{margin:0 0 6px;white-space:pre-wrap;word-break:break-word}
+.adm-tl-item{display:flex;gap:10px;align-items:flex-start;padding-bottom:10px;border-bottom:1px solid var(--border)}
+.adm-tl-icon{flex:0 0 auto;min-width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;border-radius:99px;background:var(--surface-3);color:var(--text-2);font:700 .78rem var(--font)}
+.adm-tl-body{display:grid;gap:2px;word-break:break-word}
+.adm-tl-when{font-size:.8rem}

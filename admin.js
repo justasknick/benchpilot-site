@@ -14,7 +14,8 @@
 // Admin function: POST /functions/v1/admin (Bearer access token, aal2 required by the server).
 // Actions: metrics, growth, list_users, get_user, grant, revoke, grant_bulk, suspend, unsuspend, sign_out_everywhere,
 // send_password_reset, delete_user, list_payments, list_audit, list_payment_issues, resolve_payment_issue (contract: docs/archive/ADMIN_V2_PLAN.md),
-// team_scorecard, get_remote_config, set_remote_config (migration 0035), funnel (migration 0060).
+// team_scorecard, get_remote_config, set_remote_config (migration 0035), funnel (migration 0060), activity, error_groups, linkedin_health, get_settings,
+// set_setting (0062), user_timeline, user_notes, add_note, delete_note, set_tags, revenue, payment_trace (0063).
 (function () {
   'use strict';
 
@@ -217,7 +218,7 @@
     }
   }
   // latest-request-wins counters, one per view
-  var tokens = { dash: 0, users: 0, pay: 0, audit: 0, panel: 0, settings: 0, feedback: 0, growth: 0, funnel: 0, teams: 0, remote: 0 };
+  var tokens = { dash: 0, users: 0, pay: 0, audit: 0, panel: 0, settings: 0, feedback: 0, growth: 0, funnel: 0, teams: 0, remote: 0, revenue: 0, timeline: 0, notes: 0, trace: 0 };
   function nextToken(k) { tokens[k]++; return tokens[k]; }
 
   // ---------- 1. sign in ----------
@@ -322,7 +323,7 @@
   });
 
   // ---------- 3. console shell + routing ----------
-  var ROUTES = ['dashboard', 'growth', 'users', 'payments', 'teams', 'feedback', 'audit', 'remote', 'settings'];
+  var ROUTES = ['dashboard', 'growth', 'users', 'payments', 'revenue', 'teams', 'feedback', 'audit', 'remote', 'settings'];
   var currentUser = null; // {id, email} of the user shown in the panel
 
   function enterConsole() {
@@ -349,6 +350,7 @@
     else if (r === 'growth') loadGrowth();
     else if (r === 'users') loadUsers();
     else if (r === 'payments') { loadIssues(); loadPayments(); }
+    else if (r === 'revenue') loadRevenue();
     else if (r === 'feedback') loadFeedback();
     else if (r === 'audit') loadAudit();
     else if (r === 'teams') loadTeams();
@@ -546,21 +548,21 @@
 
   // ---------- funnel card (plan 4.2) ----------
   // Server numbers: counts per week (action funnel). Store numbers: the CSV is parsed here, held in memory only and never sent anywhere.
-  var fState = { data: null, store: null };
+  var funnelState = { data: null, store: null };
   function paintFunnel() {
-    var d = fState.data;
+    var d = funnelState.data;
     var host = $('f-table'), hh = $('f-heard');
     clear(host); clear(hh);
     if (!d) return;
-    host.appendChild(simpleTable(L.FUNNEL_HEAD, L.funnelTableRows(d.rows, fState.store)));
+    host.appendChild(simpleTable(L.FUNNEL_HEAD, L.funnelTableRows(d.rows, funnelState.store)));
     var h = L.heardTable(d.rows, d.channels);
     hh.appendChild(simpleTable(h.head, h.rows));
   }
   function setStore(text) {
     var r = L.parseStoreCsv(text);
     var note = $('f-store-note');
-    if (!r.ok) { fState.store = null; note.textContent = r.error; paintFunnel(); return; }
-    fState.store = r;
+    if (!r.ok) { funnelState.store = null; note.textContent = r.error; paintFunnel(); return; }
+    funnelState.store = r;
     note.textContent = 'Store numbers read: ' + L.formatCount(r.rows) + ' rows, ' + L.formatDate(r.first) + ' to ' + L.formatDate(r.last) + '.'
       + (r.guessed ? ' Column names were not recognised, so the first number column is shown as Installs and the second as Weekly users.' : '')
       + (r.hasInstalls ? '' : ' No Installs column found.') + (r.hasUsers ? '' : ' No Weekly users column found.')
@@ -570,15 +572,15 @@
   $('f-file').addEventListener('change', function () {
     var f = $('f-file').files && $('f-file').files[0];
     if (!f) return;
-    if (f.size > L.MAX_CSV_CHARS) { fState.store = null; $('f-store-note').textContent = 'This file is too large to be a store export.'; paintFunnel(); return; }
+    if (f.size > L.MAX_CSV_CHARS) { funnelState.store = null; $('f-store-note').textContent = 'This file is too large to be a store export.'; paintFunnel(); return; }
     var fr = new FileReader();
     fr.onload = function () { setStore(String(fr.result || '')); };
-    fr.onerror = function () { fState.store = null; $('f-store-note').textContent = 'Could not read that file.'; paintFunnel(); };
+    fr.onerror = function () { funnelState.store = null; $('f-store-note').textContent = 'Could not read that file.'; paintFunnel(); };
     fr.readAsText(f);
   });
   $('f-use').addEventListener('click', function () { setStore($('f-paste').value); });
   $('f-clear').addEventListener('click', function () {
-    fState.store = null; $('f-paste').value = ''; $('f-file').value = ''; $('f-store-note').textContent = ''; paintFunnel();
+    funnelState.store = null; $('f-paste').value = ''; $('f-file').value = ''; $('f-store-note').textContent = ''; paintFunnel();
   });
   $('f-refresh').addEventListener('click', function () { loadFunnel(); });
   async function loadFunnel() {
@@ -587,7 +589,7 @@
     var r = await callAdmin(L.funnelBody(L.FUNNEL_WEEKS));
     if (mine !== tokens.funnel) return;
     if (adminFailed(r, 'f-error')) return;
-    fState.data = r.body;
+    funnelState.data = r.body;
     paintFunnel();
   }
 
@@ -773,7 +775,7 @@
 
   // ---------- users ----------
   var uState = { offset: 0, selected: {}, rows: [], total: 0 };
-  var USER_FIELDS = { q: 'u-q', plan: 'u-plan', source: 'u-source', status: 'u-status', signed_up_after: 'u-after', signed_up_before: 'u-before', active_within_days: 'u-active', sort: 'u-sort' };
+  var USER_FIELDS = { q: 'u-q', plan: 'u-plan', source: 'u-source', status: 'u-status', signed_up_after: 'u-after', signed_up_before: 'u-before', active_within_days: 'u-active', tag: 'u-tag', sort: 'u-sort' };
 
   (function initUserSort() {
     Object.keys(L.USER_SORTS).forEach(function (k) { $('u-sort').appendChild(el('option', { value: k, text: L.USER_SORTS[k] })); });
@@ -789,6 +791,7 @@
 
   function filtersChanged(load) { return function () { uState.offset = 0; if (load === 'users') loadUsers(); }; }
   $('u-q').addEventListener('input', debounce(function () { uState.offset = 0; loadUsers(); }, 300));
+  $('u-tag').addEventListener('input', debounce(function () { uState.offset = 0; loadUsers(); }, 300));
   ['u-plan', 'u-source', 'u-status', 'u-after', 'u-before', 'u-active', 'u-sort'].forEach(function (id) {
     $(id).addEventListener('change', filtersChanged('users'));
   });
@@ -862,7 +865,9 @@
       open.addEventListener('click', function (ev) { ev.stopPropagation(); openUser(u.id, open); });
       tr.addEventListener('click', function (ev) { if (ev.target.closest('button,input,a')) return; openUser(u.id, open); });
       tb.appendChild(tr);
-      [td(cb, 'adm-chk'), td(open), td(L.formatDate(u.created_at)), td(L.formatDateTime(u.last_sign_in_at)), td(L.lastActiveText(u.last_active)),
+      var emailCell = el('span', null, [open]);
+      if (Array.isArray(u.tags) && u.tags.length) emailCell.appendChild(el('div', { 'class': 'adm-chips' }, u.tags.map(function (t) { return el('span', { 'class': 'adm-badge adm-chip', text: t }); })));
+      [td(cb, 'adm-chk'), td(emailCell), td(L.formatDate(u.created_at)), td(L.formatDateTime(u.last_sign_in_at)), td(L.lastActiveText(u.last_active)),
         td(planCellWithPaid(u, eff)), td(statusBadge(u)),
         td(el('button', { type: 'button', 'class': 'adm-btn adm-btn-ghost adm-btn-sm', text: 'Open', 'aria-label': 'Open ' + u.email, onclick: function (ev) { ev.stopPropagation(); openUser(u.id, ev.currentTarget); } }))
       ].forEach(function (c) { tr.appendChild(c); });
@@ -929,7 +934,7 @@
   }
   $('panel-close').addEventListener('click', closePanel);
   $('panel-scrim').addEventListener('click', closePanel);
-  document.addEventListener('keydown', function (ev) { if (ev.key === 'Escape' && !$('panel').hidden && !$('dlg').open) closePanel(); });
+  document.addEventListener('keydown', function (ev) { if (ev.key === 'Escape' && !$('panel').hidden && !$('dlg').open && !$('trace-dlg').open) closePanel(); });
 
   async function loadUser(userId, keepStatus) {
     var mine = nextToken('panel');
@@ -1031,6 +1036,8 @@
     cos.forEach(function (c) {
       cb.appendChild(el('tr', null, [td(L.formatDateTime(c.created_at)), td(c.plan), td(c.reference_id, 'adm-mono')]));
     });
+
+    loadPanelExtras(u.id);
 
     // this user's audit history (server key assumed `audit`; `audit_rows` / `history` tolerated)
     var ub = $('tbl-uaudit').tBodies[0];
@@ -1222,14 +1229,15 @@
     $('p-prev').disabled = !pi.hasPrev; $('p-next').disabled = !pi.hasNext;
     var tb = $('tbl-pay').tBodies[0];
     clear(tb);
-    if (!list.length) tb.appendChild(el('tr', null, [el('td', { colspan: 6, 'class': 'adm-muted', text: 'No payments match these filters.' })]));
+    if (!list.length) tb.appendChild(el('tr', null, [el('td', { colspan: 7, 'class': 'adm-muted', text: 'No payments match these filters.' })]));
     list.forEach(function (p) {
       var who;
       if (p.user_id) { who = el('button', { type: 'button', 'class': 'adm-link adm-mono', text: p.email || p.user_id }); who.addEventListener('click', function () { openUser(p.user_id, who); }); }
       else who = el('span', { 'class': 'adm-muted', text: (p.email || 'Deleted user') });
       var st = p.refunded_at ? 'refunded ' + L.formatDate(p.refunded_at) : (p.status || '');
       var sb = el('span', { 'class': 'adm-badge ' + (p.status === 'captured' && !p.refunded_at ? 'adm-badge-active' : p.refunded_at || p.status === 'failed' ? 'adm-badge-bad' : 'adm-badge-off'), text: st });
-      tb.appendChild(el('tr', null, [td(L.formatDateTime(p.created_at)), td(who), td(badge(p.plan)), td(L.formatMoney(p.amount, p.currency), 'adm-num'), td(sb), td(p.razorpay_payment_id, 'adm-mono')]));
+      tb.appendChild(el('tr', null, [td(L.formatDateTime(p.created_at)), td(who), td(badge(p.plan)), td(L.formatMoney(p.amount, p.currency), 'adm-num'), td(sb), td(p.razorpay_payment_id, 'adm-mono'),
+        td(el('button', { type: 'button', 'class': 'adm-btn adm-btn-ghost adm-btn-sm', text: 'Trace', 'aria-label': 'Trace payment ' + p.razorpay_payment_id, onclick: function (ev) { openTrace(p.razorpay_payment_id, ev.currentTarget); } }))]));
     });
   }
   $('p-export').addEventListener('click', function () {
@@ -1239,6 +1247,230 @@
       return exportCsv({ action: 'list_payments', filter: payFilterNow(), key: 'payments', headers: L.PAYMENT_CSV_HEADERS, row: L.paymentCsvRow, file: 'benchpilot-payments' });
     });
   });
+
+// ---------- user panel extras: timeline, notes, tags (admin v3, batch 2) ----------
+  var xState = { uid: null, limit: L.TIMELINE_STEP, tags: [], saved: [] };
+
+  function loadPanelExtras(uid) {
+    xState.uid = uid; xState.limit = L.TIMELINE_STEP; xState.tags = []; xState.saved = [];
+    setErr('tags-error', ''); setErr('notes-error', ''); setErr('timeline-error', '');
+    $('notes-in').value = ''; $('tags-in').value = '';
+    loadNotes(uid);
+    loadTimeline(uid);
+  }
+
+  async function loadTimeline(uid) {
+    var mine = nextToken('timeline');
+    var r = await callAdmin(L.timelineBody(uid, xState.limit));
+    if (mine !== tokens.timeline || xState.uid !== uid) return;
+    if (r.status === -1) return;
+    if (r.status !== 200 || !r.body) { setErr('timeline-error', L.adminErrorMessage(r.status, r.body)); return; }
+    setErr('timeline-error', '');
+    var v = L.timelineView(r.body, xState.limit);
+    var ol = $('timeline-list');
+    clear(ol);
+    v.rows.forEach(function (row) {
+      ol.appendChild(el('li', { 'class': 'adm-tl-item adm-tl-' + String(row.kind || '').replace(/[^a-z_]/g, '') }, [
+        el('span', { 'class': 'adm-tl-icon', 'aria-hidden': 'true', text: row.icon }),
+        el('span', { 'class': 'adm-tl-body' }, [
+          el('strong', { text: row.label }), document.createTextNode(' ' + row.text), el('span', { 'class': 'adm-muted adm-tl-when', text: row.when })
+        ])
+      ]));
+    });
+    $('timeline-empty').hidden = v.rows.length > 0;
+    $('timeline-more').hidden = !v.canMore;
+    if (v.atMax) setErr('timeline-error', 'Showing the latest ' + L.TIMELINE_MAX + ' events.');
+  }
+  $('timeline-more').addEventListener('click', function () {
+    if (!xState.uid) return;
+    xState.limit = L.nextTimelineLimit(xState.limit);
+    loadTimeline(xState.uid);
+  });
+
+  // tags
+  function paintTags() {
+    var host = $('tags-chips');
+    clear(host);
+    if (!xState.tags.length) host.appendChild(el('span', { 'class': 'adm-muted', text: 'No tags.' }));
+    xState.tags.forEach(function (t) {
+      var rm = el('button', { type: 'button', 'class': 'adm-chip-x', 'aria-label': 'Remove tag ' + t, text: '×' });
+      rm.addEventListener('click', function () { xState.tags = xState.tags.filter(function (x) { return x !== t; }); paintTags(); });
+      host.appendChild(el('span', { 'class': 'adm-badge adm-chip' }, [document.createTextNode(t + ' '), rm]));
+    });
+    $('tags-save').disabled = xState.tags.join('|') === xState.saved.join('|');
+  }
+  $('tags-form').addEventListener('submit', function (ev) {
+    ev.preventDefault();
+    var raw = $('tags-in').value;
+    if (!raw.trim()) return;
+    var r = L.addTag(xState.tags, raw);
+    if (!r.ok) { setErr('tags-error', r.error); return; }
+    setErr('tags-error', '');
+    xState.tags = r.tags; $('tags-in').value = '';
+    paintTags();
+  });
+  $('tags-save').addEventListener('click', function () {
+    var uid = xState.uid;
+    if (!uid) return;
+    guarded('tags', [$('tags-save'), $('tags-add')], async function () {
+      var r = await callAdmin(L.setTagsBody(uid, xState.tags));
+      if (r.status === -1) return;
+      if (r.status !== 200 || !r.body) { setErr('tags-error', L.adminErrorMessage(r.status, r.body)); return; }
+      if (xState.uid !== uid) return;
+      setErr('tags-error', '');
+      xState.tags = (r.body.tags || []).slice(); xState.saved = xState.tags.slice();
+      paintTags();
+      setPanelStatus('Tags saved.', 'ok');
+      if (currentRoute() === 'users') loadUsers();
+    });
+  });
+
+  // notes
+  async function loadNotes(uid) {
+    var mine = nextToken('notes');
+    var r = await callAdmin(L.notesBody(uid));
+    if (mine !== tokens.notes || xState.uid !== uid) return;
+    if (r.status === -1) return;
+    if (r.status !== 200 || !r.body) { setErr('notes-error', L.adminErrorMessage(r.status, r.body)); return; }
+    xState.tags = (r.body.tags || []).slice(); xState.saved = xState.tags.slice();
+    paintTags();
+    var ul = $('notes-list');
+    clear(ul);
+    var notes = r.body.notes || [];
+    $('notes-empty').hidden = notes.length > 0;
+    notes.forEach(function (n) {
+      var del = el('button', { type: 'button', 'class': 'adm-btn adm-btn-danger adm-btn-sm', text: 'Delete', 'aria-label': 'Delete this note' });
+      del.addEventListener('click', function () { onDeleteNote(n, del); });
+      ul.appendChild(el('li', { 'class': 'adm-note' }, [
+        el('p', { 'class': 'adm-note-text', text: n.note }),
+        el('div', { 'class': 'adm-row adm-tight' }, [el('span', { 'class': 'adm-muted', text: L.formatDateTime(n.created_at) + (n.created_by_email ? ' by ' + n.created_by_email : '') }), del])
+      ]));
+    });
+  }
+  $('notes-form').addEventListener('submit', function (ev) {
+    ev.preventDefault();
+    var uid = xState.uid;
+    if (!uid) return;
+    var v = L.validateNoteText($('notes-in').value);
+    if (!v.ok) { setErr('notes-error', v.error); return; }
+    setErr('notes-error', '');
+    guarded('note-add', [$('notes-add')], async function () {
+      var r = await callAdmin(L.addNoteBody(uid, v.value));
+      if (r.status === -1) return;
+      if (r.status !== 200 || !r.body) { setErr('notes-error', L.adminErrorMessage(r.status, r.body)); return; }
+      if (xState.uid !== uid) return;
+      $('notes-in').value = '';
+      setPanelStatus('Note added.', 'ok');
+      loadNotes(uid); loadTimeline(uid);
+    });
+  });
+  function onDeleteNote(n, btn) {
+    var uid = xState.uid;
+    guarded('note-del', [btn], async function () {
+      var res = await ask({
+        title: 'Delete note', okText: 'Delete note', danger: true,
+        message: 'Delete this note? This cannot be undone. The audit log keeps the fact that a note was deleted, not its text.',
+        run: function () { return callAdmin(L.deleteNoteBody(n.id)); }
+      });
+      if (!res) return;
+      setPanelStatus('Note deleted.', 'ok');
+      if (xState.uid === uid) { loadNotes(uid); loadTimeline(uid); }
+    });
+  }
+
+  // ---------- payment trace (1.6) ----------
+  var traceOpener = null;
+  function openTrace(ref, opener) {
+    var v = L.validatePaymentRef(ref);
+    if (!v.ok) { setErr('tr-error', v.error); return; }
+    setErr('tr-error', '');
+    traceOpener = opener || document.activeElement;
+    var mine = nextToken('trace');
+    $('trace-title').textContent = 'Payment trace';
+    $('trace-sub').textContent = 'Loading...';
+    clear($('trace-steps'));
+    $('trace-empty').hidden = true;
+    var d = $('trace-dlg');
+    if (!d.open) { if (typeof d.showModal === 'function') d.showModal(); else d.setAttribute('open', ''); }
+    $('trace-close').focus();
+    callAdmin(L.paymentTraceBody(v.value)).then(function (r) {
+      if (mine !== tokens.trace) return;
+      if (r.status === -1) { closeTrace(); return; }
+      if (r.status === 401) { closeTrace(); toSignin('Your session expired. Please sign in again.'); return; }
+      if (r.status !== 200 || !r.body) { $('trace-sub').textContent = L.adminErrorMessage(r.status, r.body); return; }
+      renderTrace(r.body, v.value);
+    });
+  }
+  function renderTrace(t, ref) {
+    var p = t.payment;
+    $('trace-sub').textContent = p
+      ? ref + ' - ' + L.formatMoney(p.amount, p.currency) + ' for ' + p.plan + (p.email ? ' (' + p.email + ')' : '')
+      : ref;
+    var ol = $('trace-steps');
+    clear(ol);
+    $('trace-empty').hidden = (t.steps || []).length > 0;
+    (t.steps || []).forEach(function (st) {
+      var m = L.traceMark(st.ok);
+      ol.appendChild(el('li', { 'class': 'adm-tl-item' }, [
+        el('span', { 'class': 'adm-badge ' + m.cls, 'aria-label': m.label, title: m.label, text: m.symbol }),
+        el('span', { 'class': 'adm-tl-body' }, [
+          el('strong', { text: st.label }), document.createTextNode(' ' + (st.text || '')),
+          el('span', { 'class': 'adm-muted adm-tl-when', text: st.at ? L.formatDateTime(st.at) : 'no time recorded' })
+        ])
+      ]));
+    });
+  }
+  function closeTrace() {
+    nextToken('trace');
+    var d = $('trace-dlg');
+    if (d.open) d.close();
+    if (traceOpener && document.body.contains(traceOpener)) traceOpener.focus();
+    traceOpener = null;
+  }
+  $('trace-close').addEventListener('click', closeTrace);
+  $('trace-dlg').addEventListener('cancel', function (ev) { ev.preventDefault(); closeTrace(); });
+  $('form-trace').addEventListener('submit', function (ev) { ev.preventDefault(); openTrace($('tr-q').value, $('tr-go')); });
+
+  // ---------- revenue (1.5) ----------
+  setupToggle('tg-rev', 'tbl-wrap-rev');
+  $('rev-days').addEventListener('change', function () { loadRevenue(); });
+  $('rev-refresh').addEventListener('click', function () { loadRevenue(); });
+  function revenueTable(tableId, rows, emptyText) {
+    var tb = $(tableId).tBodies[0];
+    clear(tb);
+    if (!rows.length) { tb.appendChild(el('tr', null, [el('td', { colspan: 4, 'class': 'adm-muted', text: emptyText })])); return; }
+    rows.forEach(function (x) {
+      var c = L.revenueRow(x);
+      var open = x.user_id ? el('button', { type: 'button', 'class': 'adm-btn adm-btn-ghost adm-btn-sm', text: 'Open user', 'aria-label': 'Open user ' + (x.email || '') }) : null;
+      if (open) open.addEventListener('click', function () { openUser(x.user_id, open); });
+      tb.appendChild(el('tr', null, [td(c[0], 'adm-mono'), td(c[1]), td(c[2]), td(open)]));
+    });
+  }
+  async function loadRevenue() {
+    var mine = nextToken('revenue');
+    setErr('rev-error', '');
+    var r = await callAdmin(L.revenueBody(Number($('rev-days').value)));
+    if (mine !== tokens.revenue) return;
+    if (adminFailed(r, 'rev-error')) return;
+    var b = r.body;
+    var kp = $('rev-kpis');
+    clear(kp);
+    L.revenueKpis(b).forEach(function (k) { kp.appendChild(kpi(k.label, k.value, k.sub)); });
+    var daily = (b.revenue_by_day || []).map(function (d) { return { day: d.day, net: Number(d.net) || 0, gross: Number(d.gross) || 0, refunded: Number(d.refunded) || 0, payments: d.payments | 0 }; });
+    barChart({
+      host: $('chart-rev'), tableHost: $('tbl-wrap-rev'), cls: 'adm-bar-revenue',
+      title: 'Net revenue per day', unit: 'revenue', days: daily,
+      values: daily.map(function (d) { return Math.max(0, d.net); }),
+      fmt: function (v) { return L.formatRupees(v); }, tickFmt: function (v) { return L.formatRupeesShort(v); },
+      tableHead: ['Date', 'Net', 'Paid', 'Refunded', 'Payments'],
+      tableRow: function (d) { return [L.formatDate(d.day), L.formatRupees(d.net), L.formatRupees(d.gross), L.formatRupees(d.refunded), L.formatCount(d.payments)]; }
+    });
+    var tot = b.totals || {};
+    $('rev-note').textContent = 'Last ' + b.days + ' days: paid ' + L.formatRupees(tot.gross_paise) + ', refunded ' + L.formatRupees(tot.refunded_paise) + ', net ' + L.formatRupees(tot.net_paise) +
+      '. A refund counts on the day it was made.' + (b.non_inr_payments ? ' ' + L.formatCount(b.non_inr_payments) + ' payment(s) in other currencies are not included.' : '');
+    revenueTable('tbl-renew', b.renewals_7d || [], 'No paid plans end in the next 7 days.');
+    revenueTable('tbl-expired', b.expired_30d || [], 'No paid plans expired and stayed expired in the last 30 days.');
+  }
 
   // ---------- payment issues ----------
   var iToken = 0;
