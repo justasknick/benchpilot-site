@@ -59,6 +59,7 @@
       <a href="#growth" data-route="growth">Growth</a>
       <a href="#users" data-route="users">Users</a>
       <a href="#payments" data-route="payments">Payments</a>
+      <a href="#revenue" data-route="revenue">Revenue</a>
       <a href="#teams" data-route="teams">Teams</a>
       <a href="#feedback" data-route="feedback">Feedback</a>
       <a href="#audit" data-route="audit">Audit log</a>
@@ -193,6 +194,7 @@
           <label>Signed up from<input id="u-after" type="date"></label>
           <label>Signed up to<input id="u-before" type="date"></label>
           <label>Activity<select id="u-active"><option value="">Any</option><option value="1">Active today</option><option value="7">Active in 7 days</option><option value="30">Active in 30 days</option></select></label>
+          <label>Tag<input id="u-tag" type="search" autocomplete="off" maxlength="24" placeholder="vip"></label>
           <label>Sort<select id="u-sort"></select></label>
           <button type="button" id="u-reset" class="adm-btn adm-btn-ghost">Reset</button>
         </form>
@@ -229,6 +231,11 @@
             <tbody></tbody>
           </table></div>
         </section>
+        <form id="form-trace" class="adm-card adm-filters" novalidate>
+          <label class="adm-grow">Trace a payment (pay_…)<input id="tr-q" type="text" autocomplete="off" spellcheck="false" maxlength="60" placeholder="pay_ABC123"></label>
+          <button type="submit" id="tr-go" class="adm-btn adm-btn-primary">Trace</button>
+        </form>
+        <p id="tr-error" class="adm-err" role="alert" hidden></p>
         <form id="form-payments" class="adm-card adm-filters" novalidate>
           <label class="adm-grow">Search email or payment ID<input id="p-q" type="search" autocomplete="off" maxlength="100"></label>
           <label>Status<select id="p-status"><option value="">Any</option><option value="captured">Captured</option><option value="refunded">Refunded</option><option value="failed">Failed</option></select></label>
@@ -244,10 +251,48 @@
         </div>
         <div class="adm-card adm-flush"><div class="adm-scroll"><table class="adm-table" id="tbl-pay">
           <caption class="adm-sr">Payments</caption>
-          <thead><tr><th scope="col">Date</th><th scope="col">User</th><th scope="col">Plan</th><th scope="col" class="adm-num">Amount</th><th scope="col">Status</th><th scope="col">Razorpay payment</th></tr></thead>
+          <thead><tr><th scope="col">Date</th><th scope="col">User</th><th scope="col">Plan</th><th scope="col" class="adm-num">Amount</th><th scope="col">Status</th><th scope="col">Razorpay payment</th><th scope="col"><span class="adm-sr">Trace</span></th></tr></thead>
           <tbody></tbody>
         </table></div></div>
         <div class="adm-pager"><button type="button" class="adm-btn adm-btn-ghost adm-btn-sm" id="p-prev">Previous</button><span id="p-range" class="adm-muted"></span><button type="button" class="adm-btn adm-btn-ghost adm-btn-sm" id="p-next">Next</button></div>
+      </section>
+
+      <!-- Revenue -->
+      <section id="page-revenue" hidden aria-labelledby="h-rev">
+        <div class="adm-pagehead"><h1 id="h-rev">Revenue</h1></div>
+        <div class="adm-toolbar">
+          <label class="adm-row adm-tight">Period
+            <select id="rev-days"><option value="30">Last 30 days</option><option value="90" selected>Last 90 days</option><option value="180">Last 180 days</option><option value="365">Last 365 days</option></select>
+          </label>
+          <button type="button" id="rev-refresh" class="adm-btn adm-btn-ghost adm-btn-sm">Refresh</button>
+        </div>
+        <p id="rev-error" class="adm-err" role="alert" hidden></p>
+        <div id="rev-kpis" class="adm-kpis"></div>
+        <p class="adm-muted">MRR is an estimate: for every paid plan that is active today, the amount of its last captured payment divided by the months the plan covers (yearly = 12). Grants and pilots are not counted. Money is in rupees (INR payments only).</p>
+        <section class="adm-card adm-chart" aria-labelledby="h-c-rev">
+          <div class="adm-chart-head"><h2 id="h-c-rev">Revenue per day</h2><button type="button" class="adm-btn adm-btn-ghost adm-btn-sm" id="tg-rev" aria-expanded="false" aria-controls="tbl-wrap-rev">View as table</button></div>
+          <div id="chart-rev"></div>
+          <div id="tbl-wrap-rev" class="adm-scroll adm-tbl-short" hidden></div>
+          <p id="rev-note" class="adm-muted"></p>
+        </section>
+        <div class="adm-grid2">
+          <section class="adm-card" aria-labelledby="h-renew">
+            <h2 id="h-renew">Renewals due in 7 days</h2>
+            <div class="adm-scroll"><table class="adm-table" id="tbl-renew">
+              <caption class="adm-sr">Paid plans ending in the next 7 days</caption>
+              <thead><tr><th scope="col">Who</th><th scope="col">Plan</th><th scope="col">Ends</th><th scope="col"><span class="adm-sr">Open</span></th></tr></thead>
+              <tbody></tbody>
+            </table></div>
+          </section>
+          <section class="adm-card" aria-labelledby="h-expired">
+            <h2 id="h-expired">Expired and not renewed (30 days)</h2>
+            <div class="adm-scroll"><table class="adm-table" id="tbl-expired">
+              <caption class="adm-sr">Paid plans that ended in the last 30 days and were not renewed</caption>
+              <thead><tr><th scope="col">Who</th><th scope="col">Plan</th><th scope="col">Ended</th><th scope="col"><span class="adm-sr">Open</span></th></tr></thead>
+              <tbody></tbody>
+            </table></div>
+          </section>
+        </div>
       </section>
 
       <!-- Feedback: bug reports and ideas sent from the extension -->
@@ -389,6 +434,31 @@
     <dl id="detail-summary" class="adm-dl"></dl>
     <div id="detail-actions" class="adm-actions"></div>
 
+    <h3 id="h-tags">Tags</h3>
+    <div id="tags-chips" class="adm-chips" aria-live="polite"></div>
+    <form id="tags-form" class="adm-row" novalidate>
+      <label class="adm-grow">Add a tag<input id="tags-in" type="text" autocomplete="off" maxlength="24" placeholder="vip, tester..."></label>
+      <button type="submit" id="tags-add" class="adm-btn adm-btn-ghost adm-btn-sm">Add</button>
+      <button type="button" id="tags-save" class="adm-btn adm-btn-primary adm-btn-sm" disabled>Save tags</button>
+    </form>
+    <p id="tags-error" class="adm-err" role="alert" hidden></p>
+
+    <h3 id="h-notes">Notes</h3>
+    <p class="adm-muted">Only admins see notes. Do not paste leads, contacts or post text.</p>
+    <form id="notes-form" class="adm-form" novalidate>
+      <label>New note<textarea id="notes-in" rows="3" maxlength="1000"></textarea></label>
+      <div class="adm-row adm-end"><button type="submit" id="notes-add" class="adm-btn adm-btn-primary adm-btn-sm">Add note</button></div>
+    </form>
+    <p id="notes-error" class="adm-err" role="alert" hidden></p>
+    <ul id="notes-list" class="adm-notes"></ul>
+    <p id="notes-empty" class="adm-muted" hidden>No notes yet.</p>
+
+    <h3 id="h-timeline">Timeline</h3>
+    <ol id="timeline-list" class="adm-timeline"></ol>
+    <p id="timeline-empty" class="adm-muted" hidden>No events.</p>
+    <p id="timeline-error" class="adm-err" role="alert" hidden></p>
+    <button type="button" id="timeline-more" class="adm-btn adm-btn-ghost adm-btn-sm" hidden>Show more</button>
+
     <h3>Grants</h3>
     <div class="adm-scroll"><table class="adm-table" id="tbl-grants">
       <thead><tr><th>Plan</th><th>From</th><th>Until</th><th>Reason</th><th>Status</th><th></th></tr></thead>
@@ -426,6 +496,17 @@
   </div>
 </aside>
 <div id="panel-scrim" class="adm-scrim" hidden></div>
+
+<!-- Payment trace dialog -->
+<dialog id="trace-dlg" class="adm-dlg" aria-labelledby="trace-title">
+  <div class="adm-form">
+    <h2 id="trace-title">Payment trace</h2>
+    <p id="trace-sub" class="adm-muted"></p>
+    <ol id="trace-steps" class="adm-timeline"></ol>
+    <p id="trace-empty" class="adm-muted" hidden>Nothing found for that payment id. Check it in the Razorpay dashboard.</p>
+    <div class="adm-row adm-end"><button id="trace-close" class="adm-btn adm-btn-ghost" type="button">Close</button></div>
+  </div>
+</dialog>
 
 <!-- Confirm dialog: optional plan fields, reason, and type-the-email box -->
 <dialog id="dlg" class="adm-dlg" aria-labelledby="dlg-title">
