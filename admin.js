@@ -15,7 +15,9 @@
 // Actions: metrics, growth, list_users, get_user, grant, revoke, grant_bulk, suspend, unsuspend, sign_out_everywhere,
 // send_password_reset, delete_user, list_payments, list_audit, list_payment_issues, resolve_payment_issue (contract: docs/archive/ADMIN_V2_PLAN.md),
 // team_scorecard, get_remote_config, set_remote_config (migration 0035), funnel (migration 0060), activity, error_groups, linkedin_health, get_settings,
-// set_setting (0062), user_timeline, user_notes, add_note, delete_note, set_tags, revenue, payment_trace (0063).
+// set_setting (0062, key release 0064), user_timeline, user_notes, add_note, delete_note, set_tags, revenue, payment_trace (0063),
+// set_feedback_link, feedback_links, schedule_delete, cancel_delete, pending_deletions, note_session, admin_sessions, list_data_requests,
+// add_data_request, update_data_request, export_user, policy_versions, add_policy_version, user_consent (0064).
 (function () {
   'use strict';
 
@@ -201,9 +203,10 @@
     Object.keys(tokens).forEach(function (k) { tokens[k]++; }); // drop in-flight responses
     closePanel();
     currentUser = null;
+    sessionNoted = false;
     uState.offset = 0; uState.selected = {}; pState.offset = 0; aState.offset = 0;
     ['tbl-users', 'tbl-pay', 'tbl-audit'].forEach(function (id) { clear($(id).tBodies[0]); });
-    ['kpis', 'chart-signups', 'chart-revenue', 'chart-plan', 'funnel', 'health', 'tbl-wrap-signups', 'tbl-wrap-revenue', 'chart-active', 'tbl-wrap-active', 'chart-li', 'set-account'].forEach(function (id) { clear($(id)); });
+    ['kpis', 'chart-signups', 'chart-revenue', 'chart-plan', 'funnel', 'health', 'tbl-wrap-signups', 'tbl-wrap-revenue', 'chart-active', 'tbl-wrap-active', 'chart-li', 'set-account', 'sessions-table', 'policy-table'].forEach(function (id) { clear($(id)); });
   }
 
   // ---------- busy / double-submit guard ----------
@@ -218,7 +221,7 @@
     }
   }
   // latest-request-wins counters, one per view
-  var tokens = { dash: 0, users: 0, pay: 0, audit: 0, panel: 0, settings: 0, feedback: 0, growth: 0, funnel: 0, teams: 0, remote: 0, revenue: 0, timeline: 0, notes: 0, trace: 0 };
+  var tokens = { dash: 0, users: 0, pay: 0, audit: 0, panel: 0, settings: 0, feedback: 0, growth: 0, funnel: 0, teams: 0, remote: 0, revenue: 0, timeline: 0, notes: 0, trace: 0, release: 0, pending: 0, data: 0, sessions: 0, links: 0, policy: 0 };
   function nextToken(k) { tokens[k]++; return tokens[k]; }
 
   // ---------- 1. sign in ----------
@@ -323,12 +326,14 @@
   });
 
   // ---------- 3. console shell + routing ----------
-  var ROUTES = ['dashboard', 'growth', 'users', 'payments', 'revenue', 'teams', 'feedback', 'audit', 'remote', 'settings'];
+  var ROUTES = ['dashboard', 'growth', 'users', 'payments', 'revenue', 'teams', 'feedback', 'data', 'audit', 'remote', 'settings'];
   var currentUser = null; // {id, email} of the user shown in the panel
 
+  var sessionNoted = false; // admin sign-in history (batch 3): one note per page load; the server keeps at most one row per 10 minutes
   function enterConsole() {
     showView('view-console');
     setStatus('');
+    if (!sessionNoted) { sessionNoted = true; callAdmin(L.noteSessionBody()); } // best effort: the console works without it
     showRoute();
   }
   function currentRoute() {
@@ -348,10 +353,11 @@
     if (h1) { h1.setAttribute('tabindex', '-1'); h1.focus({ preventScroll: true }); }
     if (r === 'dashboard') loadDashboard();
     else if (r === 'growth') loadGrowth();
-    else if (r === 'users') loadUsers();
+    else if (r === 'users') { loadPending(); loadUsers(); }
     else if (r === 'payments') { loadIssues(); loadPayments(); }
     else if (r === 'revenue') loadRevenue();
     else if (r === 'feedback') loadFeedback();
+    else if (r === 'data') loadDataRequests();
     else if (r === 'audit') loadAudit();
     else if (r === 'teams') loadTeams();
     else if (r === 'remote') loadRemote();
@@ -406,6 +412,7 @@
 
   // Signed-in activity and LinkedIn health (admin console v3). Separate calls so the dashboard never waits on them or breaks without them.
   async function loadDashExtras(mine) {
+    loadRelease(mine);
     var a = await callAdmin(L.activityBody(dState.days));
     if (mine !== tokens.dash) return;
     renderActivity(a.status === 200 && a.body ? a.body : null);
@@ -413,6 +420,52 @@
     if (mine !== tokens.dash) return;
     renderLinkedin(h.status === 200 && h.body ? h.body : null);
   }
+  // ---------- release card (admin v3, batch 3) ----------
+  var relState = { rel: null };
+  function renderRelease() {
+    var l = L.releaseLines(relState.rel || {});
+    $('rel-live').textContent = l.live;
+    $('rel-review').textContent = l.review;
+    $('rel-next').textContent = l.next; $('rel-next').hidden = !l.next;
+    $('rel-retest').hidden = !l.retest;
+    if (l.retest) $('rel-retest-link').setAttribute('href', l.retest);
+  }
+  async function loadRelease(mine) {
+    var g = await callAdmin(L.settingsBody());
+    if (mine !== tokens.dash) return;
+    if (g.status === 200 && g.body && g.body.release) relState.rel = g.body.release;
+    renderRelease();
+  }
+  function setRelFormOpen(open) {
+    $('rel-form').hidden = !open;
+    $('rel-edit').setAttribute('aria-expanded', open ? 'true' : 'false');
+    setErr('rel-error', '');
+    if (open) {
+      var r = relState.rel || {};
+      $('rel-live-in').value = r.live || ''; $('rel-since-in').value = r.live_since || '';
+      $('rel-review-in').value = r.in_review || ''; $('rel-sub-in').value = r.submitted_on || '';
+      $('rel-next-in').value = r.next || ''; $('rel-url-in').value = r.retest_url || '';
+      $('rel-live-in').focus();
+    }
+  }
+  $('rel-edit').addEventListener('click', function () { setRelFormOpen($('rel-form').hidden); });
+  $('rel-cancel').addEventListener('click', function () { setRelFormOpen(false); $('rel-edit').focus(); });
+  $('rel-form').addEventListener('submit', function (ev) {
+    ev.preventDefault();
+    var v = L.validateReleaseForm({ live: $('rel-live-in').value, live_since: $('rel-since-in').value, in_review: $('rel-review-in').value,
+      submitted_on: $('rel-sub-in').value, next: $('rel-next-in').value, retest_url: $('rel-url-in').value });
+    if (!v.ok) { setErr('rel-error', Object.keys(v.errors).map(function (k) { return v.errors[k]; }).join(' ')); return; }
+    setErr('rel-error', '');
+    guarded('rel-save', [$('rel-save')], async function () {
+      var r = await callAdmin(L.setReleaseBody(v.value));
+      if (adminFailed(r, 'rel-error')) return;
+      relState.rel = r.body.value || v.value;
+      setRelFormOpen(false);
+      renderRelease();
+      setStatus('Release saved.', 'ok');
+    });
+  });
+
   function renderActivity(a) {
     $('kpis').appendChild(kpi('Weekly active (signed-in)', a ? L.formatCount(a.wau) : '-', a ? 'last 7 days, ' + L.formatCount(a.mau) + ' in 30 days' : 'not available yet'));
     if (!a) { clear($('chart-active')); $('chart-active').appendChild(el('p', { 'class': 'adm-muted', text: 'Not available yet. It needs the database update from batch 1.' })); return; }
@@ -800,6 +853,35 @@
   $('u-prev').addEventListener('click', function () { uState.offset = Math.max(0, uState.offset - L.PAGE_SIZE); loadUsers(); });
   $('u-next').addEventListener('click', function () { uState.offset += L.PAGE_SIZE; loadUsers(); });
 
+  // ---------- pending deletions (two-step delete, admin v3 batch 3) ----------
+  async function loadPending() {
+    var mine = nextToken('pending');
+    var r = await callAdmin(L.pendingDeletionsBody());
+    if (mine !== tokens.pending) return;
+    renderPending(r.status === 200 && r.body && Array.isArray(r.body.rows) ? r.body.rows : []);
+  }
+  function renderPending(rows) {
+    $('pending-card').hidden = !rows.length;
+    var tb = $('tbl-pending').tBodies[0];
+    clear(tb);
+    rows.forEach(function (p) {
+      var target = { id: p.user_id, email: p.email || p.user_id };
+      var who = el('button', { type: 'button', 'class': 'adm-link adm-mono', text: target.email });
+      who.addEventListener('click', function () { openUser(p.user_id, who); });
+      var acts = el('span', { 'class': 'adm-actions' });
+      var cancel = el('button', { type: 'button', 'class': 'adm-btn adm-btn-ghost adm-btn-sm', text: 'Cancel deletion', 'aria-label': 'Cancel the deletion of ' + target.email });
+      cancel.addEventListener('click', function () { guarded('pend-' + p.user_id, [cancel], function () { return onCancelDelete(target); }); });
+      acts.appendChild(cancel);
+      if (p.ready) {
+        var del = el('button', { type: 'button', 'class': 'adm-btn adm-btn-danger adm-btn-sm', text: 'Delete now', 'aria-label': 'Delete ' + target.email + ' now' });
+        del.addEventListener('click', function () { guarded('pend-' + p.user_id, [del], function () { return onDeleteNow(target); }); });
+        acts.appendChild(del);
+      }
+      tb.appendChild(el('tr', null, [td(who), td(L.formatDateTime(p.requested_at)), td(L.formatDateTime(p.due_at)),
+        td(el('span', { 'class': 'adm-badge ' + (p.ready ? 'adm-badge-bad' : 'adm-badge-off'), text: p.ready ? 'Due now' : 'Undo open' })), td(p.reason || ''), td(acts)]));
+    });
+  }
+
   async function loadUsers() {
     var err = L.dateRangeError($('u-after').value, $('u-before').value);
     setErr('u-error', err);
@@ -956,7 +1038,7 @@
     var eff = u.effective || { plan: 'free' };
     var dl = $('detail-summary');
     clear(dl);
-    function row(k, v) { dl.appendChild(el('dt', { text: k })); var dd = el('dd'); if (v && v.nodeType) dd.appendChild(v); else dd.textContent = v == null ? '-' : String(v); dl.appendChild(dd); }
+    function row(k, v) { dl.appendChild(el('dt', { text: k })); var dd = el('dd'); if (v && v.nodeType) dd.appendChild(v); else dd.textContent = v == null ? '-' : String(v); dl.appendChild(dd); return dd; }
     row('Email', u.email);
     row('User ID', el('span', { 'class': 'adm-mono', text: u.id }));
     row('Status', suspended ? el('span', { 'class': 'adm-badge adm-badge-bad', text: 'Suspended' }) : statusBadge(u));
@@ -967,6 +1049,30 @@
     row('Effective plan', planCell(eff.plan, eff.until, eff.source ? '(' + eff.source + ')' : ''));
     row('Paid plan', u.paid ? planCell(u.paid.tier, u.paid.until, u.paid.active ? '' : '(expired)') : 'None');
     row('Active grant', u.activeGrant ? planCell(u.activeGrant.tier, u.activeGrant.ends_on, '- ' + u.activeGrant.reason) : 'None');
+    var consentDd = row('Privacy policy', 'Loading...');
+    callAdmin(L.userConsentBody(u.id)).then(function (c) {
+      if (!currentUser || currentUser.id !== u.id) return;
+      clear(consentDd);
+      if (c.status !== 200 || !c.body) { consentDd.textContent = 'Not available yet'; return; }
+      consentDd.appendChild(el('span', { text: L.consentValue(c.body) }));
+      consentDd.appendChild(el('div', { 'class': 'adm-muted', text: L.CONSENT_NOTE }));
+    });
+    // two-step delete: a red banner while a deletion is scheduled
+    var pb = L.deletionBanner(d.pending_deletion, Date.now());
+    $('pending-banner').hidden = !pb;
+    clear($('pending-actions'));
+    if (pb) {
+      $('pending-text').textContent = pb.text;
+      var pt = { id: u.id, email: u.email };
+      var pc = el('button', { type: 'button', 'class': 'adm-btn adm-btn-ghost adm-btn-sm', text: 'Cancel deletion' });
+      pc.addEventListener('click', function () { guarded('pcancel', [pc], function () { return onCancelDelete(pt); }); });
+      $('pending-actions').appendChild(pc);
+      if (pb.ready) {
+        var pd = el('button', { type: 'button', 'class': 'adm-btn adm-btn-danger adm-btn-sm', text: 'Delete now' });
+        pd.addEventListener('click', function () { guarded('pdelete', [pd], function () { return onDeleteNow(pt); }); });
+        $('pending-actions').appendChild(pd);
+      }
+    }
 
     // actions
     var ac = $('detail-actions');
@@ -978,7 +1084,7 @@
     else actBtn('Suspend', 'adm-btn-ghost', function (t) { return simpleAction('suspend', 'Suspend', t); });
     actBtn('Sign out everywhere', 'adm-btn-ghost', function (t) { return simpleAction('sign_out_everywhere', 'Sign out everywhere', t); });
     actBtn('Send password reset', 'adm-btn-ghost', function (t) { return simpleAction('send_password_reset', 'Send password reset', t); });
-    actBtn('Delete user', 'adm-btn-danger', onDelete);
+    if (!pb) actBtn('Schedule deletion (24-hour undo)', 'adm-btn-danger', onSchedule);
 
     // grants
     var gb = $('tbl-grants').tBodies[0];
@@ -1182,16 +1288,42 @@
     });
   }
 
-  function onDelete(target) {
+  // Two-step delete (batch 3): the dialog only SCHEDULES the deletion. After 24 hours "Delete now" removes the account.
+  function onSchedule(target) {
     return ask({
-      title: 'Delete user', reason: true, typeEmail: target.email, okText: 'Delete user', danger: true,
-      message: L.deleteConfirmText(target.email),
+      title: 'Schedule deletion', reason: true, typeEmail: target.email, okText: 'Schedule deletion', danger: true,
+      message: L.scheduleDeleteText(target.email),
+      run: function (vals) { return callAdmin(L.scheduleDeleteBody(target.id, vals.confirm_email, vals.reason)); }
+    }).then(function (res) {
+      if (!res) return;
+      setPanelStatus('Deletion scheduled for ' + target.email + '. You can cancel it for the next 24 hours.', 'ok');
+      loadPending();
+      return refreshAfterChange(target.id);
+    });
+  }
+  function onCancelDelete(target) {
+    return ask({
+      title: 'Cancel deletion', reason: true, okText: 'Cancel deletion',
+      message: 'Cancel the scheduled deletion of ' + target.email + '? The account stays as it is.',
+      run: function (vals) { return callAdmin(L.cancelDeleteBody(target.id, vals.reason)); }
+    }).then(function (res) {
+      if (!res) return;
+      setStatus('Deletion of ' + target.email + ' cancelled.', 'ok');
+      loadPending();
+      if (!$('panel').hidden && currentUser && currentUser.id === target.id) return loadUser(target.id, true);
+    });
+  }
+  function onDeleteNow(target) {
+    return ask({
+      title: 'Delete user now', reason: true, typeEmail: target.email, okText: 'Delete user', danger: true,
+      message: L.deleteNowText(target.email),
       run: function (vals) { return callAdmin(L.deleteUserBody(target.id, vals.confirm_email, vals.reason)); }
     }).then(function (res) {
       if (!res) return;
       closePanel();
       setStatus('Deleted ' + target.email + '. The account is gone; payment records are kept.', 'ok');
       delete uState.selected[target.id];
+      loadPending();
       return loadUsers();
     });
   }
@@ -1520,7 +1652,7 @@
   }
 
   // ---------- feedback (bug reports and ideas) ----------
-  var fState = { offset: 0, rows: [], selected: {}, versionsSeen: '' };
+  var fState = { offset: 0, rows: [], selected: {}, versionsSeen: '', links: {}, paint: {} };
   var FB_FIELDS = { kind: 'f-kind', status: 'f-status', version: 'f-version' };
   function feedbackFilterNow() { return L.feedbackFilter(readFilter(FB_FIELDS)); }
   ['f-kind', 'f-status', 'f-version'].forEach(function (id) { $(id).addEventListener('change', function () { fState.offset = 0; fState.selected = {}; loadFeedback(); }); });
@@ -1544,12 +1676,19 @@
     if (mine !== tokens.feedback) return;
     if (adminFailed(r, 'f-error')) { $('f-count').textContent = ''; return; }
     var groups = r.body.groups || [];
+    var linkIds = groups.map(function (g) { return g.newest_id; }).filter(function (x) { return x != null; });
+    var linkMap = {};
+    if (linkIds.length) {
+      var lr = await callAdmin(L.feedbackLinksBody(linkIds));
+      if (mine !== tokens.feedback) return;
+      if (lr.status === 200 && lr.body) linkMap = L.linksById(lr.body);
+    }
     $('f-count').textContent = L.formatCount(groups.length) + (groups.length === 1 ? ' kind of error' : ' kinds of error') + ', ' + L.formatCount(r.body.total_errors | 0) + ' reports in the last ' + (r.body.days | 0) + ' days';
     $('f-groups-note').textContent = 'Reports with the same message are counted once; numbers, ids and quoted text are ignored. Stack traces are not shown here: untick "Group errors" to read them.';
     var host = $('f-groups-table');
     clear(host);
     if (!groups.length) { host.appendChild(el('p', { 'class': 'adm-muted', text: 'No error reports in this period.' })); return; }
-    host.appendChild(simpleTable(L.ERROR_GROUP_HEAD, L.errorGroupRows(groups)));
+    host.appendChild(simpleTable(L.ERROR_GROUP_HEAD_LINKED, L.errorGroupRowsLinked(groups, linkMap)));
   }
   $('f-prev').addEventListener('click', function () { fState.offset = Math.max(0, fState.offset - L.PAGE_SIZE); fState.selected = {}; loadFeedback(); });
   $('f-next').addEventListener('click', function () { fState.offset += L.PAGE_SIZE; fState.selected = {}; loadFeedback(); });
@@ -1631,8 +1770,18 @@
     var box = $('f-list');
     clear(box);
     if (!list.length) box.appendChild(el('p', { 'class': 'adm-card adm-muted', text: 'No reports match these filters.' }));
+    fState.paint = {};
     list.forEach(function (rep) { box.appendChild(feedbackCard(rep)); });
     updateFeedbackCopy();
+    loadFeedbackLinks(list, mine);
+  }
+  // The to-do links of the reports on screen (batch 3). Separate call: the list never waits on it or breaks without it.
+  async function loadFeedbackLinks(list, mine) {
+    if (!list.length) return;
+    var r = await callAdmin(L.feedbackLinksBody(list.map(function (x) { return x.id; })));
+    if (mine !== tokens.feedback || r.status !== 200 || !r.body) return;
+    fState.links = L.linksById(r.body);
+    list.forEach(function (x) { if (fState.paint[x.id]) fState.paint[x.id](fState.links[x.id] || null); });
   }
 
   function feedbackCard(rep) {
@@ -1705,8 +1854,139 @@
     });
     actions.appendChild(note);
     card.appendChild(actions);
+
+    // to-do link: a chip ("K26 · fixed in 1.21.2") and a small editor (two inputs + Save) in the card
+    var chip = el('span', { 'class': 'adm-badge adm-chip' });
+    chip.hidden = true;
+    var linkBox = el('div', { 'class': 'adm-fb-link' }, [chip]);
+    var editBtn = el('button', { type: 'button', 'class': 'adm-btn adm-btn-ghost adm-btn-sm', text: 'Link to to-do', 'aria-expanded': 'false' });
+    var refIn = el('input', { type: 'text', maxlength: '8', autocomplete: 'off', placeholder: 'K26' });
+    var fixIn = el('input', { type: 'text', maxlength: '20', autocomplete: 'off', placeholder: '1.21.2' });
+    var saveBtn = el('button', { type: 'submit', 'class': 'adm-btn adm-btn-primary adm-btn-sm', text: 'Save link' });
+    var linkErr = el('p', { 'class': 'adm-err', role: 'alert' });
+    linkErr.hidden = true;
+    var form = el('form', { 'class': 'adm-fb-link-form', novalidate: '' }, [
+      el('label', null, ['To-do number', refIn]), el('label', null, ['Fixed in version', fixIn]), saveBtn, linkErr]);
+    form.hidden = true;
+    var current = null;
+    fState.paint[rep.id] = function (link) {
+      current = link;
+      var t = L.linkChipText(link);
+      chip.textContent = t; chip.hidden = !t;
+    };
+    editBtn.addEventListener('click', function () {
+      form.hidden = !form.hidden;
+      editBtn.setAttribute('aria-expanded', form.hidden ? 'false' : 'true');
+      if (!form.hidden) { refIn.value = (current && current.todo_ref) || ''; fixIn.value = (current && current.fixed_in) || ''; linkErr.hidden = true; refIn.focus(); }
+    });
+    form.addEventListener('submit', function (ev) {
+      ev.preventDefault();
+      var v = L.validateLinkForm({ todo_ref: refIn.value, fixed_in: fixIn.value });
+      if (!v.ok) { linkErr.textContent = Object.keys(v.errors).map(function (k) { return v.errors[k]; }).join(' '); linkErr.hidden = false; return; }
+      linkErr.hidden = true;
+      guarded('link-' + rep.id, [saveBtn], async function () {
+        var res = await callAdmin(L.setFeedbackLinkBody(rep.id, v.value.todo_ref, v.value.fixed_in));
+        if (res.status === -1) return;
+        if (res.status !== 200 || !res.body) { linkErr.textContent = L.adminErrorMessage(res.status, res.body); linkErr.hidden = false; return; }
+        var link = res.body.removed ? null : { feedback_id: rep.id, todo_ref: res.body.todo_ref, fixed_in: res.body.fixed_in };
+        fState.links[rep.id] = link;
+        fState.paint[rep.id](link);
+        form.hidden = true; editBtn.setAttribute('aria-expanded', 'false');
+        setStatus(link ? 'Report #' + rep.id + ' linked: ' + L.linkChipText(link) + '.' : 'Link removed from report #' + rep.id + '.', 'ok');
+      });
+    });
+    linkBox.appendChild(editBtn);
+    card.appendChild(linkBox);
+    card.appendChild(form);
+    fState.paint[rep.id](fState.links[rep.id] || null);
     return card;
   }
+
+  // ---------- data requests (admin v3, batch 3; India's DPDP Act: 30 days to answer) ----------
+  function downloadJson(filename, obj) {
+    var blob = new Blob([JSON.stringify(obj, null, 2)], { type: 'application/json;charset=utf-8' });
+    var url = URL.createObjectURL(blob);
+    var a = el('a', { href: url, download: filename });
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(function () { URL.revokeObjectURL(url); }, 2000);
+  }
+  async function loadDataRequests() {
+    var mine = nextToken('data');
+    if (!$('dr-received').value) $('dr-received').value = L.istToday(Date.now());
+    $('dr-count').textContent = 'Loading...';
+    var r = await callAdmin(L.listDataRequestsBody($('dr-status').value));
+    if (mine !== tokens.data) return;
+    if (adminFailed(r, 'dr-error')) { $('dr-count').textContent = ''; return; }
+    var rows = r.body.rows || [];
+    var open = rows.filter(function (x) { return x.status === 'open'; }).length;
+    var late = rows.filter(function (x) { return x.overdue || L.dataRequestOverdue(x, Date.now()); }).length;
+    $('dr-count').textContent = L.formatCount(rows.length) + (rows.length === 1 ? ' request' : ' requests') + ', ' + L.formatCount(open) + ' open' + (late ? ', ' + L.formatCount(late) + ' overdue' : '');
+    var tb = $('tbl-dr').tBodies[0];
+    clear(tb);
+    if (!rows.length) tb.appendChild(el('tr', null, [el('td', { colspan: 8, 'class': 'adm-muted', text: 'No requests here.' })]));
+    rows.forEach(function (x) { tb.appendChild(dataRequestRow(x)); });
+  }
+  function dataRequestRow(x) {
+    var overdue = x.overdue === true || L.dataRequestOverdue(x, Date.now());
+    var who;
+    if (x.user_id) { who = el('button', { type: 'button', 'class': 'adm-link adm-mono', text: x.email }); who.addEventListener('click', function () { openUser(x.user_id, who); }); }
+    else who = el('span', { 'class': 'adm-mono', text: x.email + ' (no account)' });
+    var left = L.dataRequestDaysLeft(x, Date.now());
+    var due = L.formatDate(x.due_by || L.dataRequestDue(x.received_at));
+    var dueCell = el('span', null, [due]);
+    if (x.status === 'open' && !isNaN(left)) dueCell.appendChild(el('span', { 'class': overdue ? 'adm-od' : 'adm-muted', text: overdue ? ' (' + (-left) + (left === -1 ? ' day late)' : ' days late)') : ' (' + left + (left === 1 ? ' day left)' : ' days left)') }));
+    var st = el('span', { 'class': 'adm-badge ' + (x.status === 'done' ? 'adm-badge-active' : overdue ? 'adm-badge-bad' : 'adm-badge-off'), text: (overdue ? 'Overdue' : x.status === 'open' ? 'Open' : x.status === 'done' ? 'Done' : 'Rejected') });
+    var acts = el('span', { 'class': 'adm-actions' });
+    function setBtn(label, status, cls) {
+      var b = el('button', { type: 'button', 'class': 'adm-btn adm-btn-sm ' + cls, text: label, 'aria-label': label + ': request ' + x.id });
+      b.addEventListener('click', function () {
+        guarded('dr-' + x.id, [b], async function () {
+          var res = await ask({ title: label, message: label + ' for ' + x.email + ' (' + L.dataKindLabel(x.kind) + ')?', okText: label, run: function () { return callAdmin(L.updateDataRequestBody(x.id, status)); } });
+          if (!res) return;
+          setStatus('Request ' + x.id + ' ' + (status === 'done' ? 'marked done' : status === 'rejected' ? 'rejected' : 'reopened') + '.', 'ok');
+          loadDataRequests();
+        });
+      });
+      acts.appendChild(b);
+    }
+    if (x.status === 'open') { setBtn('Mark done', 'done', 'adm-btn-primary'); setBtn('Reject', 'rejected', 'adm-btn-ghost'); } else setBtn('Reopen', 'open', 'adm-btn-ghost');
+    if (x.kind === 'export' && x.user_id) {
+      var dl = el('button', { type: 'button', 'class': 'adm-btn adm-btn-ghost adm-btn-sm', text: 'Download export', 'aria-label': 'Download the data export for ' + x.email });
+      dl.addEventListener('click', function () {
+        guarded('dr-export-' + x.id, [dl], async function () {
+          var res = await callAdmin(L.exportUserBody(x.user_id));
+          if (adminFailed(res)) return;
+          downloadJson(L.exportFilename(Date.now()), res.body.bundle);
+          setStatus('Export downloaded. Send it to ' + x.email + ', then mark the request done.', 'ok');
+        });
+      });
+      acts.appendChild(dl);
+    }
+    if (x.kind === 'delete' && x.user_id) {
+      var ou = el('button', { type: 'button', 'class': 'adm-btn adm-btn-ghost adm-btn-sm', text: 'Open user', 'aria-label': 'Open the account of ' + x.email });
+      ou.addEventListener('click', function () { openUser(x.user_id, ou); });
+      acts.appendChild(ou);
+    }
+    return el('tr', overdue ? { 'class': 'adm-overdue' } : null, [td(L.formatDate(x.received_at)), td(dueCell), td(who), td(L.dataKindLabel(x.kind)), td(L.dataChannelLabel(x.channel)), td(st), td(x.note || ''), td(acts)]);
+  }
+  $('dr-status').addEventListener('change', function () { loadDataRequests(); });
+  $('dr-refresh').addEventListener('click', function () { loadDataRequests(); });
+  $('form-dr-filter').addEventListener('submit', function (ev) { ev.preventDefault(); loadDataRequests(); });
+  $('form-dr-add').addEventListener('submit', function (ev) {
+    ev.preventDefault();
+    var v = L.validateDataRequestForm({ email: $('dr-email').value, kind: $('dr-kind').value, channel: $('dr-channel').value, received_on: $('dr-received').value, note: $('dr-note').value }, Date.now());
+    if (!v.ok) { setErr('dr-error', Object.keys(v.errors).map(function (k) { return v.errors[k]; }).join(' ')); return; }
+    setErr('dr-error', '');
+    guarded('dr-add', [$('dr-add')], async function () {
+      var r = await callAdmin(L.addDataRequestBody(v.value));
+      if (adminFailed(r, 'dr-error')) return;
+      $('dr-email').value = ''; $('dr-note').value = '';
+      setStatus('Request added' + (r.body.user_id ? ' and linked to the account.' : '. No account uses that email.'), 'ok');
+      loadDataRequests();
+    });
+  });
 
   // ---------- audit log ----------
   var aState = { offset: 0 };
@@ -1922,7 +2202,47 @@
       row('Two-step verification', f.verified ? 'On: authenticator app verified' : 'Not set up');
       row('Server rule', REQUIRE_MFA ? 'Admin actions need the authenticator code (aal2)' : 'Authenticator code not enforced');
     } else row('Two-step verification', 'Could not check (' + L.authErrorMessage(u.status, u.body) + ')');
+    loadSessions(mine);
+    loadPolicy();
   }
+
+  // admin sign-in history (batch 3): when, who, IP, browser. The browser string is shortened for reading.
+  async function loadSessions(mine) {
+    setErr('sessions-error', '');
+    var r = await callAdmin(L.adminSessionsBody(50));
+    if (mine !== tokens.settings) return;
+    var host = $('sessions-table');
+    clear(host);
+    if (adminFailed(r, 'sessions-error')) return;
+    var rows = r.body.rows || [];
+    if (!rows.length) { host.appendChild(el('p', { 'class': 'adm-muted', text: 'No sign-ins recorded yet.' })); return; }
+    host.appendChild(simpleTable(L.SESSION_HEAD, L.sessionRows(rows)));
+  }
+
+  // privacy policy versions (batch 3): the "Last updated" dates; consent is derived from the sign-up date
+  async function loadPolicy() {
+    var mine = nextToken('policy');
+    setErr('policy-error', '');
+    var r = await callAdmin(L.policyVersionsBody());
+    if (mine !== tokens.policy) return;
+    var host = $('policy-table');
+    clear(host);
+    if (adminFailed(r, 'policy-error')) return;
+    host.appendChild(simpleTable(L.POLICY_HEAD, L.policyRows(r.body.versions || [], r.body.current)));
+  }
+  $('policy-form').addEventListener('submit', function (ev) {
+    ev.preventDefault();
+    var v = L.validatePolicyForm({ version: $('pv-version').value, effective_from: $('pv-from').value, url: $('pv-url').value, summary: $('pv-summary').value });
+    if (!v.ok) { setErr('policy-error', Object.keys(v.errors).map(function (k) { return v.errors[k]; }).join(' ')); return; }
+    setErr('policy-error', '');
+    guarded('pv-add', [$('pv-add')], async function () {
+      var r = await callAdmin(L.addPolicyBody(v.value));
+      if (adminFailed(r, 'policy-error')) return;
+      $('pv-version').value = ''; $('pv-from').value = ''; $('pv-url').value = ''; $('pv-summary').value = '';
+      setStatus('Policy version ' + v.value.version + ' added.', 'ok');
+      loadPolicy();
+    });
+  });
 
   // ---------- startup ----------
   setInterval(function () { // keep the session alive while the page is open; drop to sign-in if it can't be renewed

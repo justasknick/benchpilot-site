@@ -1029,6 +1029,217 @@
     return { symbol: '–', label: 'Unknown', cls: 'adm-badge-off' };
   }
 
+  // ---------- admin console v3, batch 3 (migration 0064) ----------
+  var TODO_REF_RE = /^[A-Z]{1,3}[0-9]{1,4}[a-z]?$/;
+  var VERSION_RE3 = /^\d+\.\d+\.\d+$/;
+  var RETEST_RE = /^https:\/\/github\.com\/justasknick\/[A-Za-z0-9._~\/?#=&%:@+-]*$/;
+  var RELEASE_NEXT_MAX = 80;
+
+  // 1.9 feedback linked to the to-do list
+  function feedbackLinksBody(ids) { return { action: 'feedback_links', ids: (Array.isArray(ids) ? ids : []).slice(0, 100) }; }
+  function setFeedbackLinkBody(id, todoRef, fixedIn) {
+    var b = { action: 'set_feedback_link', id: id };
+    if (todoRef) b.todo_ref = todoRef;
+    if (fixedIn) b.fixed_in = fixedIn;
+    return b;
+  }
+  /** The two inputs of a report's link editor. Both empty = remove the link. Same rule as the server. */
+  function validateLinkForm(raw) {
+    var ref = String(raw && raw.todo_ref != null ? raw.todo_ref : '').trim();
+    var fix = String(raw && raw.fixed_in != null ? raw.fixed_in : '').trim();
+    var errors = {};
+    if (ref && !TODO_REF_RE.test(ref)) errors.todo_ref = 'The to-do number is letters then digits, like K26 or N52.';
+    if (fix && (fix.length > 20 || !VERSION_RE3.test(fix))) errors.fixed_in = 'The version must look like 1.21.2.';
+    if (Object.keys(errors).length) return { ok: false, errors: errors };
+    return { ok: true, value: { todo_ref: ref || null, fixed_in: fix || null } };
+  }
+  /** "K26 · fixed in 1.21.2"; '' when there is no link. */
+  function linkChipText(link) {
+    if (!link) return '';
+    var parts = [];
+    if (link.todo_ref) parts.push(link.todo_ref);
+    if (link.fixed_in) parts.push('fixed in ' + link.fixed_in);
+    return parts.join(' · ');
+  }
+  /** feedback_links answer -> { [feedback_id]: link }. */
+  function linksById(res) {
+    var out = {};
+    ((res && Array.isArray(res.links)) ? res.links : []).forEach(function (l) { if (l && l.feedback_id != null) out[l.feedback_id] = l; });
+    return out;
+  }
+  var ERROR_GROUP_HEAD_LINKED = ERROR_GROUP_HEAD.concat(['To-do']);
+  /** errorGroupRows plus a "To-do" cell: the link chip of the group's newest report (links = linksById(...)). */
+  function errorGroupRowsLinked(groups, links) {
+    var base = errorGroupRows(groups);
+    return base.map(function (row, i) {
+      var g = groups[i] || {};
+      var l = links && g.newest_id != null ? links[g.newest_id] : null;
+      return row.concat([linkChipText(l) || '-']);
+    });
+  }
+
+  // 1.10 release tracker
+  function setReleaseBody(v) { return { action: 'set_setting', key: 'release', value: v }; }
+  /** The card lines: live, in review, next, and the retest link (only a github.com/justasknick link is ever returned). */
+  function releaseLines(rel) {
+    var r = rel && typeof rel === 'object' ? rel : {};
+    return {
+      live: r.live ? 'Live v' + r.live + (r.live_since ? ' since ' + formatDate(r.live_since) : '') : 'Live version not set',
+      review: r.in_review ? 'In review v' + r.in_review + (r.submitted_on ? ' since ' + formatDate(r.submitted_on) : '') : 'Nothing in review',
+      next: r.next ? 'Next: ' + r.next : '',
+      retest: typeof r.retest_url === 'string' && RETEST_RE.test(r.retest_url) ? r.retest_url : null
+    };
+  }
+  /** The release form (all strings). Blank optional fields become null. Same rules as the server. */
+  function validateReleaseForm(raw) {
+    var g = function (k) { return String(raw && raw[k] != null ? raw[k] : '').trim(); };
+    var errors = {};
+    var live = g('live'), since = g('live_since'), review = g('in_review'), sub = g('submitted_on'), next = g('next'), url = g('retest_url');
+    if (!live || live.length > 20 || !VERSION_RE3.test(live)) errors.live = 'The live version must look like 1.21.0.';
+    if (!validYmd(since)) errors.live_since = '"Live since" must be a real date.';
+    if (review && (review.length > 20 || !VERSION_RE3.test(review))) errors.in_review = 'The in-review version must look like 1.21.1.';
+    if (sub && !validYmd(sub)) errors.submitted_on = '"Submitted on" must be a real date.';
+    if (next.length > RELEASE_NEXT_MAX) errors.next = '"Next" can be at most ' + RELEASE_NEXT_MAX + ' characters.';
+    else if (CONTROL_RE.test(next)) errors.next = '"Next" has invalid characters.';
+    if (url && (url.length > 200 || !RETEST_RE.test(url))) errors.retest_url = 'The retest link must start with https://github.com/justasknick/.';
+    if (Object.keys(errors).length) return { ok: false, errors: errors };
+    return { ok: true, value: { live: live, live_since: since, in_review: review || null, submitted_on: sub || null, next: next || null, retest_url: url || null } };
+  }
+
+  // 1.11 two-step delete
+  function scheduleDeleteBody(userId, confirmEmail, reason) { return { action: 'schedule_delete', user_id: userId, confirm_email: confirmEmail, reason: reason }; }
+  function cancelDeleteBody(userId, reason) { return { action: 'cancel_delete', user_id: userId, reason: reason }; }
+  function pendingDeletionsBody() { return { action: 'pending_deletions' }; }
+  function scheduleDeleteText(email) {
+    return 'Schedule the deletion of ' + email + '. Nothing is removed now: you have 24 hours to cancel. After that, "Delete now" removes their account, sign-in and plan for good. Payment records stay for tax purposes.';
+  }
+  function deleteNowText(email) {
+    return 'The 24-hour undo window for ' + email + ' has ended. Delete the account now? This cannot be undone. Payment records stay for tax purposes.';
+  }
+  /** The red banner for a user with a scheduled deletion: { text, ready }. null when nothing is scheduled. */
+  function deletionBanner(p, nowMs) {
+    if (!p || !p.due_at) return null;
+    var due = Date.parse(p.due_at);
+    var ready = typeof p.ready === 'boolean' ? p.ready : (!isNaN(due) && due <= (nowMs === undefined ? Date.now() : nowMs));
+    return { text: 'Deletion scheduled, due ' + formatDateTime(p.due_at) + (ready ? '. The undo window has ended.' : '.'), ready: ready };
+  }
+
+  // 1.12 admin sign-in history
+  function noteSessionBody() { return { action: 'note_session' }; }
+  function adminSessionsBody(limit) { var n = Math.floor(Number(limit)); return { action: 'admin_sessions', limit: n >= 1 && n <= 200 ? n : 50 }; }
+  /** 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) ... Chrome/131.0.0.0 Safari/537.36' -> 'Chrome 131 on Windows'. */
+  function shortUserAgent(ua) {
+    var s = typeof ua === 'string' ? ua : '';
+    if (!s.trim()) return 'Unknown browser';
+    var m, name = '', ver = '';
+    if ((m = /\bEdg(?:e|A|iOS)?\/(\d+)/.exec(s))) { name = 'Edge'; ver = m[1]; }
+    else if ((m = /\bOPR\/(\d+)/.exec(s))) { name = 'Opera'; ver = m[1]; }
+    else if ((m = /\b(?:Firefox|FxiOS)\/(\d+)/.exec(s))) { name = 'Firefox'; ver = m[1]; }
+    else if ((m = /\b(?:Chrome|CriOS)\/(\d+)/.exec(s))) { name = 'Chrome'; ver = m[1]; }
+    else if ((m = /\bVersion\/(\d+)[^]*\bSafari\//.exec(s))) { name = 'Safari'; ver = m[1]; }
+    else if ((m = /^([A-Za-z][A-Za-z0-9._-]{0,30})\/(\d+)/.exec(s.trim()))) { name = m[1]; ver = m[2]; }
+    var os = '';
+    if (/Windows/.test(s)) os = 'Windows';
+    else if (/Android/.test(s)) os = 'Android';
+    else if (/iPhone|iPad|iPod|iOS/.test(s)) os = 'iOS';
+    else if (/Mac OS X|Macintosh/.test(s)) os = 'macOS';
+    else if (/CrOS/.test(s)) os = 'ChromeOS';
+    else if (/Linux|X11/.test(s)) os = 'Linux';
+    if (!name) return os ? 'Browser on ' + os : 'Unknown browser';
+    return name + (ver ? ' ' + ver : '') + (os ? ' on ' + os : '');
+  }
+  /** Rows of strings for the Settings table: when, who, IP, browser. */
+  function sessionRows(rows) {
+    return (Array.isArray(rows) ? rows : []).map(function (r) {
+      return [formatDateTime(r.at), r.email || '-', r.ip || '-', shortUserAgent(r.ua)];
+    });
+  }
+  var SESSION_HEAD = ['When', 'Admin', 'IP', 'Browser'];
+
+  // 1.13 data requests
+  var DATA_KIND_LABEL = { 'export': 'Send my data', 'delete': 'Delete my account', 'correct': 'Correct my data' };
+  var DATA_CHANNEL_LABEL = { email: 'Email', in_app: 'In the app', other: 'Other' };
+  var DATA_DUE_DAYS = 30;
+  function dataKindLabel(k) { return DATA_KIND_LABEL[k] || String(k || ''); }
+  function dataChannelLabel(c) { return DATA_CHANNEL_LABEL[c] || String(c || ''); }
+  function listDataRequestsBody(status) { var b = { action: 'list_data_requests' }; if (status) b.status = status; return b; }
+  function updateDataRequestBody(id, status, note) { var b = { action: 'update_data_request', id: id, status: status }; if (note) b.note = note; return b; }
+  function exportUserBody(userId) { return { action: 'export_user', user_id: userId }; }
+  /** The due date (30 days after receipt) as YYYY-MM-DD in IST. */
+  function dataRequestDue(receivedAt) {
+    var t = Date.parse(receivedAt);
+    return isNaN(t) ? '' : istToday(t + DATA_DUE_DAYS * 86400000);
+  }
+  /** A request is overdue while it is open and its 30 days are over (the server also sends `overdue`). */
+  function dataRequestOverdue(r, nowMs) {
+    if (!r || r.status !== 'open') return false;
+    var t = Date.parse(r.received_at);
+    return !isNaN(t) && t + DATA_DUE_DAYS * 86400000 < (nowMs === undefined ? Date.now() : nowMs);
+  }
+  /** Days left (negative = days late) before the 30 days are over. */
+  function dataRequestDaysLeft(r, nowMs) {
+    var t = Date.parse(r && r.received_at);
+    if (isNaN(t)) return NaN;
+    return daysBetween(istToday(nowMs), dataRequestDue(r.received_at));
+  }
+  function validateDataRequestForm(raw, nowMs) {
+    var g = function (k) { return String(raw && raw[k] != null ? raw[k] : '').trim(); };
+    var errors = {};
+    var email = g('email').toLowerCase(), kind = g('kind'), channel = g('channel'), received = g('received_on'), note = g('note');
+    if (email.length < 3 || email.length > 320 || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) errors.email = 'Enter the email address of the person who asked.';
+    if (!DATA_KIND_LABEL[kind]) errors.kind = 'Choose the kind of request.';
+    if (!DATA_CHANNEL_LABEL[channel]) errors.channel = 'Choose how it arrived.';
+    if (!validYmd(received)) errors.received_on = 'Enter the date it was received.';
+    else if (received > istToday(nowMs)) errors.received_on = 'The date cannot be in the future.';
+    if (note.length > 1000) errors.note = 'The note can be at most 1000 characters.';
+    else if (/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/.test(note)) errors.note = 'The note has invalid characters.';
+    if (Object.keys(errors).length) return { ok: false, errors: errors };
+    return { ok: true, value: { email: email, kind: kind, channel: channel, received_on: received, note: note || null } };
+  }
+  function addDataRequestBody(v) {
+    var b = { action: 'add_data_request', email: v.email, kind: v.kind, channel: v.channel, received_on: v.received_on };
+    if (v.note) b.note = v.note;
+    return b;
+  }
+  /** benchpilot-export-2026-11-23.json (IST date). */
+  function exportFilename(nowMs) { return 'benchpilot-export-' + istToday(nowMs) + '.json'; }
+
+  // 1.14 consent records
+  var CONSENT_NOTE = 'Derived from the sign-up date; per-click consent comes with the next extension release.';
+  function userConsentBody(userId) { return { action: 'user_consent', user_id: userId }; }
+  function policyVersionsBody() { return { action: 'policy_versions' }; }
+  /** "Privacy policy: signed up under 2026-11-17 (current)" or "(older: notify)". */
+  function consentValue(c) {
+    if (!c || typeof c !== 'object') return 'not available yet';
+    if (!c.signed_up_under) return 'signed up before the first recorded version (older: notify)';
+    return 'signed up under ' + c.signed_up_under + (c.accepted_current ? ' (current)' : ' (older: notify)');
+  }
+  function consentText(c) { return 'Privacy policy: ' + consentValue(c); }
+  function validatePolicyForm(raw) {
+    var g = function (k) { return String(raw && raw[k] != null ? raw[k] : '').trim(); };
+    var errors = {};
+    var version = g('version'), from = g('effective_from'), url = g('url'), summary = g('summary');
+    if (!validYmd(version)) errors.version = 'The version is the "Last updated" date, like 2026-11-17.';
+    if (!validYmd(from)) errors.effective_from = '"Effective from" must be a real date.';
+    if (url && (url.length > 300 || !/^https:\/\/\S+$/.test(url))) errors.url = 'The link must start with https://.';
+    if (summary.length > 300) errors.summary = 'The summary can be at most 300 characters.';
+    else if (CONTROL_RE.test(summary)) errors.summary = 'The summary has invalid characters.';
+    if (Object.keys(errors).length) return { ok: false, errors: errors };
+    return { ok: true, value: { version: version, effective_from: from, url: url || null, summary: summary || null } };
+  }
+  function addPolicyBody(v) {
+    var b = { action: 'add_policy_version', version: v.version, effective_from: v.effective_from };
+    if (v.url) b.url = v.url;
+    if (v.summary) b.summary = v.summary;
+    return b;
+  }
+  var POLICY_HEAD = ['Version', 'Effective from', 'Summary', 'Link'];
+  function policyRows(list, current) {
+    return (Array.isArray(list) ? list : []).map(function (v) {
+      return [v.version + (v.version === current ? ' (current)' : ''), formatDate(v.effective_from), v.summary || '-', v.url || '-'];
+    });
+  }
+
   return {
     SCORECARD_COLUMNS: SCORECARD_COLUMNS, scorecardBody: scorecardBody, sortScorecard: sortScorecard, nextSort: nextSort, scorecardTotals: scorecardTotals,
     REMOTE_FEATURES: REMOTE_FEATURES, SITE_PREFIX: SITE_PREFIX, SEVERITIES: SEVERITIES, MAX_ANNOUNCEMENTS: MAX_ANNOUNCEMENTS, MAX_ANN_TEXT: MAX_ANN_TEXT,
@@ -1059,6 +1270,18 @@
     validateBulkSelection: validateBulkSelection, actionConfirmText: actionConfirmText, deleteConfirmText: deleteConfirmText, bulkConfirmText: bulkConfirmText,
     niceMax: niceMax, axisTicks: axisTicks, barLayout: barLayout, labelIndexes: labelIndexes, fillDaily: fillDaily, shortDay: shortDay,
     planSegments: planSegments, funnelSteps: funnelSteps,
+    TODO_REF_RE: TODO_REF_RE, feedbackLinksBody: feedbackLinksBody, setFeedbackLinkBody: setFeedbackLinkBody, validateLinkForm: validateLinkForm, linkChipText: linkChipText, linksById: linksById,
+    ERROR_GROUP_HEAD_LINKED: ERROR_GROUP_HEAD_LINKED, errorGroupRowsLinked: errorGroupRowsLinked,
+    setReleaseBody: setReleaseBody, releaseLines: releaseLines, validateReleaseForm: validateReleaseForm, RETEST_RE: RETEST_RE,
+    scheduleDeleteBody: scheduleDeleteBody, cancelDeleteBody: cancelDeleteBody, pendingDeletionsBody: pendingDeletionsBody, scheduleDeleteText: scheduleDeleteText,
+    deleteNowText: deleteNowText, deletionBanner: deletionBanner,
+    noteSessionBody: noteSessionBody, adminSessionsBody: adminSessionsBody, shortUserAgent: shortUserAgent, sessionRows: sessionRows, SESSION_HEAD: SESSION_HEAD,
+    DATA_KIND_LABEL: DATA_KIND_LABEL, DATA_CHANNEL_LABEL: DATA_CHANNEL_LABEL, dataKindLabel: dataKindLabel, dataChannelLabel: dataChannelLabel,
+    listDataRequestsBody: listDataRequestsBody, updateDataRequestBody: updateDataRequestBody, exportUserBody: exportUserBody, dataRequestDue: dataRequestDue,
+    dataRequestOverdue: dataRequestOverdue, dataRequestDaysLeft: dataRequestDaysLeft, validateDataRequestForm: validateDataRequestForm, addDataRequestBody: addDataRequestBody,
+    exportFilename: exportFilename,
+    CONSENT_NOTE: CONSENT_NOTE, userConsentBody: userConsentBody, policyVersionsBody: policyVersionsBody, consentValue: consentValue, consentText: consentText, validatePolicyForm: validatePolicyForm,
+    addPolicyBody: addPolicyBody, POLICY_HEAD: POLICY_HEAD, policyRows: policyRows,
     MAX_REASON: MAX_REASON, MIN_DAYS: MIN_DAYS, MAX_DAYS: MAX_DAYS, DAY_PRESETS: DAY_PRESETS,
     tierLabel: tierLabel, istToday: istToday, addDays: addDays, grantEndDate: grantEndDate,
     formatDate: formatDate, formatDateTime: formatDateTime, formatMoney: formatMoney,
